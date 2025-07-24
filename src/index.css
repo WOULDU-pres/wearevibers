@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 248 100% 99%;
+    --foreground: 240 8% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 8% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 8% 15%;
+
+    --primary: 262 75% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 248 100% 96%;
+    --secondary-foreground: 240 8% 25%;
+
+    --muted: 248 50% 95%;
+    --muted-foreground: 240 5% 50%;
+
+    --accent: 16 100% 66%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 248 40% 90%;
+    --input: 248 40% 90%;
+    --ring: 262 75% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom design tokens for WeAreVibers */
+    --vibe-purple: 262 75% 60%;
+    --vibe-coral: 16 100% 66%;
+    --vibe-lavender: 270 50% 90%;
+    --vibe-soft-gray: 240 5% 96%;
+    
+    /* Gradients */
+    --gradient-vibe: linear-gradient(135deg, hsl(var(--vibe-purple)), hsl(var(--vibe-coral)));
+    --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--vibe-lavender)));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.8), hsl(270 50% 98% / 0.9));
+    
+    /* Shadows */
+    --shadow-vibe: 0 8px 32px hsl(var(--vibe-purple) / 0.15);
+    --shadow-soft: 0 4px 16px hsl(240 5% 80% / 0.2);
+    --shadow-glow: 0 0 40px hsl(var(--vibe-purple) / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 8% 8%;
+    --foreground: 248 100% 95%;
+
+    --card: 240 8% 12%;
+    --card-foreground: 248 100% 95%;
+
+    --popover: 240 8% 12%;
+    --popover-foreground: 248 100% 95%;
+
+    --primary: 262 75% 65%;
+    --primary-foreground: 240 8% 8%;
+
+    --secondary: 240 8% 16%;
+    --secondary-foreground: 248 100% 95%;
+
+    --muted: 240 8% 20%;
+    --muted-foreground: 240 5% 60%;
+
+    --accent: 16 100% 66%;
+    --accent-foreground: 240 8% 8%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 248 100% 95%;
+
+    --border: 240 8% 20%;
+    --input: 240 8% 20%;
+    --ring: 262 75% 65%;
+    
+    /* Dark mode gradients */
+    --gradient-vibe: linear-gradient(135deg, hsl(var(--vibe-purple)), hsl(var(--vibe-coral)));
+    --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(240 8% 15%));
+    --gradient-card: linear-gradient(135deg, hsl(240 8% 12% / 0.8), hsl(240 8% 18% / 0.9));
+    
+    --shadow-vibe: 0 8px 32px hsl(var(--vibe-purple) / 0.25);
+    --shadow-soft: 0 4px 16px hsl(240 8% 0% / 0.4);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
