@@ -1,32 +1,72 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Eye, EyeOff, Mail, Lock, Github } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { signIn, signInWithOAuth, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const from = location.state?.from || '/';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic with Supabase
-    console.log("Login attempt:", { email, password });
+    setIsLoading(true);
+
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast.error(error.message || '로그인에 실패했습니다.');
+      } else {
+        toast.success('로그인 성공!');
+        navigate(from, { replace: true });
+      }
+    } catch (error) {
+      toast.error('예상치 못한 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    // TODO: Implement social login with Supabase
-    console.log("Social login:", provider);
+  const handleSocialLogin = async (provider: 'google') => {
+    try {
+      const { error } = await signInWithOAuth(provider);
+      
+      if (error) {
+        toast.error(error.message || '소셜 로그인에 실패했습니다.');
+      }
+      // OAuth는 리다이렉트되므로 성공 메시지는 여기서 표시하지 않음
+    } catch (error) {
+      toast.error('예상치 못한 오류가 발생했습니다.');
+    }
   };
 
-  const handleMagicLink = () => {
-    // TODO: Implement magic link with Supabase
-    console.log("Magic link for:", email);
+  const handleMagicLink = async () => {
+    if (!email) {
+      toast.error('이메일을 먼저 입력해주세요.');
+      return;
+    }
+
+    try {
+      // Magic link 기능은 향후 구현 예정
+      toast.info('Magic link 기능은 곧 제공될 예정입니다.');
+    } catch (error) {
+      toast.error('Magic link 전송에 실패했습니다.');
+    }
   };
 
   return (
@@ -59,6 +99,7 @@ const Login = () => {
                 variant="outline"
                 className="w-full"
                 onClick={() => handleSocialLogin("google")}
+                disabled={loading || isLoading}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                   <path
@@ -79,15 +120,6 @@ const Login = () => {
                   />
                 </svg>
                 Continue with Google
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleSocialLogin("github")}
-              >
-                <Github className="w-4 h-4 mr-2" />
-                Continue with GitHub
               </Button>
             </div>
 
@@ -115,6 +147,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
+                    disabled={loading || isLoading}
                     required
                   />
                 </div>
@@ -131,6 +164,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10"
+                    disabled={loading || isLoading}
                     required
                   />
                   <Button
@@ -158,8 +192,13 @@ const Login = () => {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-vibe hover:opacity-90">
-                Sign in
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-vibe hover:opacity-90"
+                disabled={loading || isLoading}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
 
@@ -169,7 +208,7 @@ const Login = () => {
                 variant="link"
                 onClick={handleMagicLink}
                 className="text-sm text-primary"
-                disabled={!email}
+                disabled={!email || loading || isLoading}
               >
                 Send magic link instead
               </Button>

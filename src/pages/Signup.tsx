@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Mail, Lock, User, Github } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,27 +24,73 @@ const Signup = () => {
     agreeToTerms: false
   });
 
+  const { signUp, signInWithOAuth, loading } = useAuth();
+  const navigate = useNavigate();
+
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      toast.error('비밀번호가 일치하지 않습니다.');
       return;
     }
+    
     if (!formData.agreeToTerms) {
-      alert("Please agree to the terms and conditions");
+      toast.error('이용약관과 개인정보 처리방침에 동의해주세요.');
       return;
     }
-    // TODO: Implement signup logic with Supabase
-    console.log("Signup attempt:", formData);
+
+    if (!isPasswordValid) {
+      toast.error('비밀번호는 최소 8자 이상이어야 합니다.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await signUp(
+        formData.email, 
+        formData.password, 
+        {
+          username: formData.username,
+          fullName: formData.fullName,
+        }
+      );
+      
+      if (error) {
+        if (error.message.includes('email')) {
+          toast.error('이미 사용 중인 이메일입니다.');
+        } else if (error.message.includes('username')) {
+          toast.error('이미 사용 중인 사용자명입니다.');
+        } else {
+          toast.error(error.message || '회원가입에 실패했습니다.');
+        }
+      } else {
+        toast.success('회원가입이 완료되었습니다! 이메일을 확인해주세요.');
+        navigate('/login');
+      }
+    } catch (error) {
+      toast.error('예상치 못한 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    // TODO: Implement social login with Supabase
-    console.log("Social signup:", provider);
+  const handleSocialLogin = async (provider: 'google') => {
+    try {
+      const { error } = await signInWithOAuth(provider);
+      
+      if (error) {
+        toast.error(error.message || '소셜 가입에 실패했습니다.');
+      }
+      // OAuth는 리다이렉트되므로 성공 메시지는 여기서 표시하지 않음
+    } catch (error) {
+      toast.error('예상치 못한 오류가 발생했습니다.');
+    }
   };
 
   const passwordsMatch = formData.password === formData.confirmPassword;
@@ -77,6 +126,7 @@ const Signup = () => {
                 variant="outline"
                 className="w-full"
                 onClick={() => handleSocialLogin("google")}
+                disabled={loading || isLoading}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                   <path
@@ -97,15 +147,6 @@ const Signup = () => {
                   />
                 </svg>
                 Continue with Google
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleSocialLogin("github")}
-              >
-                <Github className="w-4 h-4 mr-2" />
-                Continue with GitHub
               </Button>
             </div>
 
@@ -134,6 +175,7 @@ const Signup = () => {
                       value={formData.username}
                       onChange={(e) => handleChange("username", e.target.value)}
                       className="pl-10"
+                      disabled={loading || isLoading}
                       required
                     />
                   </div>
@@ -147,6 +189,7 @@ const Signup = () => {
                     placeholder="John Doe"
                     value={formData.fullName}
                     onChange={(e) => handleChange("fullName", e.target.value)}
+                    disabled={loading || isLoading}
                     required
                   />
                 </div>
@@ -163,6 +206,7 @@ const Signup = () => {
                     value={formData.email}
                     onChange={(e) => handleChange("email", e.target.value)}
                     className="pl-10"
+                    disabled={loading || isLoading}
                     required
                   />
                 </div>
@@ -179,6 +223,7 @@ const Signup = () => {
                     value={formData.password}
                     onChange={(e) => handleChange("password", e.target.value)}
                     className="pl-10 pr-10"
+                    disabled={loading || isLoading}
                     required
                   />
                   <Button
@@ -213,6 +258,7 @@ const Signup = () => {
                     value={formData.confirmPassword}
                     onChange={(e) => handleChange("confirmPassword", e.target.value)}
                     className="pl-10 pr-10"
+                    disabled={loading || isLoading}
                     required
                   />
                   <Button
@@ -257,9 +303,10 @@ const Signup = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-gradient-vibe hover:opacity-90"
-                disabled={!formData.agreeToTerms || !passwordsMatch || !isPasswordValid}
+                disabled={!formData.agreeToTerms || !passwordsMatch || !isPasswordValid || loading || isLoading}
               >
-                Create account
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
             </form>
 

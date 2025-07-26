@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Lounge from "./pages/Lounge";
 import Tips from "./pages/Tips";
@@ -17,21 +19,71 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/lounge" element={<Lounge />} />
-          <Route path="/tips" element={<Tips />} />
-          <Route path="/members" element={<Members />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/profile" element={<Profile />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            
+            {/* Auth routes - only accessible when not logged in */}
+            <Route 
+              path="/login" 
+              element={
+                <ProtectedRoute requireAuth={false}>
+                  <Login />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/signup" 
+              element={
+                <ProtectedRoute requireAuth={false}>
+                  <Signup />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Protected routes - require authentication */}
+            <Route 
+              path="/lounge" 
+              element={
+                <ProtectedRoute>
+                  <Lounge />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tips" 
+              element={
+                <ProtectedRoute>
+                  <Tips />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/members" 
+              element={
+                <ProtectedRoute>
+                  <Members />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

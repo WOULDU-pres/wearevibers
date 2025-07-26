@@ -1,51 +1,95 @@
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, User, Calendar } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Heart, MessageCircle, User, Calendar, PlusCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import type { Tables } from "@/lib/supabase-types";
+
+type Post = Tables<'posts'>;
 
 const loungeCategories = [
-  { name: "데스크테리어", count: 42, color: "bg-primary/10 text-primary" },
-  { name: "코딩플레이리스트", count: 38, color: "bg-secondary/10 text-secondary" },
-  { name: "IDE테마", count: 25, color: "bg-accent/10 text-accent" },
-  { name: "자유게시판", count: 67, color: "bg-muted/50 text-muted-foreground" },
-];
-
-const loungePosts = [
-  {
-    id: 1,
-    title: "밤샘 코딩을 위한 완벽한 플레이리스트 🎵",
-    author: "VibeSeeker",
-    category: "코딩플레이리스트",
-    time: "2시간 전",
-    likes: 24,
-    comments: 8,
-    content: "로파이 힙합부터 앰비언트까지, 집중력을 극대화하는 음악 리스트를 공유합니다..."
-  },
-  {
-    id: 2,
-    title: "미니멀 데스크 셋업 완성! 🖥️",
-    author: "CleanCoder",
-    category: "데스크테리어",
-    time: "4시간 전",
-    likes: 45,
-    comments: 12,
-    content: "1년간 준비한 미니멀 데스크 셋업을 드디어 완성했습니다. 키보드부터 모니터 암까지..."
-  },
-  {
-    id: 3,
-    title: "VS Code 테마 추천: Tokyo Night Storm",
-    author: "ThemeHunter",
-    category: "IDE테마",
-    time: "6시간 전",
-    likes: 18,
-    comments: 5,
-    content: "Tokyo Night의 새로운 변형인 Storm 버전을 사용해봤는데 정말 눈이 편해요..."
-  },
+  { name: "데스크테리어", count: 0, color: "bg-primary/10 text-primary" },
+  { name: "코딩플레이리스트", count: 0, color: "bg-secondary/10 text-secondary" },
+  { name: "IDE테마", count: 0, color: "bg-accent/10 text-accent" },
+  { name: "자유게시판", count: 0, color: "bg-muted/50 text-muted-foreground" },
 ];
 
 const Lounge = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles (
+            username,
+            full_name
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching posts:', error);
+        return;
+      }
+
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Error in fetchPosts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const PostsSkeleton = () => (
+    <div className="space-y-6">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Card key={i} className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-16 w-full mb-4" />
+            <div className="flex justify-between">
+              <div className="flex gap-4">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const EmptyState = () => (
+    <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <CardContent className="p-12 text-center">
+        <PlusCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+        <h3 className="text-xl font-semibold mb-2">아직 게시글이 없습니다</h3>
+        <p className="text-muted-foreground mb-6">
+          첫 번째 게시글을 작성해서 커뮤니티를 시작해보세요!
+        </p>
+        <Button className="bg-gradient-vibe hover:opacity-90 text-white border-0">
+          첫 게시글 작성하기
+        </Button>
+      </CardContent>
+    </Card>
+  );
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -89,59 +133,67 @@ const Lounge = () => {
           </div>
 
           {/* Posts Feed */}
-          <div className="lg:col-span-3 space-y-6">
-            {loungePosts.map((post) => (
-              <Card key={post.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-xs">
-                          #{post.category}
-                        </Badge>
+          <div className="lg:col-span-3">
+            {loading ? (
+              <PostsSkeleton />
+            ) : posts.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="space-y-6">
+                {posts.map((post) => (
+                  <Card key={post.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              #{post.category || '일반'}
+                            </Badge>
+                          </div>
+                          <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
+                            {post.title}
+                          </CardTitle>
+                        </div>
                       </div>
-                      <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
-                        {post.title}
-                      </CardTitle>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      {post.author}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {post.time}
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <p className="text-muted-foreground mb-4 line-clamp-2">
-                    {post.content}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:text-red-500">
-                        <Heart className="w-4 h-4" />
-                        {post.likes}
-                      </Button>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                        <MessageCircle className="w-4 h-4" />
-                        {post.comments}
-                      </Button>
-                    </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          {post.profiles?.username || '익명'}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                        </div>
+                      </div>
+                    </CardHeader>
                     
-                    <Button variant="outline" size="sm">
-                      읽어보기
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4 line-clamp-2">
+                        {post.content}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:text-red-500">
+                            <Heart className="w-4 h-4" />
+                            {post.vibe_count || 0}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                            <MessageCircle className="w-4 h-4" />
+                            {post.comment_count || 0}
+                          </Button>
+                        </div>
+                        
+                        <Button variant="outline" size="sm">
+                          읽어보기
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

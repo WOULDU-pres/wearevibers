@@ -1,66 +1,105 @@
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers, PlusCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import type { Tables } from "@/lib/supabase-types";
+
+type Tip = Tables<'tips'>;
 
 const tipCategories = [
-  { name: "Productivity", icon: Layers, count: 34 },
-  { name: "CSS_Trick", icon: Palette, count: 28 },
-  { name: "Git_Flow", icon: GitBranch, count: 19 },
-  { name: "UI/UX", icon: Code, count: 42 },
-];
-
-const tips = [
-  {
-    id: 1,
-    title: "CSS Grid로 완벽한 반응형 레이아웃 만들기",
-    author: "GridMaster",
-    category: "CSS_Trick",
-    vibes: 89,
-    difficulty: "초급",
-    readTime: "5분",
-    preview: "Grid의 fr 단위와 minmax() 함수를 활용해서 모든 화면 크기에 완벽하게 대응하는 레이아웃을 만드는 방법을 알아봅시다...",
-    tags: ["CSS", "반응형", "레이아웃"]
-  },
-  {
-    id: 2,
-    title: "Git 브랜치 전략: 팀 프로젝트에서 충돌 최소화하기",
-    author: "GitNinja",
-    category: "Git_Flow",
-    vibes: 156,
-    difficulty: "중급",
-    readTime: "8분",
-    preview: "Git Flow와 GitHub Flow의 장단점을 비교하고, 팀 규모와 프로젝트 특성에 맞는 브랜치 전략을 선택하는 방법...",
-    tags: ["Git", "팀워크", "버전관리"]
-  },
-  {
-    id: 3,
-    title: "VS Code 생산성 10배 높이는 확장 프로그램",
-    author: "CodeOptimizer",
-    category: "Productivity",
-    vibes: 203,
-    difficulty: "초급",
-    readTime: "6분",
-    preview: "매일 사용하는 VS Code를 더 스마트하게! 코딩 속도를 획기적으로 향상시켜주는 필수 확장 프로그램들을 소개합니다...",
-    tags: ["VSCode", "확장프로그램", "생산성"]
-  },
-  {
-    id: 4,
-    title: "사용자 경험을 높이는 마이크로 인터랙션 디자인",
-    author: "UXDesigner",
-    category: "UI/UX",
-    vibes: 127,
-    difficulty: "중급",
-    readTime: "12분",
-    preview: "버튼 호버 효과부터 로딩 애니메이션까지, 사용자가 느끼는 앱의 품질을 크게 좌우하는 마이크로 인터랙션 디자인 가이드...",
-    tags: ["UX", "애니메이션", "인터랙션"]
-  }
+  { name: "Productivity", icon: Layers, count: 0 },
+  { name: "CSS_Trick", icon: Palette, count: 0 },
+  { name: "Git_Flow", icon: GitBranch, count: 0 },
+  { name: "UI/UX", icon: Code, count: 0 },
 ];
 
 const Tips = () => {
+  const [tips, setTips] = useState<Tip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTips();
+  }, []);
+
+  const fetchTips = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tips')
+        .select(`
+          *,
+          profiles (
+            username,
+            full_name
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching tips:', error);
+        return;
+      }
+
+      setTips(data || []);
+    } catch (error) {
+      console.error('Error in fetchTips:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const TipsSkeleton = () => (
+    <div className="space-y-6">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Card key={i} className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <div className="flex gap-2 mb-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-12" />
+            </div>
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/3" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-16 w-full mb-4" />
+            <div className="flex gap-2 mb-4">
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-5 w-12" />
+              <Skeleton className="h-5 w-20" />
+            </div>
+            <div className="flex justify-between">
+              <div className="flex gap-4">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const EmptyState = () => (
+    <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <CardContent className="p-12 text-center">
+        <PlusCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+        <h3 className="text-xl font-semibold mb-2">아직 팁이 없습니다</h3>
+        <p className="text-muted-foreground mb-6">
+          유용한 개발 팁을 공유해서 커뮤니티에 기여해보세요!
+        </p>
+        <Button className="bg-gradient-vibe hover:opacity-90 text-white border-0">
+          첫 번째 팁 공유하기
+        </Button>
+      </CardContent>
+    </Card>
+  );
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -133,65 +172,67 @@ const Tips = () => {
           </div>
 
           {/* Tips Feed */}
-          <div className="lg:col-span-3 space-y-6">
-            {tips.map((tip) => (
-              <Card key={tip.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-xs">
-                          #{tip.category}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {tip.difficulty}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {tip.readTime} 읽기
-                        </span>
+          <div className="lg:col-span-3">
+            {loading ? (
+              <TipsSkeleton />
+            ) : tips.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="space-y-6">
+                {tips.map((tip) => (
+                  <Card key={tip.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              #{tip.category || '일반'}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {tip.difficulty_level ? `레벨 ${tip.difficulty_level}` : '초급'}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {tip.read_time || '5'}분 읽기
+                            </span>
+                          </div>
+                          <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
+                            {tip.title}
+                          </CardTitle>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            by {tip.profiles?.username || '익명'}
+                          </div>
+                        </div>
                       </div>
-                      <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
-                        {tip.title}
-                      </CardTitle>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        by {tip.author}
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <p className="text-muted-foreground mb-4 line-clamp-2">
-                    {tip.preview}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {tip.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:text-red-500">
-                        <Heart className="w-4 h-4" />
-                        {tip.vibes}
-                      </Button>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                        <Bookmark className="w-4 h-4" />
-                        저장
-                      </Button>
-                    </div>
+                    </CardHeader>
                     
-                    <Button variant="outline" size="sm">
-                      자세히 보기
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4 line-clamp-2">
+                        {tip.content}
+                      </p>
+                      
+                      {/* Tags 기능은 추후 추가 예정 */}
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:text-red-500">
+                            <Heart className="w-4 h-4" />
+                            {tip.vibe_count || 0}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                            <Bookmark className="w-4 h-4" />
+                            저장
+                          </Button>
+                        </div>
+                        
+                        <Button variant="outline" size="sm">
+                          자세히 보기
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

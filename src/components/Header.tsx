@@ -1,9 +1,25 @@
-import { Search, Bell, User, Plus } from "lucide-react";
+import { Search, Bell, User, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { Link, useNavigate } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
 
 const Header = () => {
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error('로그아웃에 실패했습니다.');
+    } else {
+      toast.success('로그아웃되었습니다.');
+      navigate('/');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 py-3">
@@ -18,18 +34,18 @@ const Header = () => {
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="/" className="text-foreground hover:text-primary transition-colors font-medium">
+              <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">
                 Showcase
-              </a>
-              <a href="/lounge" className="text-muted-foreground hover:text-primary transition-colors">
+              </Link>
+              <Link to="/lounge" className="text-muted-foreground hover:text-primary transition-colors">
                 Lounge
-              </a>
-              <a href="/tips" className="text-muted-foreground hover:text-primary transition-colors">
+              </Link>
+              <Link to="/tips" className="text-muted-foreground hover:text-primary transition-colors">
                 Tips
-              </a>
-              <a href="/members" className="text-muted-foreground hover:text-primary transition-colors">
+              </Link>
+              <Link to="/members" className="text-muted-foreground hover:text-primary transition-colors">
                 Members
-              </a>
+              </Link>
             </nav>
           </div>
 
@@ -62,32 +78,52 @@ const Header = () => {
             
             {/* Login/Profile Actions */}
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => window.location.href = '/login'}
-                className="hidden md:flex"
-              >
-                Sign In
-              </Button>
-              
-              <Button 
-                size="sm"
-                onClick={() => window.location.href = '/signup'}
-                className="bg-gradient-vibe hover:opacity-90 text-white border-0"
-              >
-                Sign Up
-              </Button>
-              
-              {/* User Profile Button (will be shown when logged in) */}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="hover:bg-muted hidden"
-                onClick={() => window.location.href = '/profile'}
-              >
-                <User className="w-5 h-5" />
-              </Button>
+              {user ? (
+                // Authenticated user actions
+                <>
+                  <span className="hidden md:block text-sm text-muted-foreground">
+                    안녕하세요, {profile?.username || user.email}님
+                  </span>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="hover:bg-muted"
+                    onClick={() => navigate('/profile')}
+                  >
+                    <User className="w-5 h-5" />
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="hover:bg-muted"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </Button>
+                </>
+              ) : (
+                // Guest user actions
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate('/login')}
+                    className="hidden md:flex"
+                  >
+                    Sign In
+                  </Button>
+                  
+                  <Button 
+                    size="sm"
+                    onClick={() => navigate('/signup')}
+                    className="bg-gradient-vibe hover:opacity-90 text-white border-0"
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
