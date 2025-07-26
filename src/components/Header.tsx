@@ -60,9 +60,35 @@ const Header = () => {
               <span>Share</span>
             </Button>
             
-            <Button variant="ghost" size="icon" className="hover:bg-muted">
-              <User className="w-5 h-5" />
-            </Button>
+            {/* Login/Profile Actions */}
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => window.location.href = '/login'}
+                className="hidden md:flex"
+              >
+                Sign In
+              </Button>
+              
+              <Button 
+                size="sm"
+                onClick={() => window.location.href = '/signup'}
+                className="bg-gradient-vibe hover:opacity-90 text-white border-0"
+              >
+                Sign Up
+              </Button>
+              
+              {/* User Profile Button (will be shown when logged in) */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hover:bg-muted hidden"
+                onClick={() => window.location.href = '/profile'}
+              >
+                <User className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
