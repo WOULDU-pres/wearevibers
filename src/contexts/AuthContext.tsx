@@ -52,6 +52,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         if (error) {
           console.error('Error getting session:', error);
+          // 세션 조회 실패 시 상태 정리
+          setSession(null);
+          setUser(null);
+          setProfile(null);
         } else {
           setSession(session);
           setUser(session?.user ?? null);
@@ -62,6 +66,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
+        // 예외 발생 시 상태 정리
+        setSession(null);
+        setUser(null);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
@@ -74,13 +82,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
+        // 세션 만료 또는 로그아웃 처리
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('Session expired or user signed out, cleaning up state');
+          setSession(null);
+          setUser(null);
           setProfile(null);
+          
+          // 로그인이 필요한 페이지에서 만료 시 홈으로 리다이렉트
+          const currentPath = window.location.pathname;
+          const publicPaths = ['/', '/login', '/signup'];
+          
+          if (!publicPaths.includes(currentPath)) {
+            console.log('Redirecting to home due to session expiry');
+            window.location.href = '/';
+          }
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed successfully');
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          }
+        } else {
+          // 일반적인 세션 업데이트
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          } else {
+            setProfile(null);
+          }
         }
         
         setLoading(false);
@@ -104,6 +138,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setProfile(null);
           return;
         }
+        
+        // 인증 관련 에러인 경우 세션 정리
+        if (error.code === 'PGRST301' || error.message.includes('JWT') || error.message.includes('expired')) {
+          console.error('Auth error in fetchProfile, signing out:', error);
+          await supabase.auth.signOut();
+          return;
+        }
+        
         console.error('Error fetching profile:', error);
         return;
       }
@@ -113,6 +155,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
+      
+      // 네트워크 에러나 기타 예외 시에도 세션 상태 확인
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No valid session found, cleaning up state');
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+      }
     }
   };
 

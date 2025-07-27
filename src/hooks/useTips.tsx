@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tip, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 export const useTip = (tipId: string) => {
   return useQuery({
@@ -24,6 +25,13 @@ export const useTip = (tipId: string) => {
 
       if (error) {
         console.error('Error fetching tip:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
@@ -37,6 +45,7 @@ export const useTip = (tipId: string) => {
       };
     },
     enabled: !!tipId,
+    retry: authAwareRetry,
   });
 };
 
@@ -62,6 +71,13 @@ export const useTipComments = (tipId: string) => {
 
       if (error) {
         console.error('Error fetching tip comments:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
@@ -75,6 +91,7 @@ export const useTipComments = (tipId: string) => {
       })[];
     },
     enabled: !!tipId,
+    retry: authAwareRetry,
   });
 };
 
@@ -123,10 +140,7 @@ export const useCreateTipComment = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: (error) => {
-      console.error('Create tip comment error:', error);
-      toast.error('댓글 작성에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -215,10 +229,7 @@ export const useVibeTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success(newVibedStatus ? 'Vibe 추가됨! 🎉' : 'Vibe 제거됨');
     },
-    onError: (error) => {
-      console.error('Vibe tip error:', error);
-      toast.error('Vibe 상태 변경에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -254,9 +265,6 @@ export const useBookmarkTip = () => {
       queryClient.invalidateQueries({ queryKey: ['is-tip-bookmarked', user?.id, tipId] });
       toast.success(newBookmarkedStatus ? '북마크에 추가됨!' : '북마크에서 제거됨');
     },
-    onError: (error) => {
-      console.error('Bookmark tip error:', error);
-      toast.error('북마크 상태 변경에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('북마크 상태 변경에 실패했습니다.'),
   });
 };
