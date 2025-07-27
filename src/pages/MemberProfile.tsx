@@ -7,84 +7,87 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, MapPin, Calendar, GitBranch, Star, Users, ArrowLeft, Github, Globe, Mail } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useProfile, useProfileStats, useIsFollowing, useFollowUser, useUserProjects, useUserPosts } from "@/hooks/useProfile";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
-const mockMemberProfile = {
-  id: 1,
-  name: "DevViber",
-  avatar: "/placeholder.svg",
-  bio: "풀스택 개발자 | 아름다운 코드를 추구합니다 ✨",
-  longBio: "안녕하세요! 5년차 풀스택 개발자입니다. 클린 코드와 사용자 경험을 중시하며, 항상 새로운 기술을 배우는 것을 좋아합니다. 특히 React와 Node.js 생태계에 관심이 많고, 오픈소스 프로젝트에도 활발히 기여하고 있습니다.",
-  location: "서울, 한국",
-  joinDate: "2024년 1월",
-  website: "https://devviber.dev",
-  github: "https://github.com/devviber",
-  email: "hello@devviber.dev",
-  isOnline: true,
-  isFollowing: false,
-  stats: {
-    projects: 12,
-    vibes: 450,
-    followers: 89,
-    following: 56
-  },
-  tags: ["React", "TypeScript", "Node.js", "Python", "AWS", "Docker"],
-  projects: [
-    {
-      id: 1,
-      title: "모던 투두 앱",
-      description: "React + TypeScript로 만든 아름다운 할 일 관리 앱",
-      tags: ["React", "TypeScript", "Tailwind"],
-      vibes: 45,
-      image: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      title: "실시간 채팅 서비스",
-      description: "Socket.io를 활용한 실시간 메시징 플랫폼",
-      tags: ["Node.js", "Socket.io", "MongoDB"],
-      vibes: 67,
-      image: "/placeholder.svg"
-    },
-    {
-      id: 3,
-      title: "포트폴리오 웹사이트",
-      description: "3D 애니메이션이 포함된 개인 포트폴리오",
-      tags: ["Three.js", "React", "GSAP"],
-      vibes: 89,
-      image: "/placeholder.svg"
-    }
-  ],
-  posts: [
-    {
-      id: 1,
-      title: "React 18의 새로운 기능들",
-      category: "개발팁",
-      time: "3일 전",
-      vibes: 34,
-      comments: 8
-    },
-    {
-      id: 2,
-      title: "TypeScript 타입 가드 완벽 가이드",
-      category: "튜토리얼",
-      time: "1주 전",
-      vibes: 56,
-      comments: 12
-    }
-  ]
-};
 
 const MemberProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isFollowing, setIsFollowing] = useState(mockMemberProfile.isFollowing);
-  const [followersCount, setFollowersCount] = useState(mockMemberProfile.stats.followers);
+
+  const { data: profile, isLoading: profileLoading, error: profileError } = useProfile(id!);
+  const { data: stats, isLoading: statsLoading } = useProfileStats(id!);
+  const { data: isFollowing, isLoading: followingLoading } = useIsFollowing(id!);
+  const { data: userProjects, isLoading: projectsLoading } = useUserProjects(id!);
+  const { data: userPosts, isLoading: postsLoading } = useUserPosts(id!);
+  const followMutation = useFollowUser();
 
   const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    setFollowersCount(prev => isFollowing ? prev - 1 : prev + 1);
+    if (!id) return;
+    followMutation.mutate({ targetUserId: id, isFollowing: isFollowing || false });
   };
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-6 flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            뒤로 가기
+          </Button>
+          <Card className="border-border/50 bg-card/50 backdrop-blur mb-8">
+            <CardContent className="p-8">
+              <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col items-center lg:items-start">
+                  <Skeleton className="w-32 h-32 rounded-full" />
+                  <Skeleton className="h-8 w-48 mt-4" />
+                  <Skeleton className="h-4 w-64 mt-2" />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (profileError || !profile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-6 flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            뒤로 가기
+          </Button>
+          <Card className="border-border/50 bg-card/50 backdrop-blur">
+            <CardContent className="p-8 text-center">
+              <h2 className="text-2xl font-bold mb-4">사용자를 찾을 수 없습니다</h2>
+              <p className="text-muted-foreground">요청하신 사용자 프로필이 존재하지 않습니다.</p>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,67 +111,86 @@ const MemberProfile = () => {
               <div className="flex flex-col items-center lg:items-start">
                 <div className="relative">
                   <Avatar className="w-32 h-32">
-                    <AvatarImage src={mockMemberProfile.avatar} alt={mockMemberProfile.name} />
+                    <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || profile.username} />
                     <AvatarFallback className="bg-gradient-vibe text-white text-3xl font-bold">
-                      {mockMemberProfile.name.slice(0, 2)}
+                      {(profile.full_name || profile.username).slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  {mockMemberProfile.isOnline && (
+                  {profile.is_online && (
                     <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background rounded-full"></div>
                   )}
                 </div>
                 
-                <h1 className="text-3xl font-bold mt-4 mb-2">{mockMemberProfile.name}</h1>
-                <p className="text-muted-foreground text-center lg:text-left mb-4">{mockMemberProfile.bio}</p>
+                <h1 className="text-3xl font-bold mt-4 mb-2">{profile.full_name || profile.username}</h1>
+                <p className="text-muted-foreground text-center lg:text-left mb-4">{profile.bio || '자기소개가 없습니다.'}</p>
                 
                 {/* Social Links */}
                 <div className="flex gap-2 mb-6">
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <Globe className="w-4 h-4" />
-                    웹사이트
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <Github className="w-4 h-4" />
-                    GitHub
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <Mail className="w-4 h-4" />
-                    연락하기
-                  </Button>
+                  {profile.website_url && (
+                    <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                      <a href={profile.website_url} target="_blank" rel="noopener noreferrer">
+                        <Globe className="w-4 h-4" />
+                        웹사이트
+                      </a>
+                    </Button>
+                  )}
+                  {profile.github_url && (
+                    <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                      <a href={profile.github_url} target="_blank" rel="noopener noreferrer">
+                        <Github className="w-4 h-4" />
+                        GitHub
+                      </a>
+                    </Button>
+                  )}
+                  {profile.linkedin_url && (
+                    <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                      <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer">
+                        <Mail className="w-4 h-4" />
+                        LinkedIn
+                      </a>
+                    </Button>
+                  )}
                 </div>
                 
-                <Button 
-                  onClick={handleFollow}
-                  className={`w-full lg:w-auto ${isFollowing 
-                    ? 'bg-muted hover:bg-muted/80 text-muted-foreground' 
-                    : 'bg-gradient-vibe hover:opacity-90 text-white border-0'
-                  }`}
-                >
-                  {isFollowing ? '팔로잉' : '팔로우'}
-                </Button>
+                {!followingLoading && isFollowing !== undefined && (
+                  <Button 
+                    onClick={handleFollow}
+                    disabled={followMutation.isPending}
+                    className={`w-full lg:w-auto ${isFollowing 
+                      ? 'bg-muted hover:bg-muted/80 text-muted-foreground' 
+                      : 'bg-gradient-vibe hover:opacity-90 text-white border-0'
+                    }`}
+                  >
+                    {followMutation.isPending ? '처리 중...' : (isFollowing ? '팔로잉' : '팔로우')}
+                  </Button>
+                )}
               </div>
               
               <div className="flex-1">
                 <p className="text-muted-foreground leading-relaxed mb-6">
-                  {mockMemberProfile.longBio}
+                  {profile.bio || '자기소개가 없습니다.'}
                 </p>
                 
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold">{mockMemberProfile.stats.projects}</div>
+                    <div className="text-2xl font-bold">
+                      {statsLoading ? <Skeleton className="h-8 w-8 mx-auto" /> : (stats?.projects || 0)}
+                    </div>
                     <div className="text-sm text-muted-foreground">프로젝트</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">{mockMemberProfile.stats.vibes}</div>
+                    <div className="text-2xl font-bold">
+                      {statsLoading ? <Skeleton className="h-8 w-8 mx-auto" /> : (stats?.vibes || 0)}
+                    </div>
                     <div className="text-sm text-muted-foreground">Vibes</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">{followersCount}</div>
+                    <div className="text-2xl font-bold">{profile.follower_count || 0}</div>
                     <div className="text-sm text-muted-foreground">팔로워</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">{mockMemberProfile.stats.following}</div>
+                    <div className="text-2xl font-bold">{profile.following_count || 0}</div>
                     <div className="text-sm text-muted-foreground">팔로잉</div>
                   </div>
                 </div>
@@ -176,26 +198,24 @@ const MemberProfile = () => {
                 {/* Info */}
                 <div className="space-y-2 mb-6">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    {mockMemberProfile.location}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
-                    {mockMemberProfile.joinDate} 가입
+                    {formatDistanceToNow(new Date(profile.created_at!), { addSuffix: true, locale: ko })} 가입
                   </div>
                 </div>
                 
                 {/* Tech Stack */}
-                <div>
-                  <h3 className="font-semibold mb-3">기술 스택</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {mockMemberProfile.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-sm">
-                        {tag}
-                      </Badge>
-                    ))}
+                {profile.tech_stack && profile.tech_stack.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">기술 스택</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.tech_stack.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -209,72 +229,149 @@ const MemberProfile = () => {
           </TabsList>
           
           <TabsContent value="projects" className="mt-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockMemberProfile.projects.map((project) => (
-                <Card key={project.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
-                  <div className="aspect-video bg-muted/50 rounded-t-lg"></div>
-                  <CardContent className="p-6">
-                    <h3 className="font-bold text-lg mb-2">{project.title}</h3>
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                      {project.description}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {project.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Heart className="w-4 h-4 text-red-500" />
-                        {project.vibes}
+            {projectsLoading ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="border-border/50 bg-card/50 backdrop-blur">
+                    <Skeleton className="aspect-video rounded-t-lg" />
+                    <CardContent className="p-6">
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-full mb-4" />
+                      <div className="flex gap-1 mb-4">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-12" />
                       </div>
-                      <Button variant="outline" size="sm">
-                        보기
-                      </Button>
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-8 w-16" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : userProjects && userProjects.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userProjects.map((project) => (
+                  <Card key={project.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
+                    <div className="aspect-video bg-muted/50 rounded-t-lg">
+                      {project.image_urls && project.image_urls[0] && (
+                        <img 
+                          src={project.image_urls[0]} 
+                          alt={project.title}
+                          className="w-full h-full object-cover rounded-t-lg"
+                        />
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <CardContent className="p-6">
+                      <h3 className="font-bold text-lg mb-2">{project.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                        {project.description}
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {project.tech_stack.map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Heart className="w-4 h-4 text-red-500" />
+                          {project.vibe_count || 0}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/projects/${project.id}`)}
+                        >
+                          보기
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardContent className="p-8 text-center">
+                  <h3 className="font-semibold mb-2">아직 프로젝트가 없습니다</h3>
+                  <p className="text-muted-foreground">사용자가 공개한 프로젝트가 없습니다.</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
           
           <TabsContent value="posts" className="mt-6">
-            <div className="space-y-4">
-              {mockMemberProfile.posts.map((post) => (
-                <Card key={post.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="text-xs">
-                            #{post.category}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{post.time}</span>
+            {postsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Card key={i} className="border-border/50 bg-card/50 backdrop-blur">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                          <Skeleton className="h-6 w-3/4" />
                         </div>
-                        <h3 className="font-bold text-lg hover:text-primary transition-colors cursor-pointer">
-                          {post.title}
-                        </h3>
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Heart className="w-4 h-4" />
-                          {post.vibes}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          {post.comments}
+                        <div className="flex items-center gap-4">
+                          <Skeleton className="h-4 w-8" />
+                          <Skeleton className="h-4 w-8" />
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : userPosts && userPosts.length > 0 ? (
+              <div className="space-y-4">
+                {userPosts.map((post) => (
+                  <Card key={post.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              #{post.category}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(post.created_at!), { addSuffix: true, locale: ko })}
+                            </span>
+                          </div>
+                          <h3 
+                            className="font-bold text-lg hover:text-primary transition-colors cursor-pointer"
+                            onClick={() => navigate(`/posts/${post.id}`)}
+                          >
+                            {post.title}
+                          </h3>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Heart className="w-4 h-4" />
+                            {post.vibe_count || 0}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {post.comment_count || 0}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardContent className="p-8 text-center">
+                  <h3 className="font-semibold mb-2">아직 게시글이 없습니다</h3>
+                  <p className="text-muted-foreground">사용자가 작성한 게시글이 없습니다.</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>

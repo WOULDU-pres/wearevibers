@@ -1,0 +1,317 @@
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Project } from '@/lib/supabase-types';
+import { toast } from 'sonner';
+
+export interface ProjectFilters {
+  tech_stack?: string[];
+  difficulty_level?: number;
+  user_id?: string;
+  search?: string;
+}
+
+const PROJECTS_PER_PAGE = 6;
+
+export const useProjects = (filters?: ProjectFilters) => {
+  return useQuery({
+    queryKey: ['projects', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('projects')
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      // Apply filters
+      if (filters?.tech_stack && filters.tech_stack.length > 0) {
+        query = query.overlaps('tech_stack', filters.tech_stack);
+      }
+
+      if (filters?.difficulty_level) {
+        query = query.eq('difficulty_level', filters.difficulty_level);
+      }
+
+      if (filters?.user_id) {
+        query = query.eq('user_id', filters.user_id);
+      }
+
+      if (filters?.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching projects:', error);
+        throw error;
+      }
+      
+      return data as Project[];
+    },
+  });
+};
+
+export const useInfiniteProjects = (filters?: ProjectFilters) => {
+  return useInfiniteQuery({
+    queryKey: ['projects', 'infinite', filters],
+    queryFn: async ({ pageParam = 0 }) => {
+      let query = supabase
+        .from('projects')
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .range(pageParam * PROJECTS_PER_PAGE, (pageParam + 1) * PROJECTS_PER_PAGE - 1);
+
+      // Apply filters
+      if (filters?.tech_stack && filters.tech_stack.length > 0) {
+        query = query.overlaps('tech_stack', filters.tech_stack);
+      }
+
+      if (filters?.difficulty_level) {
+        query = query.eq('difficulty_level', filters.difficulty_level);
+      }
+
+      if (filters?.user_id) {
+        query = query.eq('user_id', filters.user_id);
+      }
+
+      if (filters?.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching projects:', error);
+        throw error;
+      }
+      
+      return {
+        projects: data as Project[],
+        nextCursor: data.length === PROJECTS_PER_PAGE ? pageParam + 1 : undefined,
+      };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: 0,
+  });
+};
+
+export const useProject = (projectId: string) => {
+  return useQuery({
+    queryKey: ['project', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url,
+            bio
+          )
+        `)
+        .eq('id', projectId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching project:', error);
+        throw error;
+      }
+
+      return data as Project;
+    },
+    enabled: !!projectId,
+  });
+};
+
+export const useMyProjects = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['projects', 'my', user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching my projects:', error);
+        throw error;
+      }
+
+      return data as Project[];
+    },
+    enabled: !!user,
+  });
+};
+
+export const useCreateProject = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (projectData: Omit<Project, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'vibe_count' | 'profiles'>) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          ...projectData,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating project:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('프로젝트가 성공적으로 생성되었습니다!');
+    },
+    onError: (error) => {
+      console.error('Create project error:', error);
+      toast.error('프로젝트 생성에 실패했습니다.');
+    },
+  });
+};
+
+export const useUpdateProject = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ projectId, updates }: { 
+      projectId: string; 
+      updates: Partial<Omit<Project, 'id' | 'user_id' | 'created_at' | 'profiles'>>
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', projectId)
+        .eq('user_id', user.id) // Ensure user can only update their own projects
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating project:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', data.id] });
+      toast.success('프로젝트가 성공적으로 수정되었습니다!');
+    },
+    onError: (error) => {
+      console.error('Update project error:', error);
+      toast.error('프로젝트 수정에 실패했습니다.');
+    },
+  });
+};
+
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (projectId: string) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+        .eq('user_id', user.id); // Ensure user can only delete their own projects
+
+      if (error) {
+        console.error('Error deleting project:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('프로젝트가 성공적으로 삭제되었습니다.');
+    },
+    onError: (error) => {
+      console.error('Delete project error:', error);
+      toast.error('프로젝트 삭제에 실패했습니다.');
+    },
+  });
+};
+
+export const useVibeProject = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (projectId: string) => {
+      if (!user) throw new Error('User not authenticated');
+
+      // First, increment the vibe count
+      const { error: updateError } = await supabase.rpc('increment_vibe_count', {
+        project_id: projectId
+      });
+
+      if (updateError) {
+        console.error('Error updating vibe count:', updateError);
+        throw updateError;
+      }
+
+      // Then record the vibe in the vibes table
+      const { error: insertError } = await supabase
+        .from('vibes')
+        .insert({
+          user_id: user.id,
+          project_id: projectId,
+        });
+
+      if (insertError && insertError.code !== '23505') { // Ignore unique constraint violation
+        console.error('Error recording vibe:', insertError);
+        throw insertError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Vibe 추가됨! 🎉');
+    },
+    onError: (error) => {
+      console.error('Vibe project error:', error);
+      toast.error('Vibe 추가에 실패했습니다.');
+    },
+  });
+};
