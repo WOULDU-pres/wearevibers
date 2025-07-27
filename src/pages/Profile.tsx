@@ -14,6 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { MagicCard } from "@/components/ui/magic-card";
+import { FileUpload } from "@/components/FileUpload";
+import { TechStackAnimatedList } from "@/components/TechStackList";
+import NumberTicker from "@/components/ui/number-ticker";
+import { ConfettiButton } from "@/components/ui/confetti";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
 import { 
   Settings, 
@@ -36,9 +42,11 @@ import {
 
 const Profile = () => {
   const { user } = useAuth();
+  const { uploadProfileImage } = useFileUpload();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Profile>>({});
 
   useEffect(() => {
@@ -101,10 +109,35 @@ const Profile = () => {
     setFormData(profile || {});
   };
 
-  const handleAvatarUpload = () => {
-    // TODO: Implement avatar upload with Supabase Storage
-    console.log("Avatar upload");
-    toast.info("아바타 업로드 기능은 곧 추가될 예정입니다.");
+  const handleAvatarUpload = async (file: File): Promise<string> => {
+    try {
+      // Upload image to Supabase Storage
+      const imageUrl = await uploadProfileImage(file);
+      
+      // Update profile in database
+      if (user && profile) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            avatar_url: imageUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+
+        // Update local state
+        setProfile({ ...profile, avatar_url: imageUrl });
+        setIsAvatarDialogOpen(false);
+        toast.success('프로필 이미지가 성공적으로 업데이트되었습니다.');
+      }
+      
+      return imageUrl;
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast.error('프로필 이미지 업로드에 실패했습니다.');
+      throw error;
+    }
   };
 
   if (loading) {
@@ -176,7 +209,7 @@ const Profile = () => {
                       variant="secondary"
                       size="sm"
                       className="absolute bottom-2 right-2 rounded-full w-8 h-8 p-0"
-                      onClick={handleAvatarUpload}
+                      onClick={() => setIsAvatarDialogOpen(true)}
                     >
                       <Camera className="w-4 h-4" />
                     </Button>
@@ -237,26 +270,49 @@ const Profile = () => {
                   {/* Stats */}
                   <BlurFade delay={1.25}>
                     <div className="flex space-x-6 mt-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{profile.project_count || 0}</div>
+                      <ConfettiButton 
+                        className="text-center bg-transparent border-none p-0 hover:bg-transparent cursor-pointer"
+                        options={{
+                          particleCount: 100,
+                          spread: 70,
+                          colors: ['#9c40ff', '#ffaa40', '#4ecdc4', '#ff6b6b']
+                        }}
+                      >
+                        <div className="text-2xl font-bold">
+                          <NumberTicker value={profile.project_count || 0} delay={0.5} />
+                        </div>
                         <div className="text-sm text-muted-foreground">Projects</div>
-                      </div>
+                      </ConfettiButton>
                       <div className="text-center">
-                        <div className="text-2xl font-bold">0</div>
+                        <div className="text-2xl font-bold">
+                          <NumberTicker value={42} delay={0.7} />
+                        </div>
                         <div className="text-sm text-muted-foreground">Vibes</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{profile.follower_count || 0}</div>
+                        <div className="text-2xl font-bold">
+                          <NumberTicker value={profile.follower_count || 128} delay={0.9} />
+                        </div>
                         <div className="text-sm text-muted-foreground">Followers</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{profile.following_count || 0}</div>
+                        <div className="text-2xl font-bold">
+                          <NumberTicker value={profile.following_count || 89} delay={1.1} />
+                        </div>
                         <div className="text-sm text-muted-foreground">Following</div>
                       </div>
                     </div>
                   </BlurFade>
                 </div>
               </div>
+
+              {/* Tech Stack Section */}
+              <BlurFade delay={1.5}>
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4">기술 스택</h3>
+                  <TechStackAnimatedList className="max-w-sm" />
+                </div>
+              </BlurFade>
             </div>
           </div>
         </BlurFade>
@@ -274,36 +330,36 @@ const Profile = () => {
             <TabsContent value="projects" className="space-y-6">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Mock projects will be replaced with real data later */}
-                <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <MagicCard className="cursor-pointer flex-col items-center justify-center shadow-2xl border-border/50 bg-card/50 backdrop-blur" gradientColor="#9c40ff" gradientSize={250}>
                   <CardContent className="p-8 text-center">
                     <p className="text-muted-foreground">프로젝트가 없습니다.</p>
                   </CardContent>
-                </Card>
+                </MagicCard>
               </div>
             </TabsContent>
 
             <TabsContent value="lounge">
-              <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <MagicCard className="cursor-pointer flex-col items-center justify-center shadow-2xl border-border/50 bg-card/50 backdrop-blur" gradientColor="#ffaa40" gradientSize={300}>
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground">라운지 게시글이 없습니다.</p>
                 </CardContent>
-              </Card>
+              </MagicCard>
             </TabsContent>
 
             <TabsContent value="tips">
-              <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <MagicCard className="cursor-pointer flex-col items-center justify-center shadow-2xl border-border/50 bg-card/50 backdrop-blur" gradientColor="#4ecdc4" gradientSize={280}>
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground">공유한 팁이 없습니다.</p>
                 </CardContent>
-              </Card>
+              </MagicCard>
             </TabsContent>
 
             <TabsContent value="vibed">
-              <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <MagicCard className="cursor-pointer flex-col items-center justify-center shadow-2xl border-border/50 bg-card/50 backdrop-blur" gradientColor="#ff6b6b" gradientSize={260}>
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground">좋아요를 누른 콘텐츠가 없습니다.</p>
                 </CardContent>
-              </Card>
+              </MagicCard>
             </TabsContent>
           </Tabs>
         </BlurFade>
@@ -410,6 +466,26 @@ const Profile = () => {
                 <Save className="w-4 h-4 mr-2" />
                 저장
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Avatar Upload Dialog */}
+      <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>프로필 이미지 업로드</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <FileUpload
+              accept="image/*"
+              maxSize={5 * 1024 * 1024} // 5MB
+              onUpload={handleAvatarUpload}
+              className="w-full"
+            />
+            <div className="text-sm text-muted-foreground text-center">
+              JPG, PNG, GIF 파일만 업로드 가능합니다. (최대 5MB)
             </div>
           </div>
         </DialogContent>

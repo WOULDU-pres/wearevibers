@@ -143,3 +143,4 @@ vite.config.ts.timestamp-*
 web-bundles/
 docs/
 .serena/
+CLAUDE.md

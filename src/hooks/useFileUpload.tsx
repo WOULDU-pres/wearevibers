@@ -1,0 +1,134 @@
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+export interface UploadOptions {
+  bucket: string;
+  folder?: string;
+  upsert?: boolean;
+  contentType?: string;
+}
+
+export const useFileUpload = () => {
+  const { user } = useAuth();
+  const [uploading, setUploading] = useState(false);
+
+  const uploadFile = async (
+    file: File,
+    options: UploadOptions
+  ): Promise<string> => {
+    if (!user) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    setUploading(true);
+    
+    try {
+      // Generate unique file path
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = options.folder 
+        ? `${options.folder}/${user.id}/${fileName}`
+        : `${user.id}/${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(options.bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: options.upsert || false,
+          contentType: options.contentType || file.type,
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        throw new Error(error.message);
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(options.bucket)
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('File upload error:', error);
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const uploadProfileImage = async (file: File): Promise<string> => {
+    return uploadFile(file, {
+      bucket: 'avatars',
+      folder: 'profiles',
+      upsert: true,
+      contentType: file.type,
+    });
+  };
+
+  const uploadProjectImage = async (file: File): Promise<string> => {
+    return uploadFile(file, {
+      bucket: 'projects',
+      folder: 'images',
+      upsert: false,
+      contentType: file.type,
+    });
+  };
+
+  const deleteFile = async (
+    bucket: string,
+    filePath: string
+  ): Promise<void> => {
+    if (!user) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    try {
+      const { error } = await supabase.storage
+        .from(bucket)
+        .remove([filePath]);
+
+      if (error) {
+        console.error('File deletion error:', error);
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error('File deletion error:', error);
+      throw error;
+    }
+  };
+
+  const getSignedUrl = async (
+    bucket: string,
+    filePath: string,
+    expiresIn: number = 3600
+  ): Promise<string> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(filePath, expiresIn);
+
+      if (error) {
+        console.error('Signed URL error:', error);
+        throw new Error(error.message);
+      }
+
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Signed URL error:', error);
+      throw error;
+    }
+  };
+
+  return {
+    uploadFile,
+    uploadProfileImage,
+    uploadProjectImage,
+    deleteFile,
+    getSignedUrl,
+    uploading,
+  };
+};
