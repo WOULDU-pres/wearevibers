@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { handleSupabaseError, addBreadcrumb } from '@/lib/sentry';
 
 export interface UploadOptions {
   bucket: string;
@@ -43,6 +44,17 @@ export const useFileUpload = () => {
 
       if (error) {
         console.error('Supabase upload error:', error);
+        
+        // Sentry로 에러 리포팅
+        handleSupabaseError(error, {
+          context: 'fileUpload',
+          bucket: options.bucket,
+          filePath: filePath,
+          fileSize: file.size,
+          fileType: file.type,
+          userId: user.id,
+        });
+        
         throw new Error(error.message);
       }
 
@@ -50,6 +62,13 @@ export const useFileUpload = () => {
       const { data: { publicUrl } } = supabase.storage
         .from(options.bucket)
         .getPublicUrl(data.path);
+
+      // 성공 시 브레드크럼 추가
+      addBreadcrumb(
+        `File uploaded successfully: ${fileName}`,
+        'storage',
+        'info'
+      );
 
       return publicUrl;
     } catch (error) {
@@ -93,6 +112,15 @@ export const useFileUpload = () => {
 
       if (error) {
         console.error('File deletion error:', error);
+        
+        // Sentry로 에러 리포팅
+        handleSupabaseError(error, {
+          context: 'fileDelete',
+          bucket: bucket,
+          filePath: filePath,
+          userId: user.id,
+        });
+        
         throw new Error(error.message);
       }
     } catch (error) {

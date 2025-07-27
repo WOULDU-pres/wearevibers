@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/lib/supabase';
+import { captureError, addBreadcrumb, setSentryUser, clearSentryUser } from '@/lib/sentry';
 
 type Profile = Tables<'profiles'>;
 
@@ -52,24 +53,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         if (error) {
           console.error('Error getting session:', error);
+          
+          // Sentry로 에러 리포팅
+          captureError(new Error(`Session retrieval failed: ${error.message}`), {
+            authContext: 'getInitialSession',
+            errorCode: error.status,
+            errorMessage: error.message,
+          });
+          
           // 세션 조회 실패 시 상태 정리
           setSession(null);
           setUser(null);
           setProfile(null);
+          clearSentryUser();
         } else {
           setSession(session);
           setUser(session?.user ?? null);
           
           if (session?.user) {
             await fetchProfile(session.user.id);
+            
+            // 로그인 성공 시 Sentry 사용자 정보 설정
+            setSentryUser({
+              id: session.user.id,
+              email: session.user.email,
+            });
+            
+            addBreadcrumb(
+              `User session restored: ${session.user.email}`,
+              'auth',
+              'info'
+            );
           }
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
+        
+        // Sentry로 예외 리포팅
+        captureError(error as Error, {
+          authContext: 'getInitialSession_exception',
+          url: window.location.href,
+        });
+        
         // 예외 발생 시 상태 정리
         setSession(null);
         setUser(null);
         setProfile(null);
+        clearSentryUser();
       } finally {
         setLoading(false);
       }
@@ -85,9 +115,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // 세션 만료 또는 로그아웃 처리
         if (event === 'SIGNED_OUT' || !session) {
           console.log('Session expired or user signed out, cleaning up state');
+          
+          addBreadcrumb(
+            `User signed out or session expired`,
+            'auth',
+            'info'
+          );
+          
           setSession(null);
           setUser(null);
           setProfile(null);
+          clearSentryUser();
           
           // 로그인이 필요한 페이지에서 만료 시 홈으로 리다이렉트
           const currentPath = window.location.pathname;
@@ -170,13 +208,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
-    return { error };
+      if (error) {
+        // 로그인 실패 시 Sentry 리포팅
+        captureError(new Error(`Sign in failed: ${error.message}`), {
+          authContext: 'signIn',
+          email: email,
+          errorCode: error.status,
+          errorMessage: error.message,
+        });
+      } else {
+        addBreadcrumb(
+          `User signed in: ${email}`,
+          'auth',
+          'info'
+        );
+      }
+
+      setLoading(false);
+      return { error };
+    } catch (error) {
+      setLoading(false);
+      captureError(error as Error, {
+        authContext: 'signIn_exception',
+        email: email,
+      });
+      return { error: error as AuthError };
+    }
   };
 
   const signUp = async (
@@ -186,34 +249,82 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   ) => {
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username: userData.username,
-          full_name: userData.fullName,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: userData.username,
+            full_name: userData.fullName,
+          },
         },
-      },
-    });
+      });
 
-    setLoading(false);
-    return { error };
+      if (error) {
+        // 회원가입 실패 시 Sentry 리포팅
+        captureError(new Error(`Sign up failed: ${error.message}`), {
+          authContext: 'signUp',
+          email: email,
+          username: userData.username,
+          errorCode: error.status,
+          errorMessage: error.message,
+        });
+      } else {
+        addBreadcrumb(
+          `User signed up: ${email}`,
+          'auth',
+          'info'
+        );
+      }
+
+      setLoading(false);
+      return { error };
+    } catch (error) {
+      setLoading(false);
+      captureError(error as Error, {
+        authContext: 'signUp_exception',
+        email: email,
+        username: userData.username,
+      });
+      return { error: error as AuthError };
+    }
   };
 
   const signOut = async () => {
     setLoading(true);
     
-    const { error } = await supabase.auth.signOut();
-    
-    if (!error) {
-      setUser(null);
-      setProfile(null);
-      setSession(null);
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (!error) {
+        addBreadcrumb(
+          'User signed out manually',
+          'auth',
+          'info'
+        );
+        
+        setUser(null);
+        setProfile(null);
+        setSession(null);
+        clearSentryUser();
+      } else {
+        captureError(new Error(`Sign out failed: ${error.message}`), {
+          authContext: 'signOut',
+          errorCode: error.status,
+          errorMessage: error.message,
+        });
+      }
+      
+      setLoading(false);
+      return { error };
+    } catch (error) {
+      setLoading(false);
+      captureError(error as Error, {
+        authContext: 'signOut_exception',
+      });
+      return { error: error as AuthError };
     }
-    
-    setLoading(false);
-    return { error };
   };
 
   const signInWithOAuth = async (provider: 'google' | 'github') => {

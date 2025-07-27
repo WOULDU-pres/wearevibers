@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { isAuthError, handleAuthError } from "@/lib/authErrorHandler";
+import { createQueryErrorHandler, captureError } from "@/lib/sentry";
+import * as Sentry from "@sentry/react";
 import Index from "./pages/Index";
 import Lounge from "./pages/Lounge";
 import Tips from "./pages/Tips";
@@ -29,10 +31,18 @@ const queryClient = new QueryClient({
       },
       staleTime: 5 * 60 * 1000, // 5분
       gcTime: 10 * 60 * 1000, // 10분 (구 cacheTime)
+      onError: createQueryErrorHandler(), // Sentry 에러 핸들러 추가
     },
     mutations: {
       onError: async (error: Error) => {
         console.error('Global mutation error:', error);
+        
+        // Sentry로 mutation 에러 리포팅
+        captureError(error, {
+          context: 'React Query Mutation',
+          isAuthError: isAuthError(error),
+        });
+        
         if (isAuthError(error)) {
           await handleAuthError(error);
         }
