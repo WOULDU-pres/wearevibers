@@ -7,6 +7,7 @@ import { ShinyButton } from '@/components/ui/shiny-button';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useUIStore } from '@/stores';
 
 interface FileUploadProps {
   accept?: string;
@@ -23,10 +24,16 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   className,
   disabled = false,
 }) => {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const { 
+    uploading, 
+    setUploading, 
+    uploadProgress, 
+    setUploadProgress, 
+    uploadComplete, 
+    setUploadComplete,
+    resetUploadState 
+  } = useUIStore();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [uploadComplete, setUploadComplete] = useState(false);
 
   const validateFile = (file: File): string | null => {
     // Check file size

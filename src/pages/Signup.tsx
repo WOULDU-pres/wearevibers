@@ -7,39 +7,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
+import { useFormStore } from "@/stores";
 
 const Signup = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { signupForm, updateSignupForm, resetSignupForm } = useFormStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    username: "",
-    fullName: "",
-    agreeToTerms: false
-  });
 
-  const { signUp, signInWithOAuth, loading } = useAuth();
+  const { signUp, signInWithOAuth, loading } = useAuthStore();
   const navigate = useNavigate();
-
-  const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
+    if (signupForm.password !== signupForm.confirmPassword) {
       toast.error('비밀번호가 일치하지 않습니다.');
       return;
     }
     
-    if (!formData.agreeToTerms) {
+    if (!signupForm.agreeToTerms) {
       toast.error('이용약관과 개인정보 처리방침에 동의해주세요.');
       return;
     }
@@ -53,11 +41,11 @@ const Signup = () => {
 
     try {
       const { error } = await signUp(
-        formData.email, 
-        formData.password, 
+        signupForm.email, 
+        signupForm.password, 
         {
-          username: formData.username,
-          fullName: formData.fullName,
+          username: signupForm.username,
+          fullName: signupForm.fullName,
         }
       );
       
@@ -93,8 +81,8 @@ const Signup = () => {
     }
   };
 
-  const passwordsMatch = formData.password === formData.confirmPassword;
-  const isPasswordValid = formData.password.length >= 8;
+  const passwordsMatch = signupForm.password === signupForm.confirmPassword;
+  const isPasswordValid = signupForm.password.length >= 8;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -172,8 +160,8 @@ const Signup = () => {
                       id="username"
                       type="text"
                       placeholder="viber123"
-                      value={formData.username}
-                      onChange={(e) => handleChange("username", e.target.value)}
+                      value={signupForm.username}
+                      onChange={(e) => updateSignupForm({ username: e.target.value })}
                       className="pl-10"
                       disabled={loading || isLoading}
                       required
@@ -187,8 +175,8 @@ const Signup = () => {
                     id="fullName"
                     type="text"
                     placeholder="John Doe"
-                    value={formData.fullName}
-                    onChange={(e) => handleChange("fullName", e.target.value)}
+                    value={signupForm.fullName}
+                    onChange={(e) => updateSignupForm({ fullName: e.target.value })}
                     disabled={loading || isLoading}
                     required
                   />
@@ -203,8 +191,8 @@ const Signup = () => {
                     id="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
+                    value={signupForm.email}
+                    onChange={(e) => updateSignupForm({ email: e.target.value })}
                     className="pl-10"
                     disabled={loading || isLoading}
                     required
@@ -218,10 +206,10 @@ const Signup = () => {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={signupForm.showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={(e) => handleChange("password", e.target.value)}
+                    value={signupForm.password}
+                    onChange={(e) => updateSignupForm({ password: e.target.value })}
                     className="pl-10 pr-10"
                     disabled={loading || isLoading}
                     required
@@ -231,9 +219,9 @@ const Signup = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => updateSignupForm({ showPassword: !signupForm.showPassword })}
                   >
-                    {showPassword ? (
+                    {signupForm.showPassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
@@ -253,10 +241,10 @@ const Signup = () => {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={signupForm.showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                    value={signupForm.confirmPassword}
+                    onChange={(e) => updateSignupForm({ confirmPassword: e.target.value })}
                     className="pl-10 pr-10"
                     disabled={loading || isLoading}
                     required
@@ -266,9 +254,9 @@ const Signup = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    onClick={() => updateSignupForm({ showConfirmPassword: !signupForm.showConfirmPassword })}
                   >
-                    {showConfirmPassword ? (
+                    {signupForm.showConfirmPassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
@@ -285,8 +273,8 @@ const Signup = () => {
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="terms"
-                  checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => handleChange("agreeToTerms", !!checked)}
+                  checked={signupForm.agreeToTerms}
+                  onCheckedChange={(checked) => updateSignupForm({ agreeToTerms: !!checked })}
                 />
                 <Label htmlFor="terms" className="text-sm">
                   I agree to the{" "}

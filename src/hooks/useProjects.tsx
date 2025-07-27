@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores';
 import type { Project } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
@@ -168,7 +168,7 @@ export const useProject = (projectId: string) => {
 };
 
 export const useMyProjects = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useQuery({
     queryKey: ['projects', 'my', user?.id],
@@ -202,7 +202,7 @@ export const useMyProjects = () => {
 
 export const useCreateProject = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async (projectData: Omit<Project, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'vibe_count' | 'profiles'>) => {
@@ -234,7 +234,7 @@ export const useCreateProject = () => {
 
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ projectId, updates }: { 
@@ -272,7 +272,7 @@ export const useUpdateProject = () => {
 
 export const useDeleteProject = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async (projectId: string) => {
@@ -299,7 +299,7 @@ export const useDeleteProject = () => {
 
 export const useVibeProject = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async (projectId: string) => {

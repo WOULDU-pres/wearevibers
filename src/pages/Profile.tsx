@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/supabase-types";
 import Header from "@/components/Header";
@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { uploadProfileImage } = useFileUpload();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,8 +1,21 @@
-import ProjectCard from "./ProjectCard";
+import { ProjectFocusCards } from "./ui/focus-cards";
+import { NavBar } from "./ui/tubelight-navbar";
+import { Code, Palette, Smartphone, Brain, Layout, Globe } from "lucide-react";
+import { useUIStore } from "@/stores";
 import project1 from "@/assets/project1.jpg";
 import project2 from "@/assets/project2.jpg";
 import project3 from "@/assets/project3.jpg";
 import project4 from "@/assets/project4.jpg";
+
+// Project categories for navigation
+const projectCategories = [
+  { name: "All", value: "all", icon: Layout },
+  { name: "Frontend", value: "frontend", icon: Code },
+  { name: "Backend", value: "backend", icon: Globe },
+  { name: "Mobile", value: "mobile", icon: Smartphone },
+  { name: "Design", value: "design", icon: Palette },
+  { name: "AI/ML", value: "ai", icon: Brain },
+];
 
 // Mock data for projects
 const mockProjects = [
@@ -18,7 +31,8 @@ const mockProjects = [
     vibes: 124,
     tags: ["React", "TypeScript", "Monaco Editor"],
     vibeEmoji: "🚀",
-    isVibed: true
+    isVibed: true,
+    category: "frontend"
   },
   {
     id: "2",
@@ -31,7 +45,8 @@ const mockProjects = [
     },
     vibes: 89,
     tags: ["React Native", "Design", "UX/UI"],
-    vibeEmoji: "✨"
+    vibeEmoji: "✨",
+    category: "mobile"
   },
   {
     id: "3",
@@ -44,7 +59,8 @@ const mockProjects = [
     },
     vibes: 156,
     tags: ["D3.js", "Chart.js", "Analytics"],
-    vibeEmoji: "📊"
+    vibeEmoji: "📊",
+    category: "frontend"
   },
   {
     id: "4",
@@ -58,7 +74,8 @@ const mockProjects = [
     vibes: 203,
     tags: ["Next.js", "E-commerce", "Stripe"],
     vibeEmoji: "🛍️",
-    isVibed: true
+    isVibed: true,
+    category: "design"
   },
   {
     id: "5",
@@ -71,7 +88,8 @@ const mockProjects = [
     },
     vibes: 78,
     tags: ["AI", "Chat", "WebSocket"],
-    vibeEmoji: "🤖"
+    vibeEmoji: "🤖",
+    category: "ai"
   },
   {
     id: "6",
@@ -84,13 +102,55 @@ const mockProjects = [
     },
     vibes: 91,
     tags: ["Portfolio", "GSAP", "Creative"],
-    vibeEmoji: "🎨"
+    vibeEmoji: "🎨",
+    category: "design"
+  },
+  {
+    id: "7",
+    title: "Node.js API Server",
+    description: "확장 가능한 RESTful API 서버. 마이크로서비스 아키텍처와 Redis 캐싱 적용.",
+    image: project3,
+    author: {
+      name: "김백엔드",
+      avatar: "/api/placeholder/40/40"
+    },
+    vibes: 142,
+    tags: ["Node.js", "Express", "Redis"],
+    vibeEmoji: "⚡",
+    category: "backend"
+  },
+  {
+    id: "8",
+    title: "ML Image Classifier",
+    description: "딥러닝 기반 이미지 분류 모델. TensorFlow와 CNN을 활용한 정확도 95% 달성.",
+    image: project4,
+    author: {
+      name: "박AI",
+      avatar: "/api/placeholder/40/40"
+    },
+    vibes: 187,
+    tags: ["TensorFlow", "CNN", "Python"],
+    vibeEmoji: "🧠",
+    category: "ai"
   }
 ];
 
 const ProjectGrid = () => {
+  const { activeCategory, setActiveCategory } = useUIStore();
+
+  // Filter projects based on active category
+  const filteredProjects = activeCategory === "all" 
+    ? mockProjects 
+    : mockProjects.filter(project => project.category === activeCategory);
+
+  // Get category count for stats
+  const getCategoryCount = (category: string) => {
+    if (category === "all") return mockProjects.length;
+    return mockProjects.filter(project => project.category === category).length;
+  };
+
   return (
-    <section className="py-16 px-4">
+    <section className="py-16 px-4 relative">
       <div className="container mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -102,30 +162,24 @@ const ProjectGrid = () => {
           </p>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {["All", "Frontend", "Backend", "Mobile", "Design", "AI/ML"].map((filter) => (
-            <button
-              key={filter}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                filter === "All"
-                  ? "bg-primary text-primary-foreground shadow-soft"
-                  : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
+        {/* Tubelight Navigation */}
+        <NavBar
+          items={projectCategories}
+          activeItem={activeCategory}
+          onItemChange={setActiveCategory}
+          className="mb-16 sm:mb-12"
+        />
+
+        {/* Category Stats */}
+        <div className="text-center mb-8">
+          <p className="text-sm text-muted-foreground">
+            {activeCategory === "all" ? "전체" : projectCategories.find(cat => cat.value === activeCategory)?.name} 
+            {" "}분야 프로젝트 <span className="font-medium text-primary">{filteredProjects.length}개</span>
+          </p>
         </div>
 
-        {/* Masonry Grid */}
-        <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-          {mockProjects.map((project) => (
-            <div key={project.id} className="break-inside-avoid">
-              <ProjectCard {...project} />
-            </div>
-          ))}
-        </div>
+        {/* Focus Cards Grid */}
+        <ProjectFocusCards projects={filteredProjects} />
 
         {/* Load More Button */}
         <div className="text-center mt-12">

@@ -196,6 +196,35 @@ export function trackApiCall(method: string, endpoint: string, callback: () => v
   return startSpan("http.client", `${method} ${endpoint}`, callback);
 }
 
+// 커스텀 에러 클래스들 (Rule 3 - 이슈 그룹핑 최적화)
+export class AuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
+export class ApiError extends Error {
+  constructor(message: string, public statusCode?: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export class DatabaseError extends Error {
+  constructor(message: string, public code?: string) {
+    super(message);
+    this.name = "DatabaseError";
+  }
+}
+
+export class NetworkError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
 // Supabase 에러 처리를 위한 유틸리티
 export function handleSupabaseError(error: any, context: Record<string, any> = {}) {
   // Supabase 에러 정보 추출
@@ -209,13 +238,65 @@ export function handleSupabaseError(error: any, context: Record<string, any> = {
     },
   };
 
-  if (error instanceof Error) {
-    captureError(error, supabaseContext);
+  // Rule 2: Tags와 Context 활용
+  const method = context.method || 'unknown';
+  const endpoint = context.endpoint || 'unknown';
+  
+  // API 에러 유형에 따른 태그 설정
+  if (error?.code === 'PGRST301' || error?.code === 'PGRST302') {
+    setSentryTag("api-error-type", "auth");
+    setSentryTag("error-category", "authentication");
+  } else if (error?.status >= 500) {
+    setSentryTag("api-error-type", "internal-server");
+    setSentryTag("error-category", "server");
+  } else if (error?.status >= 400) {
+    setSentryTag("api-error-type", "client");
+    setSentryTag("error-category", "client");
   } else {
-    captureMessage(
-      `Supabase Error: ${error?.message || 'Unknown error'}`,
-      'error',
-      supabaseContext
-    );
+    setSentryTag("api-error-type", "database");
+    setSentryTag("error-category", "database");
   }
+
+  // Rule 3: Fingerprint를 이용한 그룹핑 제어
+  Sentry.withScope((scope) => {
+    // HTTP Method, Status Code, Error Code 기준으로 그룹핑
+    const status = error?.status || error?.code || 'unknown';
+    scope.setFingerprint([method, String(status), endpoint]);
+    
+    // Rule 2: 상세 정보를 위한 Context 활용
+    scope.setContext("API Request Detail", {
+      method,
+      endpoint,
+      params: context.params,
+    });
+    
+    scope.setContext("API Response Detail", {
+      status: error?.status,
+      code: error?.code,
+      data: error?.details || error?.message,
+    });
+
+    // 커스텀 에러 클래스 사용
+    let customError;
+    if (error?.code === 'PGRST301' || error?.code === 'PGRST302') {
+      customError = new AuthError(error?.message || '인증 토큰이 만료되었습니다.');
+    } else if (error?.status >= 500) {
+      customError = new ApiError(error?.message || '서버 내부 오류가 발생했습니다.', error?.status);
+    } else if (error?.status >= 400) {
+      customError = new ApiError(error?.message || '클라이언트 요청 오류가 발생했습니다.', error?.status);
+    } else {
+      customError = new DatabaseError(error?.message || '데이터베이스 오류가 발생했습니다.', error?.code);
+    }
+
+    // Rule 4: 에러 심각도 Level 설정
+    if (error?.code === 'PGRST301' || error?.code === 'PGRST302') {
+      scope.setLevel('warning'); // 인증 에러는 warning
+    } else if (error?.status >= 500) {
+      scope.setLevel('error'); // 서버 에러는 error
+    } else {
+      scope.setLevel('warning'); // 기타는 warning
+    }
+
+    Sentry.captureException(customError);
+  });
 }

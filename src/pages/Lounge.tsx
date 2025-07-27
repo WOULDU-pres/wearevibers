@@ -1,56 +1,190 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, MessageCircle, User, Calendar, PlusCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Heart, MessageCircle, User, Calendar, PlusCircle, Search, TrendingUp, Clock, Filter } from "lucide-react";
+import { usePosts, useVibePost, useIsPostVibed } from "@/hooks/usePosts";
 import { supabase } from "@/lib/supabase";
-import type { Tables } from "@/lib/supabase-types";
-
-type Post = Tables<'posts'>;
+import { useAuthStore } from "@/stores";
+import { toast } from "sonner";
+import { useUIStore } from "@/stores";
 
 const loungeCategories = [
-  { name: "데스크테리어", count: 0, color: "bg-primary/10 text-primary" },
-  { name: "코딩플레이리스트", count: 0, color: "bg-secondary/10 text-secondary" },
-  { name: "IDE테마", count: 0, color: "bg-accent/10 text-accent" },
-  { name: "자유게시판", count: 0, color: "bg-muted/50 text-muted-foreground" },
+  { 
+    id: 'all', 
+    name: "전체", 
+    value: undefined, 
+    color: "bg-primary/10 text-primary",
+    icon: Filter
+  },
+  { 
+    id: 'desk-setup', 
+    name: "데스크테리어", 
+    value: 'desk-setup', 
+    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300",
+    icon: PlusCircle
+  },
+  { 
+    id: 'coding-playlist', 
+    name: "코딩플레이리스트", 
+    value: 'coding-playlist', 
+    color: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300",
+    icon: MessageCircle
+  },
+  { 
+    id: 'ide-theme', 
+    name: "IDE테마", 
+    value: 'ide-theme', 
+    color: "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300",
+    icon: Heart
+  },
+  { 
+    id: 'free-talk', 
+    name: "자유게시판", 
+    value: 'free-talk', 
+    color: "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300",
+    icon: User
+  },
+];
+
+const sortOptions = [
+  { value: 'newest', label: '최신순', icon: Clock },
+  { value: 'popular', label: '인기순', icon: TrendingUp },
+  { value: 'comments', label: '댓글순', icon: MessageCircle },
 ];
 
 const Lounge = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
+  const { 
+    activeCategory, 
+    setActiveCategory, 
+    sortBy, 
+    setSortBy, 
+    searchQuery, 
+    setSearchQuery 
+  } = useUIStore();
 
+  // Get current category value for API call
+  const currentCategory = loungeCategories.find(cat => cat.id === activeCategory)?.value;
+
+  // Fetch posts with filters
+  const { data: posts, isLoading, error } = usePosts({
+    category: currentCategory,
+    search: searchQuery || undefined,
+    sortBy
+  });
+
+  // Real-time updates
   useEffect(() => {
-    fetchPosts();
+    const channel = supabase
+      .channel('posts-realtime')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'posts' },
+        (payload) => {
+          toast.success('새로운 게시글이 등록되었습니다! 🎉');
+        }
+      )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'posts' },
+        (payload) => {
+          // Silently update without notification for likes/comments
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  const fetchPosts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          profiles (
-            username,
-            full_name
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(10);
+  // Post Card Component with Vibe functionality
+  const PostCard = ({ post }: { post: typeof posts[0] }) => {
+    const { data: isVibed, isLoading: vibeLoading } = useIsPostVibed(post.id);
+    const vibePostMutation = useVibePost();
 
-      if (error) {
-        console.error('Error fetching posts:', error);
+    const handleVibe = () => {
+      if (!user) {
+        toast.error('로그인이 필요합니다.');
         return;
       }
+      vibePostMutation.mutate({ 
+        postId: post.id, 
+        isVibed: !!isVibed 
+      });
+    };
 
-      setPosts(data || []);
-    } catch (error) {
-      console.error('Error in fetchPosts:', error);
-    } finally {
-      setLoading(false);
-    }
+    const getCategoryColor = (category: string) => {
+      const categoryData = loungeCategories.find(cat => cat.value === category);
+      return categoryData?.color || "bg-muted/50 text-muted-foreground";
+    };
+
+    return (
+      <Card className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline" className={`text-xs ${getCategoryColor(post.category)}`}>
+                  #{post.category || '일반'}
+                </Badge>
+              </div>
+              <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
+                {post.title}
+              </CardTitle>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <User className="w-4 h-4" />
+              {post.profiles?.username || post.profiles?.full_name || '익명'}
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              {new Date(post.created_at).toLocaleDateString('ko-KR')}
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          <p className="text-muted-foreground mb-4 line-clamp-2">
+            {post.content}
+          </p>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`flex items-center gap-1 transition-colors ${
+                  isVibed 
+                    ? 'text-red-500 hover:text-red-600' 
+                    : 'hover:text-red-500'
+                }`}
+                onClick={handleVibe}
+                disabled={vibeLoading || vibePostMutation.isPending}
+              >
+                <Heart className={`w-4 h-4 ${isVibed ? 'fill-current' : ''}`} />
+                {post.vibe_count || 0}
+              </Button>
+              <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                <MessageCircle className="w-4 h-4" />
+                {post.comment_count || 0}
+              </Button>
+            </div>
+            
+            <Button variant="outline" size="sm">
+              읽어보기
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   const PostsSkeleton = () => (
@@ -105,93 +239,123 @@ const Lounge = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Categories Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="border-border/50 bg-card/50 backdrop-blur">
-              <CardHeader>
-                <CardTitle className="text-lg">카테고리</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {loungeCategories.map((category) => (
-                  <div
-                    key={category.name}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <span className="font-medium">{category.name}</span>
-                    <Badge variant="secondary" className={category.color}>
-                      {category.count}
-                    </Badge>
-                  </div>
+        {/* Search and Filter Bar */}
+        <div className="mb-8 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="게시글 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="md:w-[180px]">
+                <SelectValue placeholder="정렬 기준" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div className="flex items-center gap-2">
+                      <option.icon className="w-4 h-4" />
+                      {option.label}
+                    </div>
+                  </SelectItem>
                 ))}
-              </CardContent>
-            </Card>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <Button className="w-full mt-4 bg-gradient-vibe hover:opacity-90 text-white border-0">
-              새 글 작성하기
-            </Button>
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {loungeCategories.map((category) => {
+              const IconComponent = category.icon;
+              return (
+                <Button
+                  key={category.id}
+                  variant={activeCategory === category.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`flex items-center gap-2 ${
+                    activeCategory === category.id
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  {category.name}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Quick Actions Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="space-y-4">
+              <Button className="w-full bg-gradient-vibe hover:opacity-90 text-white border-0">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                새 글 작성하기
+              </Button>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="text-lg">통계</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">전체 게시글</span>
+                    <span className="font-medium">{posts?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">현재 카테고리</span>
+                    <span className="font-medium">
+                      {activeCategory === 'all' ? '전체' : 
+                       loungeCategories.find(cat => cat.id === activeCategory)?.name || 0}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Posts Feed */}
           <div className="lg:col-span-3">
-            {loading ? (
+            {isLoading ? (
               <PostsSkeleton />
-            ) : posts.length === 0 ? (
+            ) : error ? (
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardContent className="p-12 text-center">
+                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">게시글을 불러올 수 없습니다</h3>
+                  <p className="text-muted-foreground mb-6">
+                    네트워크 연결을 확인하고 다시 시도해주세요.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.reload()}
+                  >
+                    다시 시도
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : !posts || posts.length === 0 ? (
               <EmptyState />
             ) : (
               <div className="space-y-6">
                 {posts.map((post) => (
-                  <Card key={post.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              #{post.category || '일반'}
-                            </Badge>
-                          </div>
-                          <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
-                            {post.title}
-                          </CardTitle>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          {post.profiles?.username || '익명'}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(post.created_at).toLocaleDateString('ko-KR')}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent>
-                      <p className="text-muted-foreground mb-4 line-clamp-2">
-                        {post.content}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:text-red-500">
-                            <Heart className="w-4 h-4" />
-                            {post.vibe_count || 0}
-                          </Button>
-                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                            <MessageCircle className="w-4 h-4" />
-                            {post.comment_count || 0}
-                          </Button>
-                        </div>
-                        
-                        <Button variant="outline" size="sm">
-                          읽어보기
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <PostCard key={post.id} post={post} />
                 ))}
+                
+                {/* Load More Button */}
+                <div className="text-center pt-8">
+                  <Button variant="outline" className="hover:bg-primary/10">
+                    더 많은 게시글 보기
+                  </Button>
+                </div>
               </div>
             )}
           </div>

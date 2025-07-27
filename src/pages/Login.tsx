@@ -6,17 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
+import { useFormStore } from "@/stores";
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { loginForm, updateLoginForm, resetLoginForm } = useFormStore();
   const [isLoading, setIsLoading] = useState(false);
   
-  const { signIn, signInWithOAuth, loading } = useAuth();
+  const { signIn, signInWithOAuth, loading } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -27,7 +26,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(loginForm.email, loginForm.password);
       
       if (error) {
         toast.error(error.message || '로그인에 실패했습니다.');
@@ -56,7 +55,7 @@ const Login = () => {
   };
 
   const handleMagicLink = async () => {
-    if (!email) {
+    if (!loginForm.email) {
       toast.error('이메일을 먼저 입력해주세요.');
       return;
     }
@@ -144,8 +143,8 @@ const Login = () => {
                     id="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={loginForm.email}
+                    onChange={(e) => updateLoginForm({ email: e.target.value })}
                     className="pl-10"
                     disabled={loading || isLoading}
                     required
@@ -159,10 +158,10 @@ const Login = () => {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={loginForm.showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={loginForm.password}
+                    onChange={(e) => updateLoginForm({ password: e.target.value })}
                     className="pl-10 pr-10"
                     disabled={loading || isLoading}
                     required
@@ -172,9 +171,9 @@ const Login = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => updateLoginForm({ showPassword: !loginForm.showPassword })}
                   >
-                    {showPassword ? (
+                    {loginForm.showPassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
@@ -208,7 +207,7 @@ const Login = () => {
                 variant="link"
                 onClick={handleMagicLink}
                 className="text-sm text-primary"
-                disabled={!email || loading || isLoading}
+                disabled={!loginForm.email || loading || isLoading}
               >
                 Send magic link instead
               </Button>

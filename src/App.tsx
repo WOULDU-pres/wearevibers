@@ -1,14 +1,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryProvider } from "@/providers/QueryProvider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
-import { isAuthError, handleAuthError } from "@/lib/authErrorHandler";
-import { createQueryErrorHandler, captureError } from "@/lib/sentry";
-import * as Sentry from "@sentry/react";
+
 import Index from "./pages/Index";
 import Lounge from "./pages/Lounge";
 import Tips from "./pages/Tips";
@@ -17,43 +15,14 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount: number, error: Error) => {
-        // 인증 에러는 재시도하지 않음
-        if (isAuthError(error) || error?.message?.includes('세션이 만료')) {
-          return false;
-        }
-        // 일반 에러는 최대 3회 재시도
-        return failureCount < 3;
-      },
-      staleTime: 5 * 60 * 1000, // 5분
-      gcTime: 10 * 60 * 1000, // 10분 (구 cacheTime)
-      onError: createQueryErrorHandler(), // Sentry 에러 핸들러 추가
-    },
-    mutations: {
-      onError: async (error: Error) => {
-        console.error('Global mutation error:', error);
-        
-        // Sentry로 mutation 에러 리포팅
-        captureError(error, {
-          context: 'React Query Mutation',
-          isAuthError: isAuthError(error),
-        });
-        
-        if (isAuthError(error)) {
-          await handleAuthError(error);
-        }
-      },
-    },
-  },
-});
+import TipDetail from "./pages/TipDetail";
+import PostDetail from "./pages/PostDetail";
+import CreateTip from "./pages/CreateTip";
+import MemberProfile from "./pages/MemberProfile";
 
 const App = () => (
   <AppErrorBoundary>
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <TooltipProvider>
         <AuthProvider>
           <Toaster />
@@ -99,6 +68,38 @@ const App = () => (
               } 
             />
             <Route 
+              path="/tips/create" 
+              element={
+                <ProtectedRoute>
+                  <CreateTip />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tips/:id" 
+              element={
+                <ProtectedRoute>
+                  <TipDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/posts/:id" 
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile/:userId" 
+              element={
+                <ProtectedRoute>
+                  <MemberProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/members" 
               element={
                 <ProtectedRoute>
@@ -121,7 +122,7 @@ const App = () => (
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
-  </QueryClientProvider>
+  </QueryProvider>
   </AppErrorBoundary>
 );
 

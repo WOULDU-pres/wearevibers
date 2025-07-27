@@ -7,11 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, MessageCircle, Share2, User, Calendar, ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { usePost, usePostComments, useCreateComment, useIsPostVibed, useVibePost, useIsCommentVibed, useVibeComment } from "@/hooks/usePosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { useFormStore } from "@/stores";
 
 const CommentItem = ({ comment, postId }: { 
   comment: any; 
@@ -68,7 +68,7 @@ const CommentItem = ({ comment, postId }: {
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [newComment, setNewComment] = useState("");
+  const { commentForm, updateCommentForm, resetCommentForm } = useFormStore();
 
   const { data: post, isLoading: postLoading, error: postError } = usePost(id!);
   const { data: comments, isLoading: commentsLoading } = usePostComments(id!);
@@ -82,12 +82,12 @@ const PostDetail = () => {
   };
 
   const handleCommentSubmit = () => {
-    if (newComment.trim() && id) {
+    if (commentForm.newComment.trim() && id) {
       createCommentMutation.mutate(
-        { postId: id, content: newComment },
+        { postId: id, content: commentForm.newComment },
         {
           onSuccess: () => {
-            setNewComment("");
+            resetCommentForm();
           }
         }
       );
@@ -264,15 +264,15 @@ const PostDetail = () => {
             <div className="mb-6 space-y-4">
               <Textarea
                 placeholder="댓글을 작성해주세요..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                value={commentForm.newComment}
+                onChange={(e) => updateCommentForm({ newComment: e.target.value })}
                 className="min-h-[100px] bg-muted/30 border-border"
               />
               <div className="flex justify-end">
                 <Button 
                   onClick={handleCommentSubmit}
                   className="bg-gradient-vibe hover:opacity-90 text-white border-0"
-                  disabled={!newComment.trim() || createCommentMutation.isPending}
+                  disabled={!commentForm.newComment.trim() || createCommentMutation.isPending}
                 >
                   {createCommentMutation.isPending ? '작성 중...' : '댓글 작성'}
                 </Button>

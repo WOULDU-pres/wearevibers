@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 import { handleSupabaseError, addBreadcrumb } from '@/lib/sentry';
 
@@ -12,7 +12,7 @@ export interface UploadOptions {
 }
 
 export const useFileUpload = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [uploading, setUploading] = useState(false);
 
   const uploadFile = async (

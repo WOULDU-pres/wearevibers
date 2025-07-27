@@ -1,13 +1,13 @@
 import { Search, Bell, User, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
 
 const Header = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {

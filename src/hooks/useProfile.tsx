@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores';
 import type { Profile } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { handleSupabaseError } from '@/lib/sentry';
 
 export const useProfile = (userId: string) => {
   return useQuery({
@@ -17,6 +18,14 @@ export const useProfile = (userId: string) => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        
+        // Sentry로 에러 리포팅
+        handleSupabaseError(error, {
+          method: 'GET',
+          endpoint: 'profiles',
+          context: 'useProfile',
+          userId: userId,
+        });
         
         // 인증 에러인 경우 처리
         if (isAuthError(error)) {
@@ -47,6 +56,13 @@ export const useProfileStats = (userId: string) => {
           .eq('status', 'published');
 
         if (projectsError) {
+          handleSupabaseError(projectsError, {
+            method: 'GET',
+            endpoint: 'projects',
+            context: 'useProfileStats',
+            userId: userId,
+          });
+          
           if (isAuthError(projectsError)) {
             await handleAuthError(projectsError);
             throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
@@ -101,7 +117,7 @@ export const useProfileStats = (userId: string) => {
 };
 
 export const useIsFollowing = (targetUserId: string) => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useQuery({
     queryKey: ['is-following', user?.id, targetUserId],
@@ -136,7 +152,7 @@ export const useIsFollowing = (targetUserId: string) => {
 
 export const useFollowUser = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ targetUserId, isFollowing }: { targetUserId: string; isFollowing: boolean }) => {

@@ -7,12 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Bookmark, Share2, Clock, User, ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { useTip, useTipComments, useCreateTipComment, useIsTipVibed, useVibeTip, useIsTipBookmarked, useBookmarkTip } from "@/hooks/useTips";
 import { useIsCommentVibed, useVibeComment } from "@/hooks/usePosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { useFormStore } from "@/stores";
 
 const TipCommentItem = ({ comment, tipId }: { 
   comment: any; 
@@ -68,7 +69,7 @@ const TipCommentItem = ({ comment, tipId }: {
 const TipDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [newComment, setNewComment] = useState("");
+  const { commentForm, updateCommentForm, resetCommentForm } = useFormStore();
 
   const { data: tip, isLoading: tipLoading, error: tipError } = useTip(id!);
   const { data: comments, isLoading: commentsLoading } = useTipComments(id!);
@@ -89,12 +90,12 @@ const TipDetail = () => {
   };
 
   const handleCommentSubmit = () => {
-    if (newComment.trim() && id) {
+    if (commentForm.newComment.trim() && id) {
       createCommentMutation.mutate(
-        { tipId: id, content: newComment },
+        { tipId: id, content: commentForm.newComment },
         {
           onSuccess: () => {
-            setNewComment("");
+            resetCommentForm();
           }
         }
       );
@@ -254,30 +255,7 @@ const TipDetail = () => {
           </CardHeader>
           
           <CardContent>
-            <div className="prose prose-gray dark:prose-invert max-w-none">
-              {tip.content.split('\n').map((paragraph, index) => {
-                if (paragraph.startsWith('## ')) {
-                  return <h2 key={index} className="text-2xl font-bold mt-6 mb-4">{paragraph.slice(3)}</h2>;
-                } else if (paragraph.startsWith('```css')) {
-                  return <div key={index} className="bg-muted/50 rounded-lg p-4 my-4 font-mono text-sm overflow-x-auto">{/* CSS code block would be here */}</div>;
-                } else if (paragraph.startsWith('```')) {
-                  return null; // Skip closing code block markers
-                } else if (paragraph.includes('`') && paragraph.indexOf('`') !== paragraph.lastIndexOf('`')) {
-                  const parts = paragraph.split('`');
-                  return (
-                    <p key={index} className="mb-4">
-                      {parts.map((part, i) => 
-                        i % 2 === 0 ? part : <code key={i} className="bg-muted/50 px-1 py-0.5 rounded text-sm">{part}</code>
-                      )}
-                    </p>
-                  );
-                } else if (paragraph.match(/^\d+\./)) {
-                  return <p key={index} className="mb-2 ml-4">{paragraph}</p>;
-                } else {
-                  return <p key={index} className="mb-4">{paragraph}</p>;
-                }
-              })}
-            </div>
+            <MarkdownRenderer content={tip.content} />
           </CardContent>
         </Card>
 
@@ -294,15 +272,15 @@ const TipDetail = () => {
             <div className="mb-6 space-y-4">
               <Textarea
                 placeholder="댓글을 작성해주세요..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                value={commentForm.newComment}
+                onChange={(e) => updateCommentForm({ newComment: e.target.value })}
                 className="min-h-[100px] bg-muted/30 border-border"
               />
               <div className="flex justify-end">
                 <Button 
                   onClick={handleCommentSubmit}
                   className="bg-gradient-vibe hover:opacity-90 text-white border-0"
-                  disabled={!newComment.trim() || createCommentMutation.isPending}
+                  disabled={!commentForm.newComment.trim() || createCommentMutation.isPending}
                 >
                   {createCommentMutation.isPending ? '작성 중...' : '댓글 작성'}
                 </Button>

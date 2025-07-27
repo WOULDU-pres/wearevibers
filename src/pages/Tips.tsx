@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,51 +7,110 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers, PlusCircle } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import type { Tables } from "@/lib/supabase-types";
-
-type Tip = Tables<'tips'>;
+import { useTips, useIsTipVibed, useVibeTip, useIsTipBookmarked, useBookmarkTip } from "@/hooks/useTips";
+import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
 const tipCategories = [
-  { name: "Productivity", icon: Layers, count: 0 },
-  { name: "CSS_Trick", icon: Palette, count: 0 },
-  { name: "Git_Flow", icon: GitBranch, count: 0 },
-  { name: "UI/UX", icon: Code, count: 0 },
+  { name: "productivity", value: "productivity", icon: Layers },
+  { name: "css-tricks", value: "css-tricks", icon: Palette },
+  { name: "git-flow", value: "git-flow", icon: GitBranch },
+  { name: "ui-ux", value: "ui-ux", icon: Code },
 ];
 
 const Tips = () => {
-  const [tips, setTips] = useState<Tip[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
 
-  useEffect(() => {
-    fetchTips();
-  }, []);
+  const { data: tips, isLoading: loading } = useTips({ 
+    category: selectedCategory, 
+    search: searchQuery,
+    sortBy 
+  });
 
-  const fetchTips = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tips')
-        .select(`
-          *,
-          profiles (
-            username,
-            full_name
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(10);
+  const TipCard = ({ tip }: { tip: any }) => {
+    const { data: isTipVibed } = useIsTipVibed(tip.id);
+    const { data: isTipBookmarked } = useIsTipBookmarked(tip.id);
+    const vibeTipMutation = useVibeTip();
+    const bookmarkTipMutation = useBookmarkTip();
 
-      if (error) {
-        console.error('Error fetching tips:', error);
-        return;
-      }
+    const handleVibe = () => {
+      vibeTipMutation.mutate({ tipId: tip.id, isVibed: isTipVibed || false });
+    };
 
-      setTips(data || []);
-    } catch (error) {
-      console.error('Error in fetchTips:', error);
-    } finally {
-      setLoading(false);
-    }
+    const handleBookmark = () => {
+      bookmarkTipMutation.mutate({ tipId: tip.id, isBookmarked: isTipBookmarked || false });
+    };
+
+    const handleViewDetail = () => {
+      navigate(`/tips/${tip.id}`);
+    };
+
+    return (
+      <Card key={tip.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline" className="text-xs">
+                  #{tip.category || '일반'}
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {tip.difficulty_level ? `레벨 ${tip.difficulty_level}` : '초급'}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {tip.read_time || '5'}분 읽기
+                </span>
+              </div>
+              <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer" onClick={handleViewDetail}>
+                {tip.title}
+              </CardTitle>
+              <div className="text-sm text-muted-foreground mt-1">
+                by {tip.profiles?.full_name || tip.profiles?.username || '익명'} · {formatDistanceToNow(new Date(tip.created_at!), { addSuffix: true, locale: ko })}
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          <p className="text-muted-foreground mb-4 line-clamp-2">
+            {tip.content.substring(0, 150)}...
+          </p>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleVibe}
+                disabled={vibeTipMutation.isPending}
+                className={`flex items-center gap-1 ${isTipVibed ? 'text-red-500' : 'hover:text-red-500'}`}
+              >
+                <Heart className={`w-4 h-4 ${isTipVibed ? 'fill-current' : ''}`} />
+                {tip.vibe_count || 0}
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBookmark}
+                disabled={bookmarkTipMutation.isPending}
+                className={`flex items-center gap-1 ${isTipBookmarked ? 'text-blue-500' : 'hover:text-blue-500'}`}
+              >
+                <Bookmark className={`w-4 h-4 ${isTipBookmarked ? 'fill-current' : ''}`} />
+                저장
+              </Button>
+            </div>
+            
+            <Button variant="outline" size="sm" onClick={handleViewDetail}>
+              자세히 보기
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   const TipsSkeleton = () => (
@@ -122,19 +181,33 @@ const Tips = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input 
                 placeholder="팁 검색하기..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-muted/50 border-border hover:border-primary/50 transition-colors"
               />
             </div>
             
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant={sortBy === 'newest' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setSortBy('newest')}
+              >
                 최신순
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant={sortBy === 'popular' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setSortBy('popular')}
+              >
                 인기순
               </Button>
-              <Button variant="outline" size="sm">
-                북마크
+              <Button 
+                variant={sortBy === 'trending' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setSortBy('trending')}
+              >
+                조회순
               </Button>
             </div>
           </div>
@@ -148,17 +221,31 @@ const Tips = () => {
                 <CardTitle className="text-lg">카테고리</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div
+                  className={`flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${!selectedCategory ? 'bg-muted/50' : ''}`}
+                  onClick={() => setSelectedCategory("")}
+                >
+                  <Layers className="w-5 h-5 text-primary" />
+                  <div className="flex-1">
+                    <span className="font-medium">전체</span>
+                    <div className="text-xs text-muted-foreground">{tips?.length || 0}개</div>
+                  </div>
+                </div>
                 {tipCategories.map((category) => {
                   const IconComponent = category.icon;
+                  const isSelected = selectedCategory === category.value;
                   return (
                     <div
-                      key={category.name}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                      key={category.value}
+                      className={`flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${isSelected ? 'bg-muted/50' : ''}`}
+                      onClick={() => setSelectedCategory(isSelected ? "" : category.value)}
                     >
                       <IconComponent className="w-5 h-5 text-primary" />
                       <div className="flex-1">
                         <span className="font-medium">{category.name}</span>
-                        <div className="text-xs text-muted-foreground">{category.count}개</div>
+                        <div className="text-xs text-muted-foreground">
+                          {tips?.filter(tip => tip.category === category.value).length || 0}개
+                        </div>
                       </div>
                     </div>
                   );
@@ -166,7 +253,10 @@ const Tips = () => {
               </CardContent>
             </Card>
 
-            <Button className="w-full mt-4 bg-gradient-vibe hover:opacity-90 text-white border-0">
+            <Button 
+              className="w-full mt-4 bg-gradient-vibe hover:opacity-90 text-white border-0"
+              onClick={() => navigate('/tips/create')}
+            >
               팁 공유하기
             </Button>
           </div>
@@ -179,57 +269,8 @@ const Tips = () => {
               <EmptyState />
             ) : (
               <div className="space-y-6">
-                {tips.map((tip) => (
-                  <Card key={tip.id} className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              #{tip.category || '일반'}
-                            </Badge>
-                            <Badge variant="secondary" className="text-xs">
-                              {tip.difficulty_level ? `레벨 ${tip.difficulty_level}` : '초급'}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {tip.read_time || '5'}분 읽기
-                            </span>
-                          </div>
-                          <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
-                            {tip.title}
-                          </CardTitle>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            by {tip.profiles?.username || '익명'}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent>
-                      <p className="text-muted-foreground mb-4 line-clamp-2">
-                        {tip.content}
-                      </p>
-                      
-                      {/* Tags 기능은 추후 추가 예정 */}
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:text-red-500">
-                            <Heart className="w-4 h-4" />
-                            {tip.vibe_count || 0}
-                          </Button>
-                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                            <Bookmark className="w-4 h-4" />
-                            저장
-                          </Button>
-                        </div>
-                        
-                        <Button variant="outline" size="sm">
-                          자세히 보기
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {tips?.map((tip) => (
+                  <TipCard key={tip.id} tip={tip} />
                 ))}
               </div>
             )}

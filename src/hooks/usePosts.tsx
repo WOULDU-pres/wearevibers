@@ -1,9 +1,78 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores';
 import type { Post, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+
+interface PostFilters {
+  category?: string;
+  search?: string;
+  sortBy?: 'newest' | 'popular' | 'comments';
+}
+
+export const usePosts = (filters: PostFilters = {}) => {
+  return useQuery({
+    queryKey: ['posts', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `);
+
+      // Apply filters
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+
+      if (filters.search) {
+        query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
+      }
+
+      // Apply sorting
+      switch (filters.sortBy) {
+        case 'popular':
+          query = query.order('vibe_count', { ascending: false });
+          break;
+        case 'comments':
+          query = query.order('comment_count', { ascending: false });
+          break;
+        default:
+          query = query.order('created_at', { ascending: false });
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching posts:', error);
+        
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
+        throw error;
+      }
+
+      return data as (Post & {
+        profiles: {
+          id: string;
+          username: string;
+          full_name: string | null;
+          avatar_url: string | null;
+        };
+      })[];
+    },
+    retry: authAwareRetry,
+  });
+};
 
 export const usePost = (postId: string) => {
   return useQuery({
@@ -97,7 +166,7 @@ export const usePostComments = (postId: string) => {
 
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
@@ -145,7 +214,7 @@ export const useCreateComment = () => {
 };
 
 export const useIsPostVibed = (postId: string) => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useQuery({
     queryKey: ['is-post-vibed', user?.id, postId],
@@ -181,7 +250,7 @@ export const useIsPostVibed = (postId: string) => {
 
 export const useVibePost = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ postId, isVibed }: { postId: string; isVibed: boolean }) => {
@@ -242,7 +311,7 @@ export const useVibePost = () => {
 };
 
 export const useIsCommentVibed = (commentId: string) => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useQuery({
     queryKey: ['is-comment-vibed', user?.id, commentId],
@@ -278,7 +347,7 @@ export const useIsCommentVibed = (commentId: string) => {
 
 export const useVibeComment = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ commentId, postId, isVibed }: { commentId: string; postId: string; isVibed: boolean }) => {
@@ -332,5 +401,128 @@ export const useVibeComment = () => {
       queryClient.invalidateQueries({ queryKey: ['comments', 'post', postId] });
     },
     onError: createAuthAwareMutationErrorHandler('댓글 Vibe 상태 변경에 실패했습니다.'),
+  });
+};
+
+export const useCreatePost = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (postData: {
+      title: string;
+      content: string;
+      category: string;
+      image_urls?: string[];
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          ...postData,
+          user_id: user.id,
+        })
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) {
+        console.error('Error creating post:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('게시글이 성공적으로 작성되었습니다!');
+    },
+    onError: createAuthAwareMutationErrorHandler('게시글 작성에 실패했습니다.'),
+  });
+};
+
+export const useUpdatePost = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async ({ postId, postData }: {
+      postId: string;
+      postData: {
+        title?: string;
+        content?: string;
+        category?: string;
+        image_urls?: string[];
+      };
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('posts')
+        .update({
+          ...postData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', postId)
+        .eq('user_id', user.id)
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) {
+        console.error('Error updating post:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['post', data.id] });
+      toast.success('게시글이 성공적으로 수정되었습니다!');
+    },
+    onError: createAuthAwareMutationErrorHandler('게시글 수정에 실패했습니다.'),
+  });
+};
+
+export const useDeletePost = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error deleting post:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('게시글이 성공적으로 삭제되었습니다!');
+    },
+    onError: createAuthAwareMutationErrorHandler('게시글 삭제에 실패했습니다.'),
   });
 };

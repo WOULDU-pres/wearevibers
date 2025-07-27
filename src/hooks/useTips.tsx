@@ -1,9 +1,84 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores';
 import type { Tip, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+
+interface TipFilters {
+  category?: string;
+  difficulty?: number;
+  search?: string;
+  sortBy?: 'newest' | 'popular' | 'trending';
+}
+
+export const useTips = (filters: TipFilters = {}) => {
+  return useQuery({
+    queryKey: ['tips', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('tips')
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('status', 'published');
+
+      // Apply filters
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+      
+      if (filters.difficulty) {
+        query = query.eq('difficulty_level', filters.difficulty);
+      }
+
+      if (filters.search) {
+        query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
+      }
+
+      // Apply sorting
+      switch (filters.sortBy) {
+        case 'popular':
+          query = query.order('vibe_count', { ascending: false });
+          break;
+        case 'trending':
+          query = query.order('view_count', { ascending: false });
+          break;
+        default:
+          query = query.order('created_at', { ascending: false });
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching tips:', error);
+        
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
+        throw error;
+      }
+
+      return data as (Tip & {
+        profiles: {
+          id: string;
+          username: string;
+          full_name: string | null;
+          avatar_url: string | null;
+        };
+      })[];
+    },
+    retry: authAwareRetry,
+  });
+};
 
 export const useTip = (tipId: string) => {
   return useQuery({
@@ -97,7 +172,7 @@ export const useTipComments = (tipId: string) => {
 
 export const useCreateTipComment = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ tipId, content }: { tipId: string; content: string }) => {
@@ -145,7 +220,7 @@ export const useCreateTipComment = () => {
 };
 
 export const useIsTipVibed = (tipId: string) => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useQuery({
     queryKey: ['is-tip-vibed', user?.id, tipId],
@@ -173,7 +248,7 @@ export const useIsTipVibed = (tipId: string) => {
 
 export const useVibeTip = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ tipId, isVibed }: { tipId: string; isVibed: boolean }) => {
@@ -234,37 +309,217 @@ export const useVibeTip = () => {
 };
 
 export const useIsTipBookmarked = (tipId: string) => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useQuery({
     queryKey: ['is-tip-bookmarked', user?.id, tipId],
     queryFn: async () => {
       if (!user) return false;
 
-      // Note: You'll need to create a bookmarks table if it doesn't exist
-      // For now, we'll just return false
-      return false;
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('content_id', tipId)
+        .eq('content_type', 'tip')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking tip bookmark status:', error);
+        throw error;
+      }
+
+      return !!data;
     },
     enabled: !!user && !!tipId,
+    retry: authAwareRetry,
   });
 };
 
 export const useBookmarkTip = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ tipId, isBookmarked }: { tipId: string; isBookmarked: boolean }) => {
       if (!user) throw new Error('User not authenticated');
 
-      // Note: You'll need to implement bookmark functionality
-      // For now, we'll just simulate it
-      return !isBookmarked;
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('content_id', tipId)
+          .eq('content_type', 'tip');
+
+        if (error) {
+          console.error('Error removing tip bookmark:', error);
+          throw error;
+        }
+
+        // Update bookmark count
+        await supabase.rpc('decrement_bookmark_count', {
+          content_id: tipId,
+          content_type: 'tip'
+        });
+
+        return false;
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .insert({
+            user_id: user.id,
+            content_id: tipId,
+            content_type: 'tip',
+          });
+
+        if (error && error.code !== '23505') { // Ignore unique constraint violation
+          console.error('Error adding tip bookmark:', error);
+          throw error;
+        }
+
+        // Update bookmark count
+        await supabase.rpc('increment_bookmark_count', {
+          content_id: tipId,
+          content_type: 'tip'
+        });
+
+        return true;
+      }
     },
     onSuccess: (newBookmarkedStatus, { tipId }) => {
       queryClient.invalidateQueries({ queryKey: ['is-tip-bookmarked', user?.id, tipId] });
+      queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success(newBookmarkedStatus ? '북마크에 추가됨!' : '북마크에서 제거됨');
     },
     onError: createAuthAwareMutationErrorHandler('북마크 상태 변경에 실패했습니다.'),
+  });
+};
+
+export const useCreateTip = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (tipData: {
+      title: string;
+      content: string;
+      category: string;
+      difficulty_level: number;
+      read_time?: number;
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('tips')
+        .insert({
+          ...tipData,
+          user_id: user.id,
+          status: 'published',
+        })
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) {
+        console.error('Error creating tip:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tips'] });
+      toast.success('팁이 성공적으로 게시되었습니다!');
+    },
+    onError: createAuthAwareMutationErrorHandler('팁 게시에 실패했습니다.'),
+  });
+};
+
+export const useUpdateTip = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async ({ tipId, tipData }: {
+      tipId: string;
+      tipData: {
+        title?: string;
+        content?: string;
+        category?: string;
+        difficulty_level?: number;
+        read_time?: number;
+      };
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('tips')
+        .update({
+          ...tipData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', tipId)
+        .eq('user_id', user.id)
+        .select(`
+          *,
+          profiles!inner(
+            id,
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) {
+        console.error('Error updating tip:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['tips'] });
+      queryClient.invalidateQueries({ queryKey: ['tip', data.id] });
+      toast.success('팁이 성공적으로 수정되었습니다!');
+    },
+    onError: createAuthAwareMutationErrorHandler('팁 수정에 실패했습니다.'),
+  });
+};
+
+export const useDeleteTip = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (tipId: string) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('tips')
+        .delete()
+        .eq('id', tipId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error deleting tip:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tips'] });
+      toast.success('팁이 성공적으로 삭제되었습니다!');
+    },
+    onError: createAuthAwareMutationErrorHandler('팁 삭제에 실패했습니다.'),
   });
 };
