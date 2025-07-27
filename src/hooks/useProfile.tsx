@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Profile } from '@/lib/supabase-types';
 import { toast } from 'sonner';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 export const useProfile = (userId: string) => {
   return useQuery({
@@ -16,12 +17,20 @@ export const useProfile = (userId: string) => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return data as Profile;
     },
     enabled: !!userId,
+    retry: authAwareRetry,
   });
 };
 
@@ -29,43 +38,65 @@ export const useProfileStats = (userId: string) => {
   return useQuery({
     queryKey: ['profile-stats', userId],
     queryFn: async () => {
-      // Get projects count
-      const { count: projectsCount } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('status', 'published');
+      try {
+        // Get projects count
+        const { count: projectsCount, error: projectsError } = await supabase
+          .from('projects')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('status', 'published');
 
-      // Get total vibes count across all user content
-      const { data: vibesData } = await supabase
-        .from('vibes')
-        .select('content_id, content_type')
-        .or(`and(content_type.eq.project,content_id.in.(${
-          await supabase
-            .from('projects')
-            .select('id')
-            .eq('user_id', userId)
-            .then(({ data }) => data?.map(p => p.id).join(',') || '')
-        })),and(content_type.eq.post,content_id.in.(${
-          await supabase
-            .from('posts')
-            .select('id')
-            .eq('user_id', userId)
-            .then(({ data }) => data?.map(p => p.id).join(',') || '')
-        })),and(content_type.eq.tip,content_id.in.(${
-          await supabase
-            .from('tips')
-            .select('id')
-            .eq('user_id', userId)
-            .then(({ data }) => data?.map(t => t.id).join(',') || '')
-        }))`);
+        if (projectsError) {
+          if (isAuthError(projectsError)) {
+            await handleAuthError(projectsError);
+            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+          }
+          throw projectsError;
+        }
 
-      return {
-        projects: projectsCount || 0,
-        vibes: vibesData?.length || 0,
-      };
+        // Get total vibes count across all user content
+        const { data: vibesData, error: vibesError } = await supabase
+          .from('vibes')
+          .select('content_id, content_type')
+          .or(`and(content_type.eq.project,content_id.in.(${
+            await supabase
+              .from('projects')
+              .select('id')
+              .eq('user_id', userId)
+              .then(({ data }) => data?.map(p => p.id).join(',') || '')
+          })),and(content_type.eq.post,content_id.in.(${
+            await supabase
+              .from('posts')
+              .select('id')
+              .eq('user_id', userId)
+              .then(({ data }) => data?.map(p => p.id).join(',') || '')
+          })),and(content_type.eq.tip,content_id.in.(${
+            await supabase
+              .from('tips')
+              .select('id')
+              .eq('user_id', userId)
+              .then(({ data }) => data?.map(t => t.id).join(',') || '')
+          }))`);
+
+        if (vibesError) {
+          if (isAuthError(vibesError)) {
+            await handleAuthError(vibesError);
+            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+          }
+          throw vibesError;
+        }
+
+        return {
+          projects: projectsCount || 0,
+          vibes: vibesData?.length || 0,
+        };
+      } catch (error) {
+        console.error('Error fetching profile stats:', error);
+        throw error;
+      }
     },
     enabled: !!userId,
+    retry: authAwareRetry,
   });
 };
 
@@ -86,12 +117,20 @@ export const useIsFollowing = (targetUserId: string) => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error checking follow status:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return !!data;
     },
     enabled: !!user && !!targetUserId && user.id !== targetUserId,
+    retry: authAwareRetry,
   });
 };
 
@@ -159,10 +198,7 @@ export const useFollowUser = () => {
       queryClient.invalidateQueries({ queryKey: ['profile', targetUserId] });
       toast.success(newFollowingStatus ? '팔로우했습니다!' : '언팔로우했습니다.');
     },
-    onError: (error) => {
-      console.error('Follow/unfollow error:', error);
-      toast.error('팔로우 상태 변경에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('팔로우 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -187,12 +223,20 @@ export const useUserProjects = (userId: string) => {
 
       if (error) {
         console.error('Error fetching user projects:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return data;
     },
     enabled: !!userId,
+    retry: authAwareRetry,
   });
 };
 
@@ -217,11 +261,19 @@ export const useUserPosts = (userId: string) => {
 
       if (error) {
         console.error('Error fetching user posts:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return data;
     },
     enabled: !!userId,
+    retry: authAwareRetry,
   });
 };

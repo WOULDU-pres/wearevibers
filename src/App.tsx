@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { isAuthError, handleAuthError } from "@/lib/authErrorHandler";
 import Index from "./pages/Index";
 import Lounge from "./pages/Lounge";
 import Tips from "./pages/Tips";
@@ -14,15 +16,39 @@ import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount: number, error: Error) => {
+        // 인증 에러는 재시도하지 않음
+        if (isAuthError(error) || error?.message?.includes('세션이 만료')) {
+          return false;
+        }
+        // 일반 에러는 최대 3회 재시도
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5분
+      gcTime: 10 * 60 * 1000, // 10분 (구 cacheTime)
+    },
+    mutations: {
+      onError: async (error: Error) => {
+        console.error('Global mutation error:', error);
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+        }
+      },
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+  <AppErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
@@ -86,6 +112,7 @@ const App = () => (
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
+  </AppErrorBoundary>
 );
 
 export default App;

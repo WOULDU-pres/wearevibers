@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Project } from '@/lib/supabase-types';
 import { toast } from 'sonner';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 export interface ProjectFilters {
   tech_stack?: string[];
@@ -52,11 +53,19 @@ export const useProjects = (filters?: ProjectFilters) => {
       
       if (error) {
         console.error('Error fetching projects:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
       
       return data as Project[];
     },
+    retry: authAwareRetry,
   });
 };
 
@@ -100,6 +109,13 @@ export const useInfiniteProjects = (filters?: ProjectFilters) => {
       
       if (error) {
         console.error('Error fetching projects:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
       
@@ -134,12 +150,20 @@ export const useProject = (projectId: string) => {
 
       if (error) {
         console.error('Error fetching project:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return data as Project;
     },
     enabled: !!projectId,
+    retry: authAwareRetry,
   });
 };
 
@@ -159,12 +183,20 @@ export const useMyProjects = () => {
 
       if (error) {
         console.error('Error fetching my projects:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return data as Project[];
     },
     enabled: !!user,
+    retry: authAwareRetry,
   });
 };
 
@@ -196,10 +228,7 @@ export const useCreateProject = () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('프로젝트가 성공적으로 생성되었습니다!');
     },
-    onError: (error) => {
-      console.error('Create project error:', error);
-      toast.error('프로젝트 생성에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('프로젝트 생성에 실패했습니다.'),
   });
 };
 
@@ -237,10 +266,7 @@ export const useUpdateProject = () => {
       queryClient.invalidateQueries({ queryKey: ['project', data.id] });
       toast.success('프로젝트가 성공적으로 수정되었습니다!');
     },
-    onError: (error) => {
-      console.error('Update project error:', error);
-      toast.error('프로젝트 수정에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('프로젝트 수정에 실패했습니다.'),
   });
 };
 
@@ -267,10 +293,7 @@ export const useDeleteProject = () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('프로젝트가 성공적으로 삭제되었습니다.');
     },
-    onError: (error) => {
-      console.error('Delete project error:', error);
-      toast.error('프로젝트 삭제에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('프로젝트 삭제에 실패했습니다.'),
   });
 };
 
@@ -309,9 +332,6 @@ export const useVibeProject = () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Vibe 추가됨! 🎉');
     },
-    onError: (error) => {
-      console.error('Vibe project error:', error);
-      toast.error('Vibe 추가에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('Vibe 추가에 실패했습니다.'),
   });
 };

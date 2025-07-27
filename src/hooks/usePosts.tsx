@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Post, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 export const usePost = (postId: string) => {
   return useQuery({
@@ -24,6 +25,13 @@ export const usePost = (postId: string) => {
 
       if (error) {
         console.error('Error fetching post:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
@@ -37,6 +45,7 @@ export const usePost = (postId: string) => {
       };
     },
     enabled: !!postId,
+    retry: authAwareRetry,
   });
 };
 
@@ -62,6 +71,13 @@ export const usePostComments = (postId: string) => {
 
       if (error) {
         console.error('Error fetching comments:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
@@ -75,6 +91,7 @@ export const usePostComments = (postId: string) => {
       })[];
     },
     enabled: !!postId,
+    retry: authAwareRetry,
   });
 };
 
@@ -123,10 +140,7 @@ export const useCreateComment = () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: (error) => {
-      console.error('Create comment error:', error);
-      toast.error('댓글 작성에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -148,12 +162,20 @@ export const useIsPostVibed = (postId: string) => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error checking vibe status:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return !!data;
     },
     enabled: !!user && !!postId,
+    retry: authAwareRetry,
   });
 };
 
@@ -215,10 +237,7 @@ export const useVibePost = () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       toast.success(newVibedStatus ? 'Vibe 추가됨! 🎉' : 'Vibe 제거됨');
     },
-    onError: (error) => {
-      console.error('Vibe post error:', error);
-      toast.error('Vibe 상태 변경에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -240,12 +259,20 @@ export const useIsCommentVibed = (commentId: string) => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error checking comment vibe status:', error);
+        
+        // 인증 에러인 경우 처리
+        if (isAuthError(error)) {
+          await handleAuthError(error);
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
         throw error;
       }
 
       return !!data;
     },
     enabled: !!user && !!commentId,
+    retry: authAwareRetry,
   });
 };
 
@@ -304,9 +331,6 @@ export const useVibeComment = () => {
       queryClient.invalidateQueries({ queryKey: ['is-comment-vibed', user?.id, commentId] });
       queryClient.invalidateQueries({ queryKey: ['comments', 'post', postId] });
     },
-    onError: (error) => {
-      console.error('Vibe comment error:', error);
-      toast.error('댓글 Vibe 상태 변경에 실패했습니다.');
-    },
+    onError: createAuthAwareMutationErrorHandler('댓글 Vibe 상태 변경에 실패했습니다.'),
   });
 };
