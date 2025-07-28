@@ -17,14 +17,6 @@ const Hero = () => {
         darkLineColor="hsl(var(--vibe-purple) / 0.5)"
       />
 
-      {/* Floating Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-2 h-2 bg-primary rounded-full animate-pulse" />
-        <div className="absolute top-40 right-20 w-1 h-1 bg-accent rounded-full animate-pulse delay-300" />
-        <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-primary rounded-full animate-pulse delay-700" />
-        <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-accent rounded-full animate-pulse delay-500" />
-      </div>
-
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-center mb-6">
