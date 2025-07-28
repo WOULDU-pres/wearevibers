@@ -46,17 +46,50 @@ const createMutationErrorHandler = () => {
   };
 };
 
-// 최적화된 QueryClient 생성
-const queryClient = createQueryClient();
-
-// 에러 핸들러 오버라이드
-queryClient.setQueryCache(new QueryCache({
-  onError: createQueryErrorHandler(),
-}));
-
-queryClient.setMutationCache(new MutationCache({
-  onError: createMutationErrorHandler(),
-}));
+// 최적화된 QueryClient 생성 (에러 핸들러 포함)
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: createQueryErrorHandler(),
+  }),
+  mutationCache: new MutationCache({
+    onError: createMutationErrorHandler(),
+  }),
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
+      retry: (failureCount, error: any) => {
+        if (error?.code === 'PGRST301' || error?.status === 401) {
+          return false;
+        }
+        if (error?.status >= 500) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      networkMode: 'online',
+      meta: {
+        errorMessage: '데이터를 불러오는 중 오류가 발생했습니다.'
+      }
+    },
+    mutations: {
+      retry: false,
+      networkMode: 'online',
+      meta: {
+        errorMessage: '요청 처리 중 오류가 발생했습니다.'
+      }
+    }
+  },
+  logger: {
+    log: console.log,
+    warn: console.warn,
+    error: process.env.NODE_ENV === 'development' ? console.error : () => {},
+  }
+});
 
 interface QueryProviderProps {
   children: React.ReactNode;

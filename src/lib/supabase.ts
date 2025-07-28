@@ -13,6 +13,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    storage: window.localStorage,
+    storageKey: 'wearevibers-auth-token',
+    flowType: 'pkce',
   },
   global: {
     headers: {

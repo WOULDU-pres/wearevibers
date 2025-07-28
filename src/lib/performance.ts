@@ -25,8 +25,8 @@ class PerformanceMonitor {
   private isEnabled: boolean;
 
   constructor() {
-    this.isEnabled = process.env.NODE_ENV === 'production' || 
-                    process.env.VITE_ENABLE_PERFORMANCE_MONITORING === 'true';
+    this.isEnabled = import.meta.env.MODE === 'production' || 
+                    import.meta.env.VITE_ENABLE_PERFORMANCE_MONITORING === 'true';
     
     if (this.isEnabled) {
       this.initializeObserver();

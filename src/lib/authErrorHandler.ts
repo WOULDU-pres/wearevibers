@@ -36,6 +36,7 @@ export const isAuthError = (error: unknown): boolean => {
     // HTTP 상태 코드
     err.status === 401 ||
     err.statusCode === 401 ||
+    err.status === 400 && err.message?.includes('refresh') || // Refresh token error
     
     // 에러 메시지 패턴 매칭
     err.message?.toLowerCase().includes('jwt') ||
@@ -44,9 +45,13 @@ export const isAuthError = (error: unknown): boolean => {
     err.message?.toLowerCase().includes('invalid') ||
     err.message?.toLowerCase().includes('authentication') ||
     err.message?.toLowerCase().includes('permission') ||
+    err.message?.toLowerCase().includes('refresh token') ||
+    err.message?.toLowerCase().includes('refresh token not found') ||
+    err.message?.toLowerCase().includes('invalid refresh token') ||
     
     // 에러 이름 확인
     err.name === 'AuthError' ||
+    err.name === 'AuthApiError' ||
     
     // Supabase 특화 패턴
     err.details?.toLowerCase().includes('jwt') ||
@@ -82,6 +87,19 @@ export const handleAuthError = async (error: unknown, showToast = true): Promise
     // Supabase 세션 정리
     await supabase.auth.signOut();
     
+    // 로컬 스토리지에서 인증 관련 토큰 강제 제거
+    try {
+      localStorage.removeItem('wearevibers-auth-token');
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem(`sb-${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`);
+      
+      // 세션 스토리지도 정리
+      sessionStorage.removeItem('wearevibers-auth-token');
+      sessionStorage.removeItem('supabase.auth.token');
+    } catch (storageError) {
+      console.warn('Error clearing auth storage:', storageError);
+    }
+    
     if (showToast) {
       toast.error('세션이 만료되었습니다. 다시 로그인해주세요.');
     }
@@ -98,6 +116,15 @@ export const handleAuthError = async (error: unknown, showToast = true): Promise
     }
   } catch (signOutError) {
     console.error('Error during auth error handling:', signOutError);
+    
+    // signOut이 실패해도 로컬 스토리지는 정리
+    try {
+      localStorage.removeItem('wearevibers-auth-token');
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem(`sb-${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`);
+    } catch (storageError) {
+      console.warn('Error clearing auth storage after signOut failure:', storageError);
+    }
   }
 };
 
