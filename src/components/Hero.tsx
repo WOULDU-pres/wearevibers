@@ -1,29 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
-import heroBg from "@/assets/hero-bg.jpg";
 import { cn } from "@/lib/utils";
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
-import { ChevronRight } from "lucide-react";
+import { RetroGrid } from "@/components/magicui/retro-grid";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <img
-          src={heroBg}
-          alt="Hero background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-background/90" />
-      </div>
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-background">
+      {/* RetroGrid Background */}
+      <RetroGrid
+        className="absolute inset-0"
+        opacity={1.0}
+        cellSize={50}
+        angle={65}
+        lightLineColor="hsl(var(--vibe-purple) / 0.3)"
+        darkLineColor="hsl(var(--vibe-purple) / 0.5)"
+      />
 
       {/* Floating Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-2 h-2 bg-vibe-purple rounded-full animate-pulse" />
-        <div className="absolute top-40 right-20 w-1 h-1 bg-vibe-coral rounded-full animate-pulse delay-300" />
-        <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-vibe-purple rounded-full animate-pulse delay-700" />
-        <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-vibe-coral rounded-full animate-pulse delay-500" />
+        <div className="absolute top-20 left-10 w-2 h-2 bg-primary rounded-full animate-pulse" />
+        <div className="absolute top-40 right-20 w-1 h-1 bg-accent rounded-full animate-pulse delay-300" />
+        <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-primary rounded-full animate-pulse delay-700" />
+        <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-accent rounded-full animate-pulse delay-500" />
       </div>
 
       {/* Content */}
@@ -51,9 +50,18 @@ const Hero = () => {
         </div>
 
         <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-          <span className="text-primary font-semibold">Code Your Vibe</span>
+          {/* <span className="pointer-events-none z-10 whitespace-pre-wrap bg-gradient-to-b from-[#9c40ff] via-[#ff6b6b] to-[#4ecdc4] bg-clip-text text-transparent font-bold tracking-tighter"> */}
+          <span className="pointer-events-none z-10 whitespace-pre-wrap bg-gradient-to-b from-[#9c40ff] via-[#ff6b6b] to-[#4ecdc4] bg-clip-text text-transparent font-bold tracking-tighter">
+            Code Your Vibe
+          </span>
           <br />
-          <span className="text-foreground">Share Your Story</span>
+          <span className="pointer-events-none z-10 whitespace-pre-wrap text-black font-bold tracking-tighter">
+            Share Your Story
+          </span>
+          <br />
+          <span className="pointer-events-none z-10 whitespace-pre-wrap bg-gradient-to-b from-[#4ecdc4] via-[#45b7d1] to-[#9c40ff] bg-clip-text text-transparent font-bold tracking-tighter">
+            We Are Vibers
+          </span>
         </h1>
 
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
