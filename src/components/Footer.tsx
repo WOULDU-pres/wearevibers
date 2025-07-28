@@ -3,14 +3,14 @@ import logoImg from "@/assets/logo.png";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-soft border-t border-border">
+    <footer className="bg-secondary border-t border-border">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <img src={logoImg} alt="WeAreVibers" className="w-8 h-8" />
-              <span className="text-lg font-bold bg-gradient-vibe bg-clip-text text-transparent">
+              <span className="text-lg font-bold text-primary font-semibold">
                 WeAreVibers
               </span>
             </div>

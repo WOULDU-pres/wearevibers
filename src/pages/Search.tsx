@@ -195,7 +195,7 @@ const Search = () => {
         <div className="flex items-start gap-4">
           <Avatar className="w-12 h-12">
             <AvatarImage src={user.avatar_url || ''} alt={user.username} />
-            <AvatarFallback className="bg-gradient-vibe text-white font-bold">
+            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
               {(user.full_name || user.username)?.slice(0, 2) || 'U'}
             </AvatarFallback>
           </Avatar>
@@ -292,7 +292,7 @@ const Search = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-vibe bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl font-bold text-primary font-semibold mb-4">
             검색 결과
           </h1>
           <SearchAutocomplete

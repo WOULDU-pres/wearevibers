@@ -112,7 +112,7 @@ const MemberProfile = () => {
                 <div className="relative">
                   <Avatar className="w-32 h-32">
                     <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || profile.username} />
-                    <AvatarFallback className="bg-gradient-vibe text-white text-3xl font-bold">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
                       {(profile.full_name || profile.username).slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -158,7 +158,7 @@ const MemberProfile = () => {
                     disabled={followMutation.isPending}
                     className={`w-full lg:w-auto ${isFollowing 
                       ? 'bg-muted hover:bg-muted/80 text-muted-foreground' 
-                      : 'bg-gradient-vibe hover:opacity-90 text-white border-0'
+                      : 'bg-primary hover:bg-primary/90 text-primary-foreground border-0'
                     }`}
                   >
                     {followMutation.isPending ? '처리 중...' : (isFollowing ? '팔로잉' : '팔로우')}

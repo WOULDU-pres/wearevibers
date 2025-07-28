@@ -32,7 +32,7 @@ export const Card = React.memo(
           hovered === index ? "opacity-100" : "opacity-0"
         )}
       >
-        <div className="text-xl md:text-2xl font-medium bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-200">
+        <div className="text-xl md:text-2xl font-medium text-neutral-50">
           {card.title}
         </div>
       </div>
@@ -89,7 +89,7 @@ const ProjectFocusCard = React.memo(
       />
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 transition-opacity duration-300",
+          "absolute inset-0 bg-black/50 flex flex-col justify-end p-6 transition-opacity duration-300",
           hovered === index ? "opacity-100" : "opacity-0"
         )}
       >

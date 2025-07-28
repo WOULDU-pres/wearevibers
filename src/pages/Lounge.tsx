@@ -227,7 +227,7 @@ const Lounge = () => {
         <p className="text-muted-foreground mb-6">
           첫 번째 게시글을 작성해서 커뮤니티를 시작해보세요!
         </p>
-        <Button className="bg-gradient-vibe hover:opacity-90 text-white border-0">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
           첫 게시글 작성하기
         </Button>
       </CardContent>
@@ -240,7 +240,7 @@ const Lounge = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-vibe bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-primary font-semibold mb-4">
             Vibe Lounge
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -305,7 +305,7 @@ const Lounge = () => {
           {/* Quick Actions Sidebar */}
           <div className="lg:col-span-1">
             <div className="space-y-4">
-              <Button className="w-full bg-gradient-vibe hover:opacity-90 text-white border-0">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 새 글 작성하기
               </Button>

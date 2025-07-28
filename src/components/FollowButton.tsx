@@ -103,7 +103,7 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
         'transition-all duration-200 ease-in-out',
         isFollowing && 'hover:bg-destructive hover:text-destructive-foreground',
         isFollowing && !isHovered && 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        !isFollowing && variant === 'default' && 'bg-gradient-vibe hover:opacity-90 text-white border-0',
+        !isFollowing && variant === 'default' && 'bg-primary hover:bg-primary/90 text-primary-foreground border-0',
         className
       )}
     >
@@ -202,7 +202,7 @@ export const FollowIconButton: React.FC<Omit<FollowButtonProps, 'followText' | '
         'transition-all duration-200 ease-in-out',
         isFollowing && 'hover:bg-destructive hover:text-destructive-foreground',
         isFollowing && !isHovered && 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        !isFollowing && variant === 'default' && 'bg-gradient-vibe hover:opacity-90 text-white border-0',
+        !isFollowing && variant === 'default' && 'bg-primary hover:bg-primary/90 text-primary-foreground border-0',
         className
       )}
       title={getTooltipText()}

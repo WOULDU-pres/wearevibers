@@ -154,7 +154,7 @@ const Tips = () => {
         <p className="text-muted-foreground mb-6">
           유용한 개발 팁을 공유해서 커뮤니티에 기여해보세요!
         </p>
-        <Button className="bg-gradient-vibe hover:opacity-90 text-white border-0">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
           첫 번째 팁 공유하기
         </Button>
       </CardContent>
@@ -167,7 +167,7 @@ const Tips = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-vibe bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-primary font-semibold mb-4">
             Vibe Tips
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -255,7 +255,7 @@ const Tips = () => {
             </Card>
 
             <Button 
-              className="w-full mt-4 bg-gradient-vibe hover:opacity-90 text-white border-0"
+              className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground border-0"
               onClick={() => navigate('/tips/create')}
             >
               팁 공유하기

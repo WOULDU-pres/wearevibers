@@ -178,7 +178,7 @@ const Profile = () => {
         <BlurFade delay={0.25} inView>
           <div className="relative mb-8">
             {/* Cover Image */}
-            <div className="h-48 md:h-64 bg-gradient-vibe rounded-lg relative overflow-hidden">
+            <div className="h-48 md:h-64 bg-primary rounded-lg relative overflow-hidden">
               <div className="absolute inset-0 bg-black/20"></div>
               <Button
                 variant="secondary"
@@ -201,7 +201,7 @@ const Profile = () => {
                   <div className="relative">
                     <Avatar className="w-32 h-32 border-4 border-background shadow-lg">
                       <AvatarImage src={profile.avatar_url || ''} alt={profile.username} />
-                      <AvatarFallback className="bg-gradient-vibe text-white text-3xl font-bold">
+                      <AvatarFallback className="bg-primary text-white text-3xl font-bold">
                         {profile.username?.slice(0, 2) || profile.full_name?.slice(0, 2) || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -462,7 +462,7 @@ const Profile = () => {
                 <X className="w-4 h-4 mr-2" />
                 취소
               </Button>
-              <Button onClick={handleSave} className="bg-gradient-vibe hover:opacity-90">
+              <Button onClick={handleSave} className="bg-primary hover:opacity-90">
                 <Save className="w-4 h-4 mr-2" />
                 저장
               </Button>

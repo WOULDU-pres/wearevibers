@@ -91,7 +91,7 @@ const Signup = () => {
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <img src={logoImg} alt="WeAreVibers" className="w-8 h-8" />
-            <span className="text-2xl font-bold bg-gradient-vibe bg-clip-text text-transparent">
+            <span className="text-2xl font-bold text-primary font-semibold">
               WeAreVibers
             </span>
           </div>
@@ -290,7 +290,7 @@ const Signup = () => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-vibe hover:opacity-90"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={!formData.agreeToTerms || !passwordsMatch || !isPasswordValid || loading || isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

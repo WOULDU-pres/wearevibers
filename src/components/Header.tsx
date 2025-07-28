@@ -42,7 +42,7 @@ const Header = () => {
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2">
               <img src={logoImg} alt="WeAreVibers" className="w-8 h-8" />
-              <span className="text-xl font-bold bg-gradient-vibe bg-clip-text text-transparent">
+              <span className="text-xl font-bold text-primary font-semibold">
                 WeAreVibers
               </span>
             </div>
@@ -139,7 +139,7 @@ const Header = () => {
                   <Button 
                     size="sm"
                     onClick={() => navigate('/signup')}
-                    className="bg-gradient-vibe hover:opacity-90 text-white border-0"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground border-0"
                   >
                     Sign Up
                   </Button>

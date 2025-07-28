@@ -155,7 +155,7 @@ const ProjectGrid = () => {
         {/* Section Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Latest <span className="bg-gradient-vibe bg-clip-text text-transparent">Vibes</span>
+            Latest <span className="text-primary font-semibold">Vibes</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             커뮤니티 멤버들이 공유한 최신 프로젝트들을 둘러보고 영감을 받아보세요
@@ -183,7 +183,7 @@ const ProjectGrid = () => {
 
         {/* Load More Button */}
         <div className="text-center mt-12">
-          <button className="bg-gradient-soft border border-primary/20 text-primary px-8 py-3 rounded-lg font-medium hover:border-primary hover:shadow-soft transition-all duration-300">
+          <button className="bg-secondary border border-primary/20 text-primary px-8 py-3 rounded-lg font-medium hover:border-primary hover:shadow-soft transition-all duration-300">
             더 많은 프로젝트 보기
           </button>
         </div>

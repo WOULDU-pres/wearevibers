@@ -122,7 +122,7 @@ const TipForm: React.FC<TipFormProps> = ({ tip, onSuccess, onCancel }) => {
           <Button
             onClick={handleSubmit(onSubmit)}
             disabled={!isValid || isLoading}
-            className="bg-gradient-vibe hover:opacity-90 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isLoading ? (tip ? '수정 중...' : '게시 중...') : (tip ? '수정하기' : '게시하기')}
           </Button>

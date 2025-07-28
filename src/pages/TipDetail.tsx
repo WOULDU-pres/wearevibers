@@ -146,7 +146,7 @@ const TipDetail = () => {
               <div className="flex items-center gap-2">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={tip.profiles.avatar_url || ''} alt={tip.profiles.full_name || tip.profiles.username} />
-                  <AvatarFallback className="bg-gradient-vibe text-white text-sm">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                     {(tip.profiles.full_name || tip.profiles.username).slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

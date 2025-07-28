@@ -190,7 +190,7 @@ const Members = () => {
             >
               <Avatar className="w-16 h-16">
                 <AvatarImage src={member.avatar_url || ''} alt={member.username} />
-                <AvatarFallback className="bg-gradient-vibe text-white text-lg font-bold">
+                <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
                   {(member.full_name || member.username)?.slice(0, 2) || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -307,7 +307,7 @@ const Members = () => {
         <p className="text-muted-foreground mb-6">
           첫 번째 멤버가 되어 커뮤니티를 시작해보세요!
         </p>
-        <Button className="bg-gradient-vibe hover:opacity-90 text-white border-0">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
           회원가입하기
         </Button>
       </CardContent>
@@ -320,7 +320,7 @@ const Members = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-vibe bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-primary font-semibold mb-4">
             Members
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -364,7 +364,7 @@ const Members = () => {
                   variant={filterBy === option.value ? "default" : "outline"} 
                   size="sm"
                   onClick={() => setFilterBy(option.value as FilterOption)}
-                  className={filterBy === option.value ? "bg-gradient-vibe text-white border-0" : ""}
+                  className={filterBy === option.value ? "bg-primary text-primary-foreground border-0" : ""}
                 >
                   {option.label}
                 </Button>
@@ -409,7 +409,7 @@ const Members = () => {
                   variant={selectedTechTags.includes(tag) ? "default" : "outline"}
                   className={`cursor-pointer transition-colors ${
                     selectedTechTags.includes(tag) 
-                      ? "bg-gradient-vibe text-white border-0" 
+                      ? "bg-primary text-primary-foreground border-0" 
                       : "hover:bg-primary hover:text-primary-foreground"
                   }`}
                   onClick={() => handleTechTagToggle(tag)}

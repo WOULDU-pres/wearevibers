@@ -201,7 +201,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <ShinyButton
             onClick={() => document.querySelector('input[type="file"]')?.click()}
             disabled={disabled}
-            className="bg-gradient-vibe"
+            className="bg-primary"
           >
             <Upload className="w-4 h-4 mr-2" />
             파일 선택
