@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider, MutationCache, QueryCache } from '@ta
 import { isAuthError, handleAuthError } from '@/lib/authErrorHandler';
 import { handleSupabaseError } from '@/lib/sentry';
 import { toast } from 'sonner';
+import { createQueryClient } from '@/lib/query-config';
 
 // React Query 에러 핸들러 생성
 const createQueryErrorHandler = () => {
@@ -45,29 +46,17 @@ const createMutationErrorHandler = () => {
   };
 };
 
-// QueryClient 생성
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount: number, error: Error) => {
-        // 인증 에러는 재시도하지 않음
-        if (isAuthError(error) || error?.message?.includes('세션이 만료')) {
-          return false;
-        }
-        // 일반 에러는 최대 3회 재시도
-        return failureCount < 3;
-      },
-      staleTime: 5 * 60 * 1000, // 5분
-      gcTime: 10 * 60 * 1000, // 10분 (구 cacheTime)
-    },
-  },
-  queryCache: new QueryCache({
-    onError: createQueryErrorHandler(),
-  }),
-  mutationCache: new MutationCache({
-    onError: createMutationErrorHandler(),
-  }),
-});
+// 최적화된 QueryClient 생성
+const queryClient = createQueryClient();
+
+// 에러 핸들러 오버라이드
+queryClient.setQueryCache(new QueryCache({
+  onError: createQueryErrorHandler(),
+}));
+
+queryClient.setMutationCache(new MutationCache({
+  onError: createMutationErrorHandler(),
+}));
 
 interface QueryProviderProps {
   children: React.ReactNode;

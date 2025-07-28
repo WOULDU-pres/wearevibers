@@ -4,8 +4,9 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SearchAutocomplete } from "@/components/SearchAutocomplete";
+import { SearchHighlight, SearchSnippet } from "@/components/SearchHighlight";
 import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers, PlusCircle } from "lucide-react";
 import { useTips, useIsTipVibed, useVibeTip, useIsTipBookmarked, useBookmarkTip } from "@/hooks/useTips";
 import { useNavigate } from "react-router-dom";
@@ -66,7 +67,7 @@ const Tips = () => {
                 </span>
               </div>
               <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer" onClick={handleViewDetail}>
-                {tip.title}
+                <SearchHighlight text={tip.title} searchTerm={searchQuery} />
               </CardTitle>
               <div className="text-sm text-muted-foreground mt-1">
                 by {tip.profiles?.full_name || tip.profiles?.username || '익명'} · {formatDistanceToNow(new Date(tip.created_at!), { addSuffix: true, locale: ko })}
@@ -76,9 +77,9 @@ const Tips = () => {
         </CardHeader>
         
         <CardContent>
-          <p className="text-muted-foreground mb-4 line-clamp-2">
-            {tip.content.substring(0, 150)}...
-          </p>
+          <div className="text-muted-foreground mb-4 line-clamp-2">
+            <SearchSnippet content={tip.content} searchTerm={searchQuery} maxLength={150} />
+          </div>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -178,12 +179,12 @@ const Tips = () => {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input 
-                placeholder="팁 검색하기..." 
+              <SearchAutocomplete
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted/50 border-border hover:border-primary/50 transition-colors"
+                onChange={setSearchQuery}
+                onSearch={(query) => setSearchQuery(query)}
+                placeholder="팁 검색하기..."
+                className="w-full"
               />
             </div>
             

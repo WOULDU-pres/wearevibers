@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 
 import Index from "./pages/Index";
 import Lounge from "./pages/Lounge";
@@ -19,6 +20,7 @@ import TipDetail from "./pages/TipDetail";
 import PostDetail from "./pages/PostDetail";
 import CreateTip from "./pages/CreateTip";
 import MemberProfile from "./pages/MemberProfile";
+import Search from "./pages/Search";
 
 const App = () => (
   <AppErrorBoundary>
@@ -115,10 +117,19 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/search" 
+              element={
+                <ProtectedRoute>
+                  <Search />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <PerformanceMonitor />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

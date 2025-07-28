@@ -4,94 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "@/components/ui/textarea";
+import { CommentSection } from "@/components/CommentSection";
 import { Heart, MessageCircle, Share2, User, Calendar, ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { usePost, usePostComments, useCreateComment, useIsPostVibed, useVibePost, useIsCommentVibed, useVibeComment } from "@/hooks/usePosts";
+import { usePost, useIsPostVibed, useVibePost } from "@/hooks/usePosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { useFormStore } from "@/stores";
-
-const CommentItem = ({ comment, postId }: { 
-  comment: any; 
-  postId: string; 
-}) => {
-  const { data: isCommentVibed } = useIsCommentVibed(comment.id);
-  const vibeCommentMutation = useVibeComment();
-
-  const handleCommentLike = () => {
-    vibeCommentMutation.mutate({ 
-      commentId: comment.id, 
-      postId, 
-      isVibed: isCommentVibed || false 
-    });
-  };
-
-  return (
-    <div className="border-l-2 border-border pl-4">
-      <div className="flex items-start gap-3">
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={comment.profiles.avatar_url || ''} alt={comment.profiles.full_name || comment.profiles.username} />
-          <AvatarFallback className="bg-gradient-vibe text-white text-sm">
-            {(comment.profiles.full_name || comment.profiles.username).slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-medium">{comment.profiles.full_name || comment.profiles.username}</span>
-            <span className="text-sm text-muted-foreground">
-              {formatDistanceToNow(new Date(comment.created_at!), { addSuffix: true, locale: ko })}
-            </span>
-          </div>
-          
-          <p className="text-muted-foreground mb-3">{comment.content}</p>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCommentLike}
-            disabled={vibeCommentMutation.isPending}
-            className={`flex items-center gap-1 text-xs ${isCommentVibed ? 'text-red-500' : 'hover:text-red-500'}`}
-          >
-            <Heart className={`w-3 h-3 ${isCommentVibed ? 'fill-current' : ''}`} />
-            {comment.vibe_count || 0}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { commentForm, updateCommentForm, resetCommentForm } = useFormStore();
 
   const { data: post, isLoading: postLoading, error: postError } = usePost(id!);
-  const { data: comments, isLoading: commentsLoading } = usePostComments(id!);
   const { data: isPostVibed, isLoading: vibedLoading } = useIsPostVibed(id!);
-  const createCommentMutation = useCreateComment();
   const vibePostMutation = useVibePost();
 
   const handleLike = () => {
     if (!id) return;
     vibePostMutation.mutate({ postId: id, isVibed: isPostVibed || false });
-  };
-
-  const handleCommentSubmit = () => {
-    if (commentForm.newComment.trim() && id) {
-      createCommentMutation.mutate(
-        { postId: id, content: commentForm.newComment },
-        {
-          onSuccess: () => {
-            resetCommentForm();
-          }
-        }
-      );
-    }
   };
 
   if (postLoading) {
@@ -252,63 +184,14 @@ const PostDetail = () => {
         </Card>
 
         {/* Comments Section */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <h2 className="text-xl font-bold">
-              댓글 {commentsLoading ? '-' : (comments?.length || 0)}개
-            </h2>
-          </CardHeader>
-          
-          <CardContent>
-            {/* Comment Form */}
-            <div className="mb-6 space-y-4">
-              <Textarea
-                placeholder="댓글을 작성해주세요..."
-                value={commentForm.newComment}
-                onChange={(e) => updateCommentForm({ newComment: e.target.value })}
-                className="min-h-[100px] bg-muted/30 border-border"
-              />
-              <div className="flex justify-end">
-                <Button 
-                  onClick={handleCommentSubmit}
-                  className="bg-gradient-vibe hover:opacity-90 text-white border-0"
-                  disabled={!commentForm.newComment.trim() || createCommentMutation.isPending}
-                >
-                  {createCommentMutation.isPending ? '작성 중...' : '댓글 작성'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Comments List */}
-            <div className="space-y-6">
-              {commentsLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="border-l-2 border-border pl-4">
-                    <div className="flex items-start gap-3">
-                      <Skeleton className="w-8 h-8 rounded-full" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Skeleton className="h-4 w-20" />
-                          <Skeleton className="h-3 w-16" />
-                        </div>
-                        <Skeleton className="h-4 w-full mb-3" />
-                        <Skeleton className="h-6 w-12" />
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : comments && comments.length > 0 ? (
-                comments.map((comment) => (
-                  <CommentItem key={comment.id} comment={comment} postId={id!} />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <CommentSection
+          contentId={id!}
+          contentType="post"
+          title="댓글"
+          className="border-border/50 bg-card/50 backdrop-blur"
+          enableRealtime={true}
+          showStats={true}
+        />
       </div>
       
       <Footer />

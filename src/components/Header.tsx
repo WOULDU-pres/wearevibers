@@ -1,14 +1,16 @@
 import { Search, Bell, User, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
+import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import logoImg from "@/assets/logo.png";
+import { useState } from "react";
 
 const Header = () => {
   const { user, profile, signOut } = useAuthStore();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSignOut = async () => {
     try {
@@ -23,6 +25,12 @@ const Header = () => {
     } catch (err) {
       console.error('Logout exception:', err);
       toast.error('로그아웃 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -57,20 +65,27 @@ const Header = () => {
 
           {/* Search Bar */}
           <div className="flex-1 max-w-md mx-8 hidden lg:block">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input 
-                placeholder="Search projects, tips, vibes..." 
-                className="pl-10 bg-muted/50 border-border hover:border-primary/50 transition-colors"
-              />
-            </div>
+            <SearchAutocomplete
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={handleSearch}
+              placeholder="Search projects, tips, users..."
+              className="w-full"
+            />
           </div>
 
           {/* Actions */}
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="hover:bg-muted">
-              <Search className="w-5 h-5 lg:hidden" />
-              <Bell className="w-5 h-5 hidden lg:block" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hover:bg-muted lg:hidden"
+              onClick={() => navigate('/search')}
+            >
+              <Search className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="hover:bg-muted hidden lg:block">
+              <Bell className="w-5 h-5" />
             </Button>
             
             <Button 

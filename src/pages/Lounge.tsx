@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
 import { useUIStore } from "@/stores";
+import { useNavigate } from "react-router-dom";
 
 const loungeCategories = [
   { 
@@ -104,6 +105,7 @@ const Lounge = () => {
 
   // Post Card Component with Vibe functionality
   const PostCard = ({ post }: { post: typeof posts[0] }) => {
+    const navigate = useNavigate();
     const { data: isVibed, isLoading: vibeLoading } = useIsPostVibed(post.id);
     const vibePostMutation = useVibePost();
 
@@ -133,7 +135,10 @@ const Lounge = () => {
                   #{post.category || '일반'}
                 </Badge>
               </div>
-              <CardTitle className="text-xl hover:text-primary transition-colors cursor-pointer">
+              <CardTitle 
+                className="text-xl hover:text-primary transition-colors cursor-pointer"
+                onClick={() => navigate(`/posts/${post.id}`)}
+              >
                 {post.title}
               </CardTitle>
             </div>
@@ -178,7 +183,11 @@ const Lounge = () => {
               </Button>
             </div>
             
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/posts/${post.id}`)}
+            >
               읽어보기
             </Button>
           </div>
