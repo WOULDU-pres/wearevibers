@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { CommentForm } from '@/components/CommentForm';
 import { useAuthStore } from '@/stores';
 import { 

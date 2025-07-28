@@ -41,6 +41,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@sentry/react": "^9.42.0",
+    "@sentry/tracing": "^7.120.3",
     "@sentry/vite-plugin": "^4.0.1",
     "@supabase/supabase-js": "^2.52.1",
     "@tailwindcss/line-clamp": "^0.4.4",
@@ -72,7 +73,9 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "terser": "^5.43.1",
     "vaul": "^0.9.3",
+    "web-vitals": "^5.0.3",
     "zod": "^3.23.8",
     "zustand": "^5.0.6"
   },

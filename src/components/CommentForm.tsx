@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/stores';
 import { useCreateComment, useUpdateComment } from '@/hooks/useComments';
-import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { 
   Bold, 
   Italic, 
