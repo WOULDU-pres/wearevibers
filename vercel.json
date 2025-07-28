@@ -54,11 +54,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "src/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "github": {
     "enabled": true,
     "autoAlias": false
