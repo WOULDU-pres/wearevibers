@@ -36,16 +36,18 @@ export const ProtectedRoute = ({
   requireAuth = true, 
   redirectTo = '/login' 
 }: ProtectedRouteProps) => {
-  const { user, loading } = useAuthStore();
+  const { user, session, loading, initialized } = useAuthStore();
   const location = useLocation();
 
-  // 로딩 중일 때 스켈레톤 표시
-  if (loading) {
+  // 로딩 중이거나 초기화되지 않은 경우 스켈레톤 표시
+  // loading이 undefined인 경우를 고려하여 명시적으로 true인지 확인
+  if (loading === true || !initialized) {
     return <PageSkeleton />;
   }
 
   // 인증이 필요한 페이지인데 사용자가 로그인하지 않은 경우
-  if (requireAuth && !user) {
+  // 세션과 사용자 정보 모두 확인
+  if (requireAuth && (!user || !session)) {
     return (
       <Navigate 
         to={redirectTo} 
@@ -56,7 +58,7 @@ export const ProtectedRoute = ({
   }
 
   // 인증이 필요하지 않은 페이지인데 사용자가 로그인한 경우 (로그인/회원가입 페이지)
-  if (!requireAuth && user) {
+  if (!requireAuth && user && session) {
     const from = location.state?.from || '/';
     return <Navigate to={from} replace />;
   }

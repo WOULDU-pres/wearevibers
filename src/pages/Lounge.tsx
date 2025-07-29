@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, User, Calendar, PlusCircle, Search, TrendingUp, Clock, Filter } from "lucide-react";
-import { usePosts, useVibePost, useIsPostVibed } from "@/hooks/usePosts";
+import { Heart, MessageCircle, User, Calendar, PlusCircle, Search, TrendingUp, Clock, Filter, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { usePosts, useVibePost, useIsPostVibed, useUpdatePost, useDeletePost } from "@/hooks/usePosts";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
 import { useUIStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
+import { PostEditDialog } from "@/components/PostEditDialog";
+import { PostDeleteDialog } from "@/components/PostDeleteDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const loungeCategories = [
   { 
@@ -70,6 +73,11 @@ const Lounge = () => {
     setSearchQuery 
   } = useUIStore();
 
+  // Dialog states
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<typeof posts[0] | null>(null);
+
   // Get current category value for API call
   const currentCategory = loungeCategories.find(cat => cat.id === activeCategory)?.value;
 
@@ -79,6 +87,10 @@ const Lounge = () => {
     search: searchQuery || undefined,
     sortBy
   });
+
+  // Mutations
+  const updatePostMutation = useUpdatePost();
+  const deletePostMutation = useDeletePost();
 
   // Real-time updates
   useEffect(() => {
@@ -125,6 +137,19 @@ const Lounge = () => {
       return categoryData?.color || "bg-muted/50 text-muted-foreground";
     };
 
+    const handleEdit = () => {
+      setSelectedPost(post);
+      setEditDialogOpen(true);
+    };
+
+    const handleDelete = () => {
+      setSelectedPost(post);
+      setDeleteDialogOpen(true);
+    };
+
+    // Check if current user can edit/delete this post
+    const canModifyPost = user && post.user_id === user.id;
+
     return (
       <Card className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
         <CardHeader>
@@ -142,6 +167,32 @@ const Lounge = () => {
                 {post.title}
               </CardTitle>
             </div>
+            
+            {/* More actions menu */}
+            {canModifyPost && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-muted"
+                  >
+                    <span className="sr-only">메뉴 열기</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    <span>편집</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>삭제</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -227,12 +278,24 @@ const Lounge = () => {
         <p className="text-muted-foreground mb-6">
           첫 번째 게시글을 작성해서 커뮤니티를 시작해보세요!
         </p>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
+        <Button 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+          onClick={() => navigate('/lounge/create')}
+        >
           첫 게시글 작성하기
         </Button>
       </CardContent>
     </Card>
   );
+
+  // Handler functions
+  const handleSaveEdit = async (postId: string, updates: { title?: string; content?: string; category?: string }) => {
+    await updatePostMutation.mutateAsync({ postId, postData: updates });
+  };
+
+  const handleConfirmDelete = async (postId: string) => {
+    await deletePostMutation.mutateAsync(postId);
+  };
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -305,7 +368,10 @@ const Lounge = () => {
           {/* Quick Actions Sidebar */}
           <div className="lg:col-span-1">
             <div className="space-y-4">
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+                onClick={() => navigate('/lounge/create')}
+              >
                 <PlusCircle className="w-4 h-4 mr-2" />
                 새 글 작성하기
               </Button>
@@ -372,6 +438,34 @@ const Lounge = () => {
       </div>
       
       <Footer />
+
+      {/* Edit Dialog */}
+      {selectedPost && (
+        <PostEditDialog
+          isOpen={editDialogOpen}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+          onSave={handleSaveEdit}
+          isLoading={updatePostMutation.isPending}
+        />
+      )}
+
+      {/* Delete Dialog */}
+      {selectedPost && (
+        <PostDeleteDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+          onDelete={handleConfirmDelete}
+          isLoading={deletePostMutation.isPending}
+        />
+      )}
     </div>
   );
 };

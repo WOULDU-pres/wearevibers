@@ -5,9 +5,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommentSection } from "@/components/CommentSection";
-import { Heart, MessageCircle, Share2, User, Calendar, ArrowLeft } from "lucide-react";
+import { Heart, MessageCircle, Share2, User, Calendar, ArrowLeft, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { usePost, useIsPostVibed, useVibePost } from "@/hooks/usePosts";
+import { usePost, useIsPostVibed, useVibePost, useUpdatePost, useDeletePost } from "@/hooks/usePosts";
+import { useAuthStore } from "@/stores";
+import { PostEditDialog } from "@/components/PostEditDialog";
+import { PostDeleteDialog } from "@/components/PostDeleteDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -16,15 +21,42 @@ import { ko } from "date-fns/locale";
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
 
   const { data: post, isLoading: postLoading, error: postError } = usePost(id!);
   const { data: isPostVibed, isLoading: vibedLoading } = useIsPostVibed(id!);
   const vibePostMutation = useVibePost();
+  const updatePostMutation = useUpdatePost();
+  const deletePostMutation = useDeletePost();
+
+  // Dialog states
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleLike = () => {
     if (!id) return;
     vibePostMutation.mutate({ postId: id, isVibed: isPostVibed || false });
   };
+
+  const handleEdit = () => {
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSaveEdit = async (postId: string, updates: { title?: string; content?: string; category?: string }) => {
+    await updatePostMutation.mutateAsync({ postId, postData: updates });
+  };
+
+  const handleConfirmDelete = async (postId: string) => {
+    await deletePostMutation.mutateAsync(postId);
+    navigate('/lounge'); // Redirect to lounge after deletion
+  };
+
+  // Check if current user can edit/delete this post
+  const canModifyPost = user && post && post.user_id === user.id;
 
   if (postLoading) {
     return (
@@ -158,6 +190,32 @@ const PostDetail = () => {
                   <Share2 className="w-4 h-4" />
                   공유
                 </Button>
+                
+                {/* More actions menu */}
+                {canModifyPost && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-muted"
+                      >
+                        <span className="sr-only">메뉴 열기</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-32">
+                      <DropdownMenuItem onClick={handleEdit}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>편집</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>삭제</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -195,6 +253,28 @@ const PostDetail = () => {
       </div>
       
       <Footer />
+
+      {/* Edit Dialog */}
+      {post && (
+        <PostEditDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          post={post}
+          onSave={handleSaveEdit}
+          isLoading={updatePostMutation.isPending}
+        />
+      )}
+
+      {/* Delete Dialog */}
+      {post && (
+        <PostDeleteDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          post={post}
+          onDelete={handleConfirmDelete}
+          isLoading={deletePostMutation.isPending}
+        />
+      )}
     </div>
   );
 };

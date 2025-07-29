@@ -360,12 +360,13 @@ export const useAuthStore = create<AuthState>()(
       }
     ),
     {
-      name: "auth-store",
+      name: "wearevibers-auth-store",
       partialize: (state) => ({
         user: state.user,
         profile: state.profile,
         session: state.session,
         initialized: state.initialized,
+        loading: state.loading,
       }),
     }
   )

@@ -19,8 +19,10 @@ import NotFound from "./pages/NotFound";
 import TipDetail from "./pages/TipDetail";
 import PostDetail from "./pages/PostDetail";
 import CreateTip from "./pages/CreateTip";
+import CreatePost from "./pages/CreatePost";
 import MemberProfile from "./pages/MemberProfile";
 import Search from "./pages/Search";
+import ImageViewerDemo from "./pages/ImageViewerDemo";
 
 const App = () => (
   <AppErrorBoundary>
@@ -58,6 +60,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Lounge />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/lounge/create" 
+              element={
+                <ProtectedRoute>
+                  <CreatePost />
                 </ProtectedRoute>
               } 
             />
@@ -125,6 +135,9 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
+            {/* Demo routes */}
+            <Route path="/demo/image-viewer" element={<ImageViewerDemo />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

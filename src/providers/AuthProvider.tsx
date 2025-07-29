@@ -19,56 +19,88 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   } = useAuthStore();
 
   useEffect(() => {
-    if (!initialized) {
-      // 초기화 실행
-      initialize();
-    }
+    let isSubscribed = true;
+    let authSubscription: any = null;
 
-    // 세션 변경 감지
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        
-        // 세션 만료 또는 로그아웃 처리
-        if (event === 'SIGNED_OUT' || !session) {
-          console.log('Session expired or user signed out, cleaning up state');
-          
-          cleanup();
-          
-          // 로그인이 필요한 페이지에서 만료 시 홈으로 리다이렉트
-          const currentPath = window.location.pathname;
-          const publicPaths = ['/', '/login', '/signup'];
-          
-          if (!publicPaths.includes(currentPath)) {
-            console.log('Redirecting to home due to session expiry');
-            window.location.href = '/';
-          }
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed successfully');
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            await fetchProfile(session.user.id);
-          }
-        } else {
-          // 일반적인 세션 업데이트
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            await fetchProfile(session.user.id);
-          } else {
-            setProfile(null);
-          }
-        }
-        
-        setLoading(false);
+    const setupAuth = async () => {
+      // 초기화가 아직 안 된 경우에만 실행
+      if (!initialized) {
+        await initialize();
       }
-    );
 
-    return () => subscription.unsubscribe();
-  }, [initialized]);
+      // Auth 상태 변경 감지 설정 (구독이 아직 없는 경우에만)
+      if (isSubscribed && !authSubscription) {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (!isSubscribed) return; // 구독이 취소된 경우 무시
+            
+            console.log('Auth state changed:', event, session?.user?.email);
+            
+            // INITIAL_SESSION 처리 - OAuth 콜백 후 중요한 이벤트
+            if (event === 'INITIAL_SESSION') {
+              if (session) {
+                console.log('Initial session found, updating state');
+                setSession(session);
+                setUser(session.user);
+                
+                if (session.user) {
+                  await fetchProfile(session.user.id);
+                }
+              } else {
+                console.log('No initial session found');
+              }
+              return;
+            }
+            
+            // 실제 로그아웃 이벤트만 처리
+            if (event === 'SIGNED_OUT') {
+              console.log('User signed out, cleaning up state');
+              
+              cleanup();
+              
+              // 로그인이 필요한 페이지에서 로그아웃 시 홈으로 리다이렉트
+              const currentPath = window.location.pathname;
+              const publicPaths = ['/', '/login', '/signup', '/demo/image-viewer'];
+              
+              if (!publicPaths.includes(currentPath)) {
+                console.log('Redirecting to home due to sign out');
+                window.location.href = '/';
+              }
+            } else if (event === 'TOKEN_REFRESHED') {
+              console.log('Token refreshed successfully');
+              setSession(session);
+              setUser(session?.user ?? null);
+              
+              if (session?.user) {
+                await fetchProfile(session.user.id);
+              }
+            } else if (event === 'SIGNED_IN') {
+              // 로그인 시에만 상태 업데이트
+              console.log('User signed in, updating state');
+              setSession(session);
+              setUser(session?.user ?? null);
+              
+              if (session?.user) {
+                await fetchProfile(session.user.id);
+              }
+            }
+          }
+        );
+        
+        authSubscription = subscription;
+      }
+    };
+
+    setupAuth();
+
+    return () => {
+      isSubscribed = false;
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+        authSubscription = null;
+      }
+    };
+  }, []); // 빈 dependency 배열로 한 번만 실행
 
   return <>{children}</>;
-};
+};;
