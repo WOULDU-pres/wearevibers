@@ -42,7 +42,7 @@ export const useSupabaseChannel = (
     // Cleanup: 채널 해제
     return () => {
       if (channelRef.current) {
-        const { supabase } = require('@/lib/supabase');
+        const { supabase } = await import('@/lib/supabase');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }

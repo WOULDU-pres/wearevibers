@@ -101,8 +101,8 @@ class PerformanceMonitor {
   }
 
   private sendToSentry(metric: WebVitalsMetric) {
-    if (typeof window !== 'undefined' && (window as { Sentry?: { addBreadcrumb: Function; startTransaction: Function } }).Sentry) {
-      (window as { Sentry?: { addBreadcrumb: Function; startTransaction: Function } }).Sentry.addBreadcrumb({
+    if (typeof window !== 'undefined' && (window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; startTransaction: (transaction: unknown) => { finish: () => void } } }).Sentry) {
+      (window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; startTransaction: (transaction: unknown) => { finish: () => void } } }).Sentry.addBreadcrumb({
         message: `Web Vital: ${metric.name}`,
         level: 'info',
         data: {
@@ -113,7 +113,7 @@ class PerformanceMonitor {
       });
 
       // 성능 트랜잭션 생성
-      (window as { Sentry?: { addBreadcrumb: Function; startTransaction: Function } }).Sentry.startTransaction({
+      (window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; startTransaction: (transaction: unknown) => { finish: () => void } } }).Sentry.startTransaction({
         name: `Web Vital: ${metric.name}`,
         op: 'web-vital',
         data: metric,

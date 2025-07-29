@@ -172,7 +172,7 @@ const Members = () => {
     onFollowToggle 
   }: { 
     member: Profile; 
-    currentUser: Record<string, unknown>; 
+    currentUser: { id: string } | null; 
     onFollowToggle: (userId: string, isFollowing: boolean) => Promise<void>; 
   }) => {
     const { data: isFollowing } = useIsFollowing(member.id);

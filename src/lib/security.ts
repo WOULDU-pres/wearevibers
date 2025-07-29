@@ -306,8 +306,8 @@ export const logSecurityEvent = (event: {
     });
 
     // Sentry에 보안 이벤트 기록
-    if (typeof window !== 'undefined' && (window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry) {
-      (window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry.addBreadcrumb({
+    if (typeof window !== 'undefined' && (window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; captureException: (error: Error, options?: unknown) => void } }).Sentry) {
+      (window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; captureException: (error: Error, options?: unknown) => void } }).Sentry.addBreadcrumb({
         message: `Security Event: ${event.type}`,
         level: 'info',
         category: 'security',
@@ -332,8 +332,8 @@ export const setupCSPReporting = () => {
     });
 
     // Sentry에 CSP 위반 리포트
-    if ((window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry) {
-      (window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry.captureException(new Error('CSP Violation'), {
+    if ((window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; captureException: (error: Error, options?: unknown) => void } }).Sentry) {
+      (window as { Sentry?: { addBreadcrumb: (breadcrumb: unknown) => void; captureException: (error: Error, options?: unknown) => void } }).Sentry.captureException(new Error('CSP Violation'), {
         extra: {
           violatedDirective: event.violatedDirective,
           blockedURI: event.blockedURI,
