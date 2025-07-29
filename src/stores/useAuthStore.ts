@@ -317,8 +317,13 @@ export const useAuthStore = create<AuthState>()(
         },
 
         signInWithOAuth: async (provider: "google") => {
-          const redirectUrl =
-            import.meta.env.VITE_SITE_URL || window.location.origin;
+          // 개발환경에서는 현재 origin을 사용, 프로덕션에서는 VITE_SITE_URL 사용
+          const isDev = import.meta.env.DEV;
+          const redirectUrl = isDev 
+            ? window.location.origin 
+            : (import.meta.env.VITE_SITE_URL || window.location.origin);
+
+          console.log('OAuth redirect URL:', redirectUrl);
 
           const { error } = await supabase.auth.signInWithOAuth({
             provider,

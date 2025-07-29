@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { supabase } from '@/lib/supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     let isSubscribed = true;
-    let authSubscription: any = null;
+    let authSubscription: RealtimeChannel | null = null;
 
     const setupAuth = async () => {
       // 초기화가 아직 안 된 경우에만 실행
