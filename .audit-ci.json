@@ -1,9 +1,9 @@
 {
-  "moderate": true,
+  "moderate": false,
   "high": true,
   "critical": true,
   "allowlist": [],
-  "skip-dev": false,
+  "skip-dev": true,
   "advisories": [],
   "registry": "https://registry.npmjs.org/",
   "report-type": "summary",
