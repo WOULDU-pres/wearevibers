@@ -4,11 +4,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+interface WebVital {
+  name: string;
+  value: number;
+  timestamp: number;
+  unit?: string;
+}
+
+interface LoadTime {
+  page: string;
+  duration: number;
+  timestamp: number;
+}
+
+interface ApiCall {
+  url: string;
+  method: string;
+  duration: number;
+  status: number;
+  timestamp: number;
+  name?: string;
+  value?: number;
+  unit?: string;
+  additional?: {
+    apiName?: string;
+  };
+}
+
+interface ComponentMetric {
+  name: string;
+  renderTime: number;
+  timestamp: number;
+  value?: number;
+  unit?: string;
+  additional?: {
+    componentName?: string;
+  };
+}
+
 interface PerformanceData {
-  webVitals: any[];
-  loadTimes: any[];
-  apiCalls: any[];
-  components: any[];
+  webVitals: WebVital[];
+  loadTimes: LoadTime[];
+  apiCalls: ApiCall[];
+  components: ComponentMetric[];
   summary: Record<string, number>;
 }
 

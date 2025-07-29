@@ -206,7 +206,7 @@ export const validateInput = (input: string): boolean => {
   // 기본적인 SQL 인젝션 패턴 검출
   const sqlPatterns = [
     /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT)\b)/i,
-    /['";\-\-]/,
+    /['";--]/,
     /\/\*.*\*\//,
     /<script/i,
     /javascript:/i,
@@ -306,8 +306,8 @@ export const logSecurityEvent = (event: {
     });
 
     // Sentry에 보안 이벤트 기록
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      (window as any).Sentry.addBreadcrumb({
+    if (typeof window !== 'undefined' && (window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry) {
+      (window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry.addBreadcrumb({
         message: `Security Event: ${event.type}`,
         level: 'info',
         category: 'security',
@@ -332,8 +332,8 @@ export const setupCSPReporting = () => {
     });
 
     // Sentry에 CSP 위반 리포트
-    if ((window as any).Sentry) {
-      (window as any).Sentry.captureException(new Error('CSP Violation'), {
+    if ((window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry) {
+      (window as { Sentry?: { addBreadcrumb: Function; captureException: Function } }).Sentry.captureException(new Error('CSP Violation'), {
         extra: {
           violatedDirective: event.violatedDirective,
           blockedURI: event.blockedURI,

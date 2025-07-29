@@ -65,7 +65,7 @@ const Members = () => {
 
   useEffect(() => {
     fetchMembers();
-  }, [sortBy, filterBy]);
+  }, [sortBy, filterBy, fetchMembers]);
 
   const fetchMembers = async () => {
     try {
@@ -172,7 +172,7 @@ const Members = () => {
     onFollowToggle 
   }: { 
     member: Profile; 
-    currentUser: any; 
+    currentUser: Record<string, unknown>; 
     onFollowToggle: (userId: string, isFollowing: boolean) => Promise<void>; 
   }) => {
     const { data: isFollowing } = useIsFollowing(member.id);

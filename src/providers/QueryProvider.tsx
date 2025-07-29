@@ -61,7 +61,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
       refetchOnMount: true,
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error: unknown) => {
         if (error?.code === 'PGRST301' || error?.status === 401) {
           return false;
         }

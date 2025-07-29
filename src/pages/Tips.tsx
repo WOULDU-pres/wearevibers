@@ -32,7 +32,7 @@ const Tips = () => {
     sortBy 
   });
 
-  const TipCard = ({ tip }: { tip: any }) => {
+  const TipCard = ({ tip }: { tip: Record<string, unknown> }) => {
     const { data: isTipVibed } = useIsTipVibed(tip.id);
     const { data: isTipBookmarked } = useIsTipBookmarked(tip.id);
     const vibeTipMutation = useVibeTip();

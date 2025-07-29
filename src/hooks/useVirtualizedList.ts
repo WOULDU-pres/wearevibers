@@ -4,13 +4,13 @@ interface VirtualizedListOptions {
   itemHeight: number;
   containerHeight: number;
   overscan?: number;
-  items: any[];
+  items: unknown[];
 }
 
 interface VirtualizedListReturn {
   visibleItems: Array<{
     index: number;
-    item: any;
+    item: unknown;
     style: React.CSSProperties;
   }>;
   totalHeight: number;
@@ -92,7 +92,7 @@ export const useVirtualizedList = ({
  * 아이템 높이가 다른 경우에 사용
  */
 export const useAdaptiveVirtualizedList = (
-  items: any[],
+  items: unknown[],
   estimatedItemHeight: number = 50,
   containerHeight: number,
   overscan: number = 5

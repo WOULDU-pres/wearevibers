@@ -8,7 +8,7 @@ interface PerformanceMetric {
   value: number;
   unit: string;
   timestamp: number;
-  additional?: Record<string, any>;
+  additional?: Record<string, unknown>;
 }
 
 interface WebVitalsMetric {
@@ -101,8 +101,8 @@ class PerformanceMonitor {
   }
 
   private sendToSentry(metric: WebVitalsMetric) {
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      (window as any).Sentry.addBreadcrumb({
+    if (typeof window !== 'undefined' && (window as { Sentry?: { addBreadcrumb: Function; startTransaction: Function } }).Sentry) {
+      (window as { Sentry?: { addBreadcrumb: Function; startTransaction: Function } }).Sentry.addBreadcrumb({
         message: `Web Vital: ${metric.name}`,
         level: 'info',
         data: {
@@ -113,7 +113,7 @@ class PerformanceMonitor {
       });
 
       // 성능 트랜잭션 생성
-      (window as any).Sentry.startTransaction({
+      (window as { Sentry?: { addBreadcrumb: Function; startTransaction: Function } }).Sentry.startTransaction({
         name: `Web Vital: ${metric.name}`,
         op: 'web-vital',
         data: metric,
@@ -191,7 +191,7 @@ class PerformanceMonitor {
   measureMemoryUsage() {
     if (!this.isEnabled || !('memory' in performance)) return;
 
-    const memory = (performance as any).memory;
+    const memory = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
     this.recordMetric({
       name: 'Memory Usage',
       value: memory.usedJSHeapSize / 1024 / 1024, // MB 단위
@@ -305,7 +305,7 @@ export const usePerformanceMonitor = (componentName: string) => {
     };
   }, [componentName]);
 
-  const measureApiCall = (apiName: string, promise: Promise<any>) => {
+  const measureApiCall = (apiName: string, promise: Promise<unknown>) => {
     const startTime = performance.now();
     
     return promise

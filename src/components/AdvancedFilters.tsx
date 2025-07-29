@@ -179,13 +179,13 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               {contentTypeOptions.map((type) => (
                 <Badge 
                   key={type.value}
-                  variant={filters.contentTypes.includes(type.value as any) ? "default" : "outline"}
+                  variant={filters.contentTypes.includes(type.value as 'projects' | 'tips' | 'users') ? "default" : "outline"}
                   className={`cursor-pointer transition-colors ${
-                    filters.contentTypes.includes(type.value as any)
+                    filters.contentTypes.includes(type.value as 'projects' | 'tips' | 'users')
                       ? "bg-primary text-primary-foreground" 
                       : "hover:bg-primary hover:text-primary-foreground"
                   }`}
-                  onClick={() => toggleContentType(type.value as any)}
+                  onClick={() => toggleContentType(type.value as 'projects' | 'tips' | 'users')}
                 >
                   {type.label}
                 </Badge>
@@ -200,7 +200,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <Label className="text-sm font-medium mb-2 block">정렬 기준</Label>
             <Select 
               value={filters.sortBy} 
-              onValueChange={(value: any) => updateFilters({ sortBy: value })}
+              onValueChange={(value: 'newest' | 'popular' | 'trending' | 'relevance') => updateFilters({ sortBy: value })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />

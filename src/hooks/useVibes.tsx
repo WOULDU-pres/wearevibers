@@ -334,7 +334,7 @@ export const useDebouncedToggleVibe = (delay: number = 300) => {
 };
 
 // Debounce 헬퍼 함수
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {

@@ -53,7 +53,7 @@ const TipForm: React.FC<TipFormProps> = ({ tip, onSuccess, onCancel }) => {
     defaultValues: {
       title: tip?.title || '',
       content: tip?.content || '',
-      category: tip?.category as any || 'productivity',
+      category: (tip?.category as 'productivity' | 'css-tricks' | 'git-flow' | 'ui-ux' | 'backend' | 'frontend' | 'mobile' | 'ai' | 'design') || 'productivity',
       difficulty_level: tip?.difficulty_level || 1,
       read_time: tip?.read_time || 5,
     },
@@ -71,7 +71,7 @@ const TipForm: React.FC<TipFormProps> = ({ tip, onSuccess, onCancel }) => {
       setEstimatedReadTime(readTime);
       setValue('read_time', readTime);
     }
-  }, [content, setValue]);
+  }, [content, setValue, setEstimatedReadTime]);
 
   const onSubmit = async (data: TipFormData) => {
     try {
@@ -156,7 +156,7 @@ const TipForm: React.FC<TipFormProps> = ({ tip, onSuccess, onCancel }) => {
                 <Label htmlFor="category">카테고리 *</Label>
                 <Select
                   value={watch('category')}
-                  onValueChange={(value) => setValue('category', value as any)}
+                  onValueChange={(value) => setValue('category', value as 'productivity' | 'css-tricks' | 'git-flow' | 'ui-ux' | 'backend' | 'frontend' | 'mobile' | 'ai' | 'design')}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="카테고리 선택" />

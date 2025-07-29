@@ -32,7 +32,7 @@ export const useRealtimeComments = ({
           table: 'comments',
           filter: `content_id=eq.${contentId}`,
         },
-        async (payload: RealtimePostgresChangesPayload<any>) => {
+        async (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           console.log('New comment:', payload);
           
           // 새 댓글의 프로필 정보를 가져오기
@@ -105,7 +105,7 @@ export const useRealtimeComments = ({
           table: 'comments',
           filter: `content_id=eq.${contentId}`,
         },
-        async (payload: RealtimePostgresChangesPayload<any>) => {
+        async (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           console.log('Updated comment:', payload);
 
           // 프로필 정보 포함하여 댓글 업데이트
@@ -163,7 +163,7 @@ export const useRealtimeComments = ({
           table: 'comments',
           filter: `content_id=eq.${contentId}`,
         },
-        (payload: RealtimePostgresChangesPayload<any>) => {
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           console.log('Deleted comment:', payload);
 
           const deletedCommentId = payload.old.id;
@@ -267,7 +267,7 @@ export const useRealtimeCommentVibes = (commentIds: string[], enabled = true) =>
           table: 'vibes',
           filter: `content_type=eq.comment`,
         },
-        (payload: RealtimePostgresChangesPayload<any>) => {
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           const contentId = payload.new?.content_id || payload.old?.content_id;
           
           if (commentIds.includes(contentId)) {
@@ -304,7 +304,7 @@ export const useRealtimeCommentAuthors = (userIds: string[], enabled = true) => 
           schema: 'public',
           table: 'profiles',
         },
-        (payload: RealtimePostgresChangesPayload<any>) => {
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (userIds.includes(payload.new.id) && 
               payload.old.is_online !== payload.new.is_online) {
             // 해당 사용자가 포함된 댓글 목록 무효화

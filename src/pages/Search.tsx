@@ -89,7 +89,7 @@ const Search = () => {
     };
   };
 
-  const ProjectCard = ({ project }: { project: any }) => (
+  const ProjectCard = ({ project }: { project: Record<string, unknown> }) => (
     <Card className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -139,7 +139,7 @@ const Search = () => {
     </Card>
   );
 
-  const TipCard = ({ tip }: { tip: any }) => (
+  const TipCard = ({ tip }: { tip: Record<string, unknown> }) => (
     <Card className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -189,7 +189,7 @@ const Search = () => {
     </Card>
   );
 
-  const UserCard = ({ user }: { user: any }) => (
+  const UserCard = ({ user }: { user: Record<string, unknown> }) => (
     <Card className="border-border/50 bg-card/50 backdrop-blur hover:shadow-lg transition-all duration-300">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
@@ -351,7 +351,7 @@ const Search = () => {
             </div>
 
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="w-full">
+            <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value)} className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="all">
                   전체 ({getTotalResults()})

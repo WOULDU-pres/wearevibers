@@ -18,7 +18,7 @@ export const queryConfig: DefaultOptions = {
     refetchOnMount: true,           // 컴포넌트 마운트 시 재요청
     
     // 재시도 설정
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Auth 에러는 재시도하지 않음
       if (error?.code === 'PGRST301' || error?.status === 401) {
         return false;
@@ -72,7 +72,7 @@ export const queryKeys = {
   projects: {
     all: ['projects'] as const,
     lists: () => [...queryKeys.projects.all, 'list'] as const,
-    list: (filters: Record<string, any>) => [...queryKeys.projects.lists(), filters] as const,
+    list: (filters: Record<string, unknown>) => [...queryKeys.projects.lists(), filters] as const,
     details: () => [...queryKeys.projects.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.projects.details(), id] as const,
     userProjects: (userId: string) => [...queryKeys.projects.all, 'user', userId] as const,
@@ -82,7 +82,7 @@ export const queryKeys = {
   tips: {
     all: ['tips'] as const,
     lists: () => [...queryKeys.tips.all, 'list'] as const,
-    list: (filters: Record<string, any>) => [...queryKeys.tips.lists(), filters] as const,
+    list: (filters: Record<string, unknown>) => [...queryKeys.tips.lists(), filters] as const,
     details: () => [...queryKeys.tips.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.tips.details(), id] as const,
     userTips: (userId: string) => [...queryKeys.tips.all, 'user', userId] as const,
@@ -92,7 +92,7 @@ export const queryKeys = {
   posts: {
     all: ['posts'] as const,
     lists: () => [...queryKeys.posts.all, 'list'] as const,
-    list: (filters: Record<string, any>) => [...queryKeys.posts.lists(), filters] as const,
+    list: (filters: Record<string, unknown>) => [...queryKeys.posts.lists(), filters] as const,
     details: () => [...queryKeys.posts.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.posts.details(), id] as const,
     userPosts: (userId: string) => [...queryKeys.posts.all, 'user', userId] as const,
@@ -112,7 +112,7 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     lists: () => [...queryKeys.users.all, 'list'] as const,
-    list: (filters: Record<string, any>) => [...queryKeys.users.lists(), filters] as const,
+    list: (filters: Record<string, unknown>) => [...queryKeys.users.lists(), filters] as const,
     details: () => [...queryKeys.users.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
     current: () => [...queryKeys.users.all, 'current'] as const,
@@ -121,7 +121,7 @@ export const queryKeys = {
   // 검색 관련
   search: {
     all: ['search'] as const,
-    global: (query: string, filters: Record<string, any>) => 
+    global: (query: string, filters: Record<string, unknown>) => 
       [...queryKeys.search.all, 'global', query, filters] as const,
     suggestions: (query: string) => [...queryKeys.search.all, 'suggestions', query] as const,
     history: () => [...queryKeys.search.all, 'history'] as const,

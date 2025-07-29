@@ -152,7 +152,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         case 'Enter':
           e.preventDefault();
           if (isContentValid) {
-            handleSubmit(e as any);
+            handleSubmit(e as React.FormEvent<HTMLFormElement>);
           }
           break;
         case 'b':

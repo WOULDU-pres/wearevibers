@@ -22,9 +22,9 @@ export const useCleanupEffect = (
  */
 export const useSupabaseChannel = (
   channelName: string,
-  subscriptionCallback: (channel: any) => void
+  subscriptionCallback: (channel: import('@supabase/supabase-js').RealtimeChannel) => void
 ) => {
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<import('@supabase/supabase-js').RealtimeChannel | null>(null);
 
   useEffect(() => {
     // 동적 import로 supabase 로드 (번들 크기 최적화)

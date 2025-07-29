@@ -102,7 +102,7 @@ export const SearchSnippet: React.FC<SearchSnippetProps> = ({
 
 // Hook for generating search result ranking score
 export const useSearchRanking = () => {
-  const calculateScore = (item: any, searchTerm: string, type: 'project' | 'tip' | 'user') => {
+  const calculateScore = (item: Record<string, any>, searchTerm: string, type: 'project' | 'tip' | 'user') => {
     if (!searchTerm.trim()) return 0;
 
     const term = searchTerm.toLowerCase();
@@ -136,7 +136,7 @@ export const useSearchRanking = () => {
     return score;
   };
 
-  const rankResults = <T extends any>(results: T[], searchTerm: string, type: 'project' | 'tip' | 'user'): T[] => {
+  const rankResults = <T extends Record<string, any>>(results: T[], searchTerm: string, type: 'project' | 'tip' | 'user'): T[] => {
     return results
       .map(item => ({
         ...item,

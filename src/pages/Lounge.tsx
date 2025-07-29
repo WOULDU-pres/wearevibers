@@ -260,7 +260,7 @@ const Lounge = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <Select value={sortBy} onValueChange={(value: string) => setSortBy(value)}>
               <SelectTrigger className="md:w-[180px]">
                 <SelectValue placeholder="정렬 기준" />
               </SelectTrigger>

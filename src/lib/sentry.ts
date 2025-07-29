@@ -109,12 +109,12 @@ export function setSentryTag(key: string, value: string) {
 }
 
 // 커스텀 컨텍스트 설정
-export function setSentryContext(key: string, context: Record<string, any>) {
+export function setSentryContext(key: string, context: Record<string, unknown>) {
   Sentry.setContext(key, context);
 }
 
 // 수동 에러 보고
-export function captureError(error: Error, context?: Record<string, any>) {
+export function captureError(error: Error, context?: Record<string, unknown>) {
   if (context) {
     Sentry.withScope((scope) => {
       Object.entries(context).forEach(([key, value]) => {
@@ -131,7 +131,7 @@ export function captureError(error: Error, context?: Record<string, any>) {
 export function captureMessage(
   message: string, 
   level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ) {
   if (context) {
     Sentry.withScope((scope) => {
@@ -176,7 +176,7 @@ export function createQueryErrorHandler() {
 }
 
 // 성능 추적 유틸리티 (문서 권장사항)
-export function startSpan(operation: string, name: string, callback: (span?: any) => void | Promise<void>) {
+export function startSpan(operation: string, name: string, callback: (span?: unknown) => void | Promise<void>) {
   return Sentry.startSpan(
     {
       op: operation,
@@ -226,7 +226,7 @@ export class NetworkError extends Error {
 }
 
 // Supabase 에러 처리를 위한 유틸리티
-export function handleSupabaseError(error: any, context: Record<string, any> = {}) {
+export function handleSupabaseError(error: unknown, context: Record<string, unknown> = {}) {
   // Supabase 에러 정보 추출
   const supabaseContext = {
     ...context,

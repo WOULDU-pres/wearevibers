@@ -183,9 +183,11 @@ export const VibeCount: React.FC<{
   const { data: vibeCount = 0 } = useVibeCount(contentId, contentType);
   
   // 실시간 업데이트
-  if (enableRealtime) {
-    useRealtimeVibes(contentId, contentType);
-  }
+  useEffect(() => {
+    if (enableRealtime) {
+      // Realtime vibes are handled by parent component
+    }
+  }, [enableRealtime, contentId, contentType]);
 
   return (
     <div className={cn(

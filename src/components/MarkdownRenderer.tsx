@@ -12,7 +12,7 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
-const CodeBlock = ({ children, className, ...props }: any) => {
+const CodeBlock = ({ children, className, ...props }: { children: React.ReactNode; className?: string; [key: string]: unknown }) => {
   const { theme } = useTheme();
   const { copied, setCopied } = useUIStore();
   
