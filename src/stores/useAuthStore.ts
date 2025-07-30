@@ -274,21 +274,52 @@ export const useAuthStore = create<AuthState>()(
         },
 
         signOut: async () => {
+          console.log("🔄 SignOut function started, setting loading...");
           get().setLoading(true);
 
           try {
-            const { error } = await supabase.auth.signOut();
+            console.log("🌐 Calling supabase.auth.signOut()...");
+            
+            // Create a timeout promise for the signOut call (reduced to 2 seconds for better UX)
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => {
+                reject(new Error('RLS_TIMEOUT: SignOut timed out - likely RLS permission issue'));
+              }, 2000);
+            });
+
+            // Race between the signOut call and timeout
+            const signOutPromise = supabase.auth.signOut();
+            
+            let signOutResult;
+            try {
+              signOutResult = await Promise.race([signOutPromise, timeoutPromise]);
+            } catch (timeoutError) {
+              if (timeoutError.message?.includes('RLS_TIMEOUT')) {
+                console.warn("🚨 SignOut timed out - cleaning up local state anyway");
+                // Clean up local state even if API call timed out
+                get().cleanup();
+                get().setLoading(false);
+                addBreadcrumb("User signed out (timeout, local cleanup)", "auth", "info");
+                return { error: null };
+              }
+              throw timeoutError;
+            }
+
+            const { error } = signOutResult;
+            console.log("📊 SignOut API response:", { error });
 
             // Always cleanup local state regardless of API response
             // This handles cases where the token is expired and signOut API fails
+            console.log("🧹 Cleaning up local state...");
             get().cleanup();
 
             if (!error) {
+              console.log("✅ SignOut successful");
               addBreadcrumb("User signed out manually", "auth", "info");
             } else {
               // Log the error but don't prevent logout
               console.warn(
-                "SignOut API failed, but local state cleared:",
+                "⚠️ SignOut API failed, but local state cleared:",
                 error
               );
               captureError(new Error(`Sign out failed: ${error.message}`), {
@@ -298,19 +329,23 @@ export const useAuthStore = create<AuthState>()(
               });
             }
 
+            console.log("🏁 SignOut function completing, setting loading false");
             get().setLoading(false);
             // Always return success since we cleared local state
             return { error: null };
           } catch (error) {
             // Even if there's an exception, cleanup local state
+            console.warn("💥 SignOut exception occurred:", error);
+            console.log("🧹 Exception cleanup - clearing local state...");
             get().cleanup();
             get().setLoading(false);
 
-            console.warn("SignOut exception, but local state cleared:", error);
+            console.warn("⚠️ SignOut exception, but local state cleared:", error);
             captureError(error as Error, {
               authContext: "signOut_exception",
             });
 
+            console.log("🏁 SignOut function completing after exception");
             // Return success since we cleared local state
             return { error: null };
           }

@@ -12,17 +12,22 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
+    console.log("🚀 Logout button clicked - handleSignOut called");
     try {
+      console.log("🔄 Calling signOut function...");
       const { error } = await signOut();
+      console.log("📊 SignOut result:", { error });
 
       if (error) {
+        console.error("❌ SignOut failed:", error);
         toast.error("로그아웃에 실패했습니다.");
       } else {
+        console.log("✅ SignOut successful, navigating to home");
         toast.success("로그아웃되었습니다.");
         navigate("/");
       }
     } catch (err) {
-      console.error("Logout exception:", err);
+      console.error("💥 Logout exception:", err);
       toast.error("로그아웃 중 오류가 발생했습니다.");
     }
   };
