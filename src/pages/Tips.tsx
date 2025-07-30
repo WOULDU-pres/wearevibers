@@ -26,11 +26,14 @@ const Tips = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
 
-  const { data: tips, isLoading: loading } = useTips({ 
+  const { data: tips = [], isLoading: loading, error } = useTips({ 
     category: selectedCategory, 
     search: searchQuery,
     sortBy 
   });
+
+  // Debug logging
+  console.log('Tips query state:', { tips, loading, error });
 
   const TipCard = ({ tip }: { tip: Record<string, unknown> }) => {
     const { data: isTipVibed } = useIsTipVibed(tip.id);
@@ -266,6 +269,18 @@ const Tips = () => {
           <div className="lg:col-span-3">
             {loading ? (
               <TipsSkeleton />
+            ) : error ? (
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardContent className="p-12 text-center">
+                  <h3 className="text-xl font-semibold mb-2">데이터를 불러올 수 없습니다</h3>
+                  <p className="text-muted-foreground mb-6">
+                    네트워크 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.
+                  </p>
+                  <Button onClick={() => window.location.reload()}>
+                    새로고침
+                  </Button>
+                </CardContent>
+              </Card>
             ) : tips.length === 0 ? (
               <EmptyState />
             ) : (

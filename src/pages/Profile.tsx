@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/stores";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/supabase-types";
@@ -49,32 +49,90 @@ const Profile = () => {
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Profile>>({});
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      console.log('🔍 Starting Profile query for user:', user.id);
+      
+      // Create a Promise that will timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('RLS_TIMEOUT: Profile query timed out - likely RLS permission issue'));
+        }, 5000);
+      });
+
+      // First, try a very simple query to test RLS with timeout
+      console.log('🧪 Testing basic profile table access...');
+      
+      const testQueryPromise = supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('id', user.id)
+        .limit(1);
+      
+      // Race between the query and timeout
+      const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
+      
+      console.log('🧪 Basic profile query result:', testQuery);
+      
+      if (testQuery.error) {
+        console.error('❌ Basic profile query failed:', testQuery.error);
+        throw testQuery.error;
+      }
+      
+      // If basic query works, proceed with full query
+      console.log('✅ Basic query successful, proceeding with full profile query...');
+      
+      const fullQueryPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      console.log('🔍 Executing full profile query...');
+      const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+      
+      console.log('📊 Full profile query result:', { data, error });
+
+      if (error) {
+        console.error('❌ Error fetching profile:', error);
+        
+        // If it's a timeout error, show error message but don't set profile
+        if (error.message?.includes('RLS_TIMEOUT')) {
+          console.warn('🚨 RLS timeout detected - profile data unavailable');
+          toast.error('프로필 데이터를 불러올 수 없습니다. RLS 권한 문제가 있을 수 있습니다.');
+          return;
+        }
+        
+        throw error;
+      }
+      
+      console.log('✅ Profile query successful, setting data');
       setProfile(data);
       setFormData(data);
     } catch (error) {
+      console.error('💥 Profile query failed:', error);
+      
+      // If it's a timeout error, show appropriate message
+      if (error.message?.includes('RLS_TIMEOUT')) {
+        console.warn('🚨 RLS timeout detected - profile data unavailable');
+        toast.error('프로필 데이터를 불러올 수 없습니다. RLS 권한 문제가 있을 수 있습니다.');
+        return;
+      }
+      
       console.error('Error fetching profile:', error);
       toast.error('프로필을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
 
   const handleSave = async () => {
     if (!user || !profile) return;

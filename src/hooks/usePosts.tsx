@@ -15,62 +15,118 @@ export const usePosts = (filters: PostFilters = {}) => {
   return useQuery({
     queryKey: ['posts', filters],
     queryFn: async () => {
-      let query = supabase
-        .from('posts')
-        .select(`
-          *,
-          profiles!inner(
-            id,
-            username,
-            full_name,
-            avatar_url
-          )
-        `);
+      console.log('🔍 Starting Posts query with filters:', filters);
+      
+      // Create a Promise that will timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('RLS_TIMEOUT: Posts query timed out - likely RLS permission issue'));
+        }, 5000);
+      });
 
-      // Apply filters
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
-
-      if (filters.search) {
-        query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
-      }
-
-      // Apply sorting
-      switch (filters.sortBy) {
-        case 'popular':
-          query = query.order('vibe_count', { ascending: false });
-          break;
-        case 'comments':
-          query = query.order('comment_count', { ascending: false });
-          break;
-        default:
-          query = query.order('created_at', { ascending: false });
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching posts:', error);
+      try {
+        // First, try a very simple query to test RLS with timeout
+        console.log('🧪 Testing basic posts table access...');
         
-        if (isAuthError(error)) {
-          await handleAuthError(error);
-          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        const testQueryPromise = supabase
+          .from('posts')
+          .select('id, title')
+          .limit(1);
+        
+        // Race between the query and timeout
+        const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
+        
+        console.log('🧪 Basic posts query result:', testQuery);
+        
+        if (testQuery.error) {
+          console.error('❌ Basic posts query failed:', testQuery.error);
+          throw testQuery.error;
+        }
+        
+        // If basic query works, proceed with full query
+        console.log('✅ Basic query successful, proceeding with full query...');
+        
+        let query = supabase
+          .from('posts')
+          .select(`
+            *,
+            profiles(
+              id,
+              username,
+              full_name,
+              avatar_url
+            )
+          `);
+
+        // Apply filters
+        if (filters.category) {
+          query = query.eq('category', filters.category);
+        }
+
+        if (filters.search) {
+          query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
+        }
+
+        // Apply sorting
+        switch (filters.sortBy) {
+          case 'popular':
+            query = query.order('vibe_count', { ascending: false });
+            break;
+          case 'comments':
+            query = query.order('comment_count', { ascending: false });
+            break;
+          default:
+            query = query.order('created_at', { ascending: false });
+        }
+
+        console.log('🔍 Executing full posts query...');
+        const fullQueryPromise = query;
+        const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+        
+        console.log('📊 Full posts query result:', { data, error, count: data?.length });
+
+        if (error) {
+          console.error('❌ Error fetching posts:', error);
+          
+          if (isAuthError(error)) {
+            await handleAuthError(error);
+            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+          }
+          
+          throw error;
+        }
+
+        console.log('✅ Posts query successful, returning data');
+        return data as (Post & {
+          profiles: {
+            id: string;
+            username: string;
+            full_name: string | null;
+            avatar_url: string | null;
+          };
+        })[];
+      } catch (error) {
+        console.error('💥 Posts query failed:', error);
+        
+        // If it's a timeout error, return empty array to show EmptyState
+        if (error.message?.includes('RLS_TIMEOUT')) {
+          console.warn('🚨 RLS timeout detected - showing empty state instead of hanging forever');
+          return [];
         }
         
         throw error;
       }
-
-      return data as (Post & {
-        profiles: {
-          id: string;
-          username: string;
-          full_name: string | null;
-          avatar_url: string | null;
-        };
-      })[];
     },
-    retry: authAwareRetry,
+    retry: (failureCount, error) => {
+      console.log('🔄 Posts retry attempt:', failureCount, 'Error:', error);
+      
+      // Don't retry RLS timeout errors
+      if (error?.message?.includes('RLS_TIMEOUT')) {
+        return false;
+      }
+      
+      return authAwareRetry(failureCount, error);
+    },
   });
 };
 

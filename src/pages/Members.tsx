@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -63,13 +63,39 @@ const Members = () => {
   const { data: onlineCount } = useOnlineUsersCount();
   const toggleFollow = useToggleFollow();
 
-  useEffect(() => {
-    fetchMembers();
-  }, [sortBy, filterBy, fetchMembers]);
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🔍 Starting Members query with filters:', { sortBy, filterBy });
+      
+      // Create a Promise that will timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('RLS_TIMEOUT: Members query timed out - likely RLS permission issue'));
+        }, 5000);
+      });
+
+      // First, try a very simple query to test RLS with timeout
+      console.log('🧪 Testing basic profiles table access...');
+      
+      const testQueryPromise = supabase
+        .from('profiles')
+        .select('id, username')
+        .limit(1);
+      
+      // Race between the query and timeout
+      const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
+      
+      console.log('🧪 Basic profiles query result:', testQuery);
+      
+      if (testQuery.error) {
+        console.error('❌ Basic profiles query failed:', testQuery.error);
+        throw testQuery.error;
+      }
+      
+      // If basic query works, proceed with full query
+      console.log('✅ Basic query successful, proceeding with full query...');
+      
       let query = supabase
         .from('profiles')
         .select('*');
@@ -105,20 +131,46 @@ const Members = () => {
 
       query = query.limit(50);
 
-      const { data, error } = await query;
+      console.log('🔍 Executing full members query...');
+      const fullQueryPromise = query;
+      const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+      
+      console.log('📊 Full members query result:', { data, error, count: data?.length });
 
       if (error) {
-        console.error('Error fetching members:', error);
-        return;
+        console.error('❌ Error fetching members:', error);
+        
+        // If it's a timeout error, set empty array to show EmptyState
+        if (error.message?.includes('RLS_TIMEOUT')) {
+          console.warn('🚨 RLS timeout detected - showing empty state instead of hanging forever');
+          setMembers([]);
+          return;
+        }
+        
+        throw error;
       }
 
+      console.log('✅ Members query successful, setting data');
       setMembers(data || []);
     } catch (error) {
+      console.error('💥 Members query failed:', error);
+      
+      // If it's a timeout error, set empty array to show EmptyState
+      if (error.message?.includes('RLS_TIMEOUT')) {
+        console.warn('🚨 RLS timeout detected - showing empty state instead of hanging forever');
+        setMembers([]);
+        return;
+      }
+      
       console.error('Error in fetchMembers:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortBy, filterBy, user]);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
   // 필터링된 멤버 목록
   const filteredMembers = useMemo(() => {

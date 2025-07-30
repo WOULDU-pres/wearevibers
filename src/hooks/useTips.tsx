@@ -16,67 +16,129 @@ export const useTips = (filters: TipFilters = {}) => {
   return useQuery({
     queryKey: ['tips', filters],
     queryFn: async () => {
-      let query = supabase
-        .from('tips')
-        .select(`
-          *,
-          profiles!inner(
-            id,
-            username,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('status', 'published');
-
-      // Apply filters
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
+      console.log('🔍 Starting Tips query with filters:', filters);
       
-      if (filters.difficulty) {
-        query = query.eq('difficulty_level', filters.difficulty);
-      }
+      // Create a Promise that will timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('RLS_TIMEOUT: Tips query timed out - likely RLS permission issue'));
+        }, 5000);
+      });
 
-      if (filters.search) {
-        query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
-      }
-
-      // Apply sorting
-      switch (filters.sortBy) {
-        case 'popular':
-          query = query.order('vibe_count', { ascending: false });
-          break;
-        case 'trending':
-          query = query.order('view_count', { ascending: false });
-          break;
-        default:
-          query = query.order('created_at', { ascending: false });
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching tips:', error);
+      try {
+        // First, try a very simple query to test RLS with timeout
+        console.log('🧪 Testing basic tips table access...');
         
-        if (isAuthError(error)) {
-          await handleAuthError(error);
-          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        const testQueryPromise = supabase
+          .from('tips')
+          .select('id, title')
+          .limit(1);
+        
+        // Race between the query and timeout
+        const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
+        
+        console.log('🧪 Basic tips query result:', testQuery);
+        
+        if (testQuery.error) {
+          console.error('❌ Basic tips query failed:', testQuery.error);
+          throw testQuery.error;
+        }
+        
+        // If basic query works, proceed with full query
+        console.log('✅ Basic query successful, proceeding with full query...');
+        
+        let query = supabase
+          .from('tips')
+          .select(`
+            *,
+            profiles(
+              id,
+              username,
+              full_name,
+              avatar_url
+            )
+          `)
+          .eq('status', 'published');
+
+        // Apply filters
+        if (filters.category) {
+          query = query.eq('category', filters.category);
+        }
+        
+        if (filters.difficulty) {
+          query = query.eq('difficulty_level', filters.difficulty);
+        }
+
+        if (filters.search) {
+          query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
+        }
+
+        // Apply sorting
+        switch (filters.sortBy) {
+          case 'popular':
+            query = query.order('vibe_count', { ascending: false });
+            break;
+          case 'trending':
+            query = query.order('view_count', { ascending: false });
+            break;
+          default:
+            query = query.order('created_at', { ascending: false });
+        }
+
+        console.log('🔍 Executing full query...');
+        const fullQueryPromise = query;
+        const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+        
+        console.log('📊 Full query result:', { data, error, count: data?.length });
+
+        if (error) {
+          console.error('❌ Error fetching tips:', error);
+          
+          if (isAuthError(error)) {
+            await handleAuthError(error);
+            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+          }
+          
+          throw error;
+        }
+
+        console.log('✅ Tips query successful, returning data');
+        return data as (Tip & {
+          profiles: {
+            id: string;
+            username: string;
+            full_name: string | null;
+            avatar_url: string | null;
+          };
+        })[];
+      } catch (error) {
+        console.error('💥 Tips query failed:', error);
+        
+        // If it's a timeout error, return empty array to show EmptyState
+        if (error.message?.includes('RLS_TIMEOUT')) {
+          console.warn('🚨 RLS timeout detected - showing empty state instead of hanging forever');
+          return [];
         }
         
         throw error;
       }
-
-      return data as (Tip & {
-        profiles: {
-          id: string;
-          username: string;
-          full_name: string | null;
-          avatar_url: string | null;
-        };
-      })[];
     },
-    retry: authAwareRetry,
+    retry: (failureCount, error) => {
+      console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
+      
+      // Don't retry RLS timeout errors
+      if (error?.message?.includes('RLS_TIMEOUT')) {
+        return false;
+      }
+      
+      // Don't retry timeout errors or auth errors
+      if (error?.message?.includes('시간이 초과') || isAuthError(error)) {
+        return false;
+      }
+      return authAwareRetry(failureCount, error);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
