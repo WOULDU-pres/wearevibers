@@ -137,7 +137,7 @@ export function EnhancedImageViewer({
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isOpen, currentIndex]);
+  }, [isOpen, onClose, goToPrevious, goToNext, zoomIn, zoomOut, rotate, resetZoom, toggleLens]);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % images.length);

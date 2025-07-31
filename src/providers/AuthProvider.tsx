@@ -101,7 +101,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         authSubscription = null;
       }
     };
-  }, []); // 빈 dependency 배열로 한 번만 실행
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // AuthProvider는 앱 시작 시 한 번만 실행되어야 함
 
   return <>{children}</>;
 };;

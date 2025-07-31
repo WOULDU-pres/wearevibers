@@ -60,7 +60,7 @@ const Search = () => {
     if (q && q !== query) {
       setQuery(q);
     }
-  }, [searchParams]);
+  }, [searchParams, query]);
 
   const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);

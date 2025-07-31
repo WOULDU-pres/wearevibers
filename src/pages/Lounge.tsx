@@ -17,6 +17,7 @@ import { useUIStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
 import { PostEditDialog } from "@/components/PostEditDialog";
 import { PostDeleteDialog } from "@/components/PostDeleteDialog";
+import type { Post } from "@/types/post";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const loungeCategories = [
@@ -78,7 +79,7 @@ const Lounge = () => {
   // Dialog states - moved before early return
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   // Get current category value for API call
   const currentCategory = loungeCategories.find(cat => cat.id === activeCategory)?.value;

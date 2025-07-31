@@ -320,12 +320,12 @@ export const useRealtimeVibes = (contentId: string, contentType: VibeContentType
 export const useDebouncedToggleVibe = (delay: number = 300) => {
   const toggleVibe = useToggleVibe();
   
-  const debouncedToggle = useCallback(
-    debounce((params: VibeToggleParams) => {
-      toggleVibe.mutate(params);
-    }, delay),
-    [toggleVibe, delay]
-  );
+  const debouncedToggle = useCallback((params: VibeToggleParams) => {
+    const debouncedFn = debounce((p: VibeToggleParams) => {
+      toggleVibe.mutate(p);
+    }, delay);
+    debouncedFn(params);
+  }, [toggleVibe, delay]);
 
   return {
     ...toggleVibe,

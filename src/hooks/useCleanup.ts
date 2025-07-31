@@ -14,7 +14,8 @@ export const useCleanupEffect = (
   useEffect(() => {
     const cleanup = effect();
     return cleanup;
-  }, deps);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps); // deps는 호출자가 제공하는 dependency array
 };
 
 /**
@@ -42,12 +43,13 @@ export const useSupabaseChannel = (
     // Cleanup: 채널 해제
     return () => {
       if (channelRef.current) {
-        const { supabase } = await import('@/lib/supabase');
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+        import('@/lib/supabase').then(({ supabase }) => {
+          supabase.removeChannel(channelRef.current!);
+          channelRef.current = null;
+        });
       }
     };
-  }, [channelName]);
+  }, [channelName, subscriptionCallback]);
 
   return channelRef.current;
 };

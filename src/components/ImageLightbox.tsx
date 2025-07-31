@@ -96,7 +96,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isOpen, currentIndex]);
+  }, [isOpen, onClose, handlePrevious, handleNext, handleZoomIn, handleZoomOut, handleRotate, toggleFullscreen]);
 
   const handlePrevious = useCallback(() => {
     setCurrentIndex(prev => (prev > 0 ? prev - 1 : images.length - 1));
