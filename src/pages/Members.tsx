@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { AvatarWithOnlineStatus, OnlineCount } from "@/components/OnlineStatus";
 import { FollowButton } from "@/components/FollowButton";
 import { 
@@ -52,6 +53,7 @@ const FILTER_OPTIONS = {
 } as const;
 
 const Members = () => {
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const { user } = useAuthStore();
   const [members, setMembers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,9 +62,20 @@ const Members = () => {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterBy, setFilterBy] = useState<FilterOption>('all');
 
+  // Hooks moved before early return
   const { data: onlineCount } = useOnlineUsersCount();
   const toggleFollow = useToggleFollow();
 
+  // Loading timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // fetchMembers moved before early return to ensure consistent hook calls
   const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
@@ -196,6 +209,11 @@ const Members = () => {
 
     return filtered;
   }, [members, searchQuery, selectedTechTags]);
+
+  // Early return after all hooks are declared
+  if (isPageLoading) {
+    return <LoadingScreen message="멤버 로딩중..." />;
+  }
 
   const handleTechTagToggle = (tag: string) => {
     setSelectedTechTags(prev => 

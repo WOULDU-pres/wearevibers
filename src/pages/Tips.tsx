@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,16 +22,32 @@ const tipCategories = [
 ];
 
 const Tips = () => {
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
 
+  // Fetch tips data - moved before early return
   const { data: tips = [], isLoading: loading, error } = useTips({ 
     category: selectedCategory, 
     search: searchQuery,
     sortBy 
   });
+
+  // Loading timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Early return after all hooks are declared
+  if (isPageLoading) {
+    return <LoadingScreen message="팁 로딩중..." />;
+  }
 
   // Debug logging
   console.log('Tips query state:', { tips, loading, error });

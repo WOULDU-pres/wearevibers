@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,7 @@ const sortOptions = [
 ];
 
 const Lounge = () => {
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const { user } = useAuthStore();
   const { 
     activeCategory, 
@@ -73,26 +75,35 @@ const Lounge = () => {
     setSearchQuery 
   } = useUIStore();
 
-  // Dialog states
+  // Dialog states - moved before early return
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<typeof posts[0] | null>(null);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
 
   // Get current category value for API call
   const currentCategory = loungeCategories.find(cat => cat.id === activeCategory)?.value;
 
-  // Fetch posts with filters
+  // Fetch posts with filters - moved before early return
   const { data: posts, isLoading, error } = usePosts({
     category: currentCategory,
     search: searchQuery || undefined,
     sortBy
   });
 
-  // Mutations
+  // Mutations - moved before early return
   const updatePostMutation = useUpdatePost();
   const deletePostMutation = useDeletePost();
 
-  // Real-time updates
+  // Loading timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Real-time updates - moved before early return
   useEffect(() => {
     const channel = supabase
       .channel('posts-realtime')
@@ -114,6 +125,11 @@ const Lounge = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Early return after all hooks are declared
+  if (isPageLoading) {
+    return <LoadingScreen message="라운지 로딩중..." />;
+  }
 
   // Post Card Component with Vibe functionality
   const PostCard = ({ post }: { post: typeof posts[0] }) => {
