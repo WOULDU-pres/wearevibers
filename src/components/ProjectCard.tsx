@@ -16,9 +16,13 @@ interface ProjectCardProps {
   tags: string[];
   vibeEmoji: string;
   isVibed?: boolean;
+  githubUrl?: string;
+  demoUrl?: string;
+  commentCount?: number;
 }
 
 const ProjectCard = ({ 
+  id,
   title, 
   description, 
   image, 
@@ -26,7 +30,10 @@ const ProjectCard = ({
   vibes, 
   tags, 
   vibeEmoji,
-  isVibed = false 
+  isVibed = false,
+  githubUrl,
+  demoUrl,
+  commentCount = 0
 }: ProjectCardProps) => {
   return (
     <div className="group bg-card rounded-lg overflow-hidden shadow-soft hover:shadow-vibe transition-all duration-300 hover:-translate-y-1 border border-border/50">
@@ -41,12 +48,20 @@ const ProjectCard = ({
         
         {/* Quick Actions */}
         <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white">
-            <ExternalLink className="w-4 h-4" />
-          </Button>
-          <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white">
-            <Github className="w-4 h-4" />
-          </Button>
+          {demoUrl && (
+            <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white" asChild>
+              <a href={demoUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </Button>
+          )}
+          {githubUrl && (
+            <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white" asChild>
+              <a href={githubUrl} target="_blank" rel="noopener noreferrer">
+                <Github className="w-4 h-4" />
+              </a>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -110,7 +125,7 @@ const ProjectCard = ({
               className="flex items-center space-x-1 px-2 py-1 h-8 text-muted-foreground hover:text-primary transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">12</span>
+              <span className="text-sm">{commentCount}</span>
             </Button>
           </div>
           

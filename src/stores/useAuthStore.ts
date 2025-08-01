@@ -90,15 +90,51 @@ export const useAuthStore = create<AuthState>()(
 
         fetchProfile: async (userId: string) => {
           try {
-            const { data, error } = await supabase
+            console.log('🔍 AuthStore fetchProfile for user:', userId);
+            
+            // Create timeout promise (3 seconds for auth store)
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => {
+                reject(new Error('RLS_TIMEOUT: AuthStore profile query timed out - likely RLS permission issue'));
+              }, 3000);
+            });
+
+            // Execute query with timeout
+            const queryPromise = supabase
               .from("profiles")
               .select("*")
               .eq("id", userId)
               .single();
 
+            let queryResult;
+            try {
+              queryResult = await Promise.race([queryPromise, timeoutPromise]);
+            } catch (timeoutError) {
+              if (timeoutError.message?.includes('RLS_TIMEOUT')) {
+                console.warn('🚨 AuthStore profile query timed out - likely RLS permission issue');
+                console.warn('Warning: RLS timeout detected - profile data unavailable');
+                
+                // Set profile to null but don't crash the auth flow
+                get().setProfile(null);
+                return;
+              }
+              throw timeoutError;
+            }
+
+            const { data, error } = queryResult;
+            console.log('📊 AuthStore profile query result:', { data: !!data, error });
+
             if (error) {
+              // Handle RLS timeout in error response
+              if (error.message?.includes('timeout') || error.message?.includes('RLS_TIMEOUT')) {
+                console.warn('🚨 RLS timeout in error response - profile data unavailable');
+                get().setProfile(null);
+                return;
+              }
+              
               if (error.code === "PGRST116") {
                 // 프로필이 존재하지 않는 경우 (새 사용자)
+                console.log('ℹ️ Profile not found in AuthStore - new user');
                 get().setProfile(null);
                 return;
               }
@@ -122,17 +158,33 @@ export const useAuthStore = create<AuthState>()(
             }
 
             if (data) {
+              console.log('✅ AuthStore profile fetch successful');
               get().setProfile(data);
+            } else {
+              console.warn('⚠️ No profile data returned from AuthStore query');
+              get().setProfile(null);
             }
           } catch (error) {
-            console.error("Error in fetchProfile:", error);
+            console.error('💥 Error in fetchProfile:', error);
+
+            // Handle RLS timeout in catch block
+            if (error.message?.includes('RLS_TIMEOUT')) {
+              console.warn('🚨 RLS timeout in catch block - setting profile to null');
+              get().setProfile(null);
+              return;
+            }
 
             // 네트워크 에러나 기타 예외 시에도 세션 상태 확인
-            const {
-              data: { session },
-            } = await supabase.auth.getSession();
-            if (!session) {
-              console.log("No valid session found, cleaning up state");
+            try {
+              const {
+                data: { session },
+              } = await supabase.auth.getSession();
+              if (!session) {
+                console.log("No valid session found, cleaning up state");
+                get().cleanup();
+              }
+            } catch (sessionError) {
+              console.error('Error checking session:', sessionError);
               get().cleanup();
             }
           }

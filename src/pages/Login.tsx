@@ -19,7 +19,9 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const from = location.state?.from || '/';
+  // URL 파라미터에서 redirect 값을 가져오거나, state에서 from을 가져오거나, 기본값 '/'
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTo = searchParams.get('redirect') || location.state?.from || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,7 @@ const Login = () => {
         toast.error(error.message || '로그인에 실패했습니다.');
       } else {
         toast.success('로그인 성공!');
-        navigate(from, { replace: true });
+        navigate(redirectTo, { replace: true });
       }
     } catch (error) {
       toast.error('예상치 못한 오류가 발생했습니다.');

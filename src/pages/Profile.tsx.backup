@@ -3,7 +3,6 @@ import { useAuthStore } from "@/stores";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/supabase-types";
 import { useMyProjects } from "@/hooks/useProjects";
-import { safeGetProfile } from "@/lib/rlsHelper";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProjectCard from "@/components/ProjectCard";
@@ -54,97 +53,79 @@ const Profile = () => {
   const [formData, setFormData] = useState<Partial<Profile>>({});
 
   const fetchProfile = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    console.log('🔍 Starting Profile query for user:', user.id);
-    setLoading(true);
+    if (!user) return;
 
     try {
-      // 1. First check if we have a valid session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔍 Starting Profile query for user:', user.id);
       
-      if (sessionError) {
-        console.error('❌ Session error:', sessionError);
-        toast.error('인증 세션에 문제가 있습니다. 다시 로그인해주세요.');
-        return;
-      }
-
-      if (!session || !session.user) {
-        console.warn('⚠️ No valid session found');
-        toast.error('로그인이 필요합니다.');
-        return;
-      }
-
-      console.log('✅ Valid session found, proceeding with profile query');
-      
-      // 2. Create timeout promise (reduced to 3 seconds for better UX)
+      // Create a Promise that will timeout after 5 seconds
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
           reject(new Error('RLS_TIMEOUT: Profile query timed out - likely RLS permission issue'));
-        }, 3000);
+        }, 5000);
       });
 
-      // 3. Use safe profile fetcher with built-in RLS handling
-      console.log('🔍 Using safeGetProfile with built-in RLS protection...');
+      // First, try a very simple query to test RLS with timeout
+      console.log('🧪 Testing basic profile table access...');
       
-      const { data, error, isTimeout } = await safeGetProfile(user.id);
-      console.log('📊 SafeGetProfile result:', { data: !!data, error, isTimeout });
+      const testQueryPromise = supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('id', user.id)
+        .limit(1);
       
-      if (isTimeout) {
-        console.log('⏰ Profile query timed out - using fallback profile');
-        toast.warning('프로필 데이터 로드가 지연되어 기본 정보를 표시합니다.');
-        
-        if (data) {
-          setProfile(data);
-          setFormData(data);
-        }
-        return;
+      // Race between the query and timeout
+      const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
+      
+      console.log('🧪 Basic profile query result:', testQuery);
+      
+      if (testQuery.error) {
+        console.error('❌ Basic profile query failed:', testQuery.error);
+        throw testQuery.error;
       }
+      
+      // If basic query works, proceed with full query
+      console.log('✅ Basic query successful, proceeding with full profile query...');
+      
+      const fullQueryPromise = supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      console.log('🔍 Executing full profile query...');
+      const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+      
+      console.log('📊 Full profile query result:', { data, error });
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
         
-        // Handle specific error cases
-        if (error.code === 'PGRST116') {
-          console.log('ℹ️ Profile not found - this might be a new user');
-          toast.info('프로필을 찾을 수 없습니다. 프로필을 생성해주세요.');
-          return;
-        }
-        
-        if (error.message?.includes('JWT') || error.message?.includes('expired')) {
-          console.error('🔐 Authentication error - signing out');
-          await supabase.auth.signOut();
-          toast.error('인증이 만료되었습니다. 다시 로그인해주세요.');
+        // If it's a timeout error, show error message but don't set profile
+        if (error.message?.includes('RLS_TIMEOUT')) {
+          console.warn('🚨 RLS timeout detected - profile data unavailable');
+          toast.error('프로필 데이터를 불러올 수 없습니다. RLS 권한 문제가 있을 수 있습니다.');
           return;
         }
         
         throw error;
       }
       
-      if (data) {
-        console.log('✅ Profile query successful, setting data');
-        setProfile(data);
-        setFormData(data);
-      } else {
-        console.warn('⚠️ No profile data returned');
-        toast.warning('프로필 데이터가 없습니다.');
-      }
+      console.log('✅ Profile query successful, setting data');
+      setProfile(data);
+      setFormData(data);
     } catch (error) {
       console.error('💥 Profile query failed:', error);
       
-      // Handle different types of errors
+      // If it's a timeout error, show appropriate message
       if (error.message?.includes('RLS_TIMEOUT')) {
-        console.warn('🚨 RLS timeout in catch block');
-        toast.error('프로필 로드가 시간 초과되었습니다. 잠시 후 다시 시도해주세요.');
-      } else if (error.message?.includes('network')) {
-        toast.error('네트워크 연결을 확인해주세요.');
-      } else {
-        console.error('Unexpected error fetching profile:', error);
-        toast.error('프로필을 불러오는데 실패했습니다.');
+        console.warn('🚨 RLS timeout detected - profile data unavailable');
+        toast.error('프로필 데이터를 불러올 수 없습니다. RLS 권한 문제가 있을 수 있습니다.');
+        return;
       }
+      
+      console.error('Error fetching profile:', error);
+      toast.error('프로필을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -242,31 +223,7 @@ const Profile = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">프로필을 찾을 수 없습니다</h2>
-              <p className="text-muted-foreground mb-4">
-                데이터베이스 연결에 문제가 있거나 프로필이 아직 생성되지 않았을 수 있습니다.
-              </p>
-              <div className="space-y-2">
-                <Button 
-                  onClick={() => {
-                    setLoading(true);
-                    fetchProfile();
-                  }}
-                  className="mr-2"
-                >
-                  다시 시도
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => window.location.href = '/'}
-                >
-                  홈으로 돌아가기
-                </Button>
-              </div>
-            </div>
-          </div>
+          <div className="text-center py-8">프로필을 찾을 수 없습니다.</div>
         </div>
         <Footer />
       </div>
@@ -461,7 +418,7 @@ const Profile = () => {
                       demoUrl={project.demo_url || undefined}
                       commentCount={project.comment_count || 0}
                     />
-                  ))}
+                  ))
                 </div>
               ) : (
                 <MagicCard className="cursor-pointer flex-col items-center justify-center shadow-2xl border-border/50 bg-card/50 backdrop-blur" gradientColor="#9c40ff" gradientSize={250}>

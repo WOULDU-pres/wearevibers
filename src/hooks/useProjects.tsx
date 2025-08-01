@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores';
 import type { Project } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { safeGetUserProjects } from '@/lib/rlsHelper';
 
 export interface ProjectFilters {
   tech_stack?: string[];
@@ -173,30 +174,58 @@ export const useMyProjects = () => {
   return useQuery({
     queryKey: ['projects', 'my', user?.id],
     queryFn: async () => {
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching my projects:', error);
-        
-        // 인증 에러인 경우 처리
-        if (isAuthError(error)) {
-          await handleAuthError(error);
-          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
-        }
-        
-        throw error;
+      if (!user) {
+        console.warn('⚠️ useMyProjects: No user found');
+        throw new Error('User not authenticated');
       }
 
-      return data as Project[];
+      console.log('🔍 Starting MyProjects query for user:', user.id);
+
+      try {
+        // Use safe projects fetcher with built-in RLS handling
+        console.log('🔍 Using safeGetUserProjects with built-in RLS protection...');
+        
+        const { data, error, isTimeout } = await safeGetUserProjects(user.id);
+        console.log('📊 SafeGetUserProjects result:', { data: data?.length || 0, error, isTimeout });
+        
+        if (isTimeout) {
+          console.log('⏰ Projects query timed out - returning empty array for better UX');
+          return [];
+        }
+        
+        if (error) {
+          console.error('❌ Error fetching my projects:', error);
+          
+          // Handle authentication errors
+          if (isAuthError(error)) {
+            await handleAuthError(error);
+            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+          }
+          
+          throw error;
+        }
+
+        console.log('✅ MyProjects query successful:', data?.length || 0, 'projects found');
+        return (data || []) as Project[];
+        
+      } catch (error) {
+        console.error('💥 MyProjects query failed:', error);
+        
+        // If it's our RLS timeout, return empty array for better UX
+        if (error.message?.includes('RLS_TIMEOUT')) {
+          console.warn('🚨 RLS timeout in catch block - returning empty array');
+          return [];
+        }
+        
+        // Re-throw other errors
+        throw error;
+      }
     },
     enabled: !!user,
     retry: authAwareRetry,
+    // Add some additional options for better UX
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 10, // 10 minutes
   });
 };
 

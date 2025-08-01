@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import GlobalSearch from "@/components/GlobalSearch";
 import MobileMenu from "@/components/MobileMenu";
+import NotificationCenter from "@/components/NotificationCenter";
 import logoImg from "@/assets/logo.png";
 
 const Header = () => {
@@ -88,13 +89,13 @@ const Header = () => {
           {/* Actions */}
           <div className="flex items-center space-x-2">
             <GlobalSearch variant="mobile" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-muted hidden lg:block"
-            >
-              <Bell className="w-5 h-5" />
-            </Button>
+            
+            {/* Notification Center - 로그인한 사용자만 표시 */}
+            {user && (
+              <div className="hidden lg:block">
+                <NotificationCenter />
+              </div>
+            )}
 
             <Button
               variant="outline"

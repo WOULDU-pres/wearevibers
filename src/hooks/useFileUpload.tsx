@@ -97,6 +97,15 @@ export const useFileUpload = () => {
     });
   };
 
+  const uploadImage = async (file: File, folder: string = 'general'): Promise<string> => {
+    return uploadFile(file, {
+      bucket: 'projects',
+      folder: folder,
+      upsert: false,
+      contentType: file.type,
+    });
+  };
+
   const deleteFile = async (
     bucket: string,
     filePath: string
@@ -155,6 +164,7 @@ export const useFileUpload = () => {
     uploadFile,
     uploadProfileImage,
     uploadProjectImage,
+    uploadImage,
     deleteFile,
     getSignedUrl,
     uploading,

@@ -3,8 +3,23 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
 import { RetroGrid } from "@/components/magicui/retro-grid";
+import { useAuthStore } from "@/stores";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleShareProject = () => {
+    if (user) {
+      // 로그인된 사용자는 바로 프로젝트 생성 페이지로
+      navigate('/projects/create');
+    } else {
+      // 비로그인 사용자는 로그인 페이지로 (리다이렉트 파라미터 포함)
+      navigate('/login?redirect=/projects/create');
+    }
+  };
+
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-background">
       {/* RetroGrid Background */}
@@ -66,6 +81,7 @@ const Hero = () => {
           <Button
             size="lg"
             className="bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-300 shadow-vibe px-8 py-6 text-lg font-semibold text-primary-foreground"
+            onClick={handleShareProject}
           >
             <span>프로젝트 공유하기</span>
             <ArrowRight className="w-5 h-5 ml-2" />

@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, User, Calendar, PlusCircle, Search, TrendingUp, Clock, Filter, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { ReportButton } from "@/components/ReportButton";
 import { usePosts, useVibePost, useIsPostVibed, useUpdatePost, useDeletePost } from "@/hooks/usePosts";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores";
@@ -186,30 +187,40 @@ const Lounge = () => {
             </div>
             
             {/* More actions menu */}
-            {canModifyPost && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-muted"
-                  >
-                    <span className="sr-only">메뉴 열기</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-32">
-                  <DropdownMenuItem onClick={handleEdit}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>편집</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>삭제</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <div className="flex items-center gap-1">
+              {canModifyPost ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-muted"
+                    >
+                      <span className="sr-only">메뉴 열기</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-32">
+                    <DropdownMenuItem onClick={handleEdit}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      <span>편집</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>삭제</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                user && (
+                  <ReportButton
+                    contentId={post.id}
+                    contentType="post"
+                    className="h-8 w-8 p-0"
+                  />
+                )
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-4 text-sm text-muted-foreground">

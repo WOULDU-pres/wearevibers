@@ -6,16 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, MapPin, Calendar, GitBranch, Star, Users, ArrowLeft, Github, Globe, Mail } from "lucide-react";
+import { BlockButton } from "@/components/BlockButton";
+import { ReportButton } from "@/components/ReportButton";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProfile, useProfileStats, useIsFollowing, useFollowUser, useUserProjects, useUserPosts } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { useAuthStore } from "@/stores";
 
 
 const MemberProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
 
   const { data: profile, isLoading: profileLoading, error: profileError } = useProfile(id!);
   const { data: stats, isLoading: statsLoading } = useProfileStats(id!);
@@ -152,18 +156,37 @@ const MemberProfile = () => {
                   )}
                 </div>
                 
-                {!followingLoading && isFollowing !== undefined && (
-                  <Button 
-                    onClick={handleFollow}
-                    disabled={followMutation.isPending}
-                    className={`w-full lg:w-auto ${isFollowing 
-                      ? 'bg-muted hover:bg-muted/80 text-muted-foreground' 
-                      : 'bg-primary hover:bg-primary/90 text-primary-foreground border-0'
-                    }`}
-                  >
-                    {followMutation.isPending ? '처리 중...' : (isFollowing ? '팔로잉' : '팔로우')}
-                  </Button>
-                )}
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-2 w-full lg:w-auto">
+                  {!followingLoading && isFollowing !== undefined && (
+                    <Button 
+                      onClick={handleFollow}
+                      disabled={followMutation.isPending}
+                      className={`w-full lg:w-auto ${isFollowing 
+                        ? 'bg-muted hover:bg-muted/80 text-muted-foreground' 
+                        : 'bg-primary hover:bg-primary/90 text-primary-foreground border-0'
+                      }`}
+                    >
+                      {followMutation.isPending ? '처리 중...' : (isFollowing ? '팔로잉' : '팔로우')}
+                    </Button>
+                  )}
+                  
+                  {/* Security Actions - only for other users */}
+                  {user && user.id !== id && (
+                    <div className="flex gap-2 w-full lg:w-auto">
+                      <BlockButton
+                        userId={id!}
+                        username={profile.username}
+                        className="flex-1 lg:flex-none"
+                      />
+                      <ReportButton
+                        contentId={id!}
+                        contentType="profile"
+                        className="flex-1 lg:flex-none"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="flex-1">

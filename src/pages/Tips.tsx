@@ -8,11 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { SearchHighlight, SearchSnippet } from "@/components/SearchHighlight";
-import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers, PlusCircle } from "lucide-react";
+import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers, PlusCircle, MoreHorizontal } from "lucide-react";
+import { ReportButton } from "@/components/ReportButton";
 import { useTips, useIsTipVibed, useVibeTip, useIsTipBookmarked, useBookmarkTip } from "@/hooks/useTips";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { useAuthStore } from "@/stores";
 
 const tipCategories = [
   { name: "productivity", value: "productivity", icon: Layers },
@@ -27,6 +29,7 @@ const Tips = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
+  const { user } = useAuthStore();
 
   // Fetch tips data - moved before early return
   const { data: tips = [], isLoading: loading, error } = useTips({ 
@@ -93,6 +96,15 @@ const Tips = () => {
                 by {tip.profiles?.full_name || tip.profiles?.username || '익명'} · {formatDistanceToNow(new Date(tip.created_at!), { addSuffix: true, locale: ko })}
               </div>
             </div>
+            
+            {/* Report button for non-owners */}
+            {user && user.id !== tip.user_id && (
+              <ReportButton
+                contentId={tip.id as string}
+                contentType="tip"
+                className="h-8 w-8 p-0"
+              />
+            )}
           </div>
         </CardHeader>
         

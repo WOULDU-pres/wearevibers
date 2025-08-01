@@ -20,9 +20,12 @@ import TipDetail from "./pages/TipDetail";
 import PostDetail from "./pages/PostDetail";
 import CreateTip from "./pages/CreateTip";
 import CreatePost from "./pages/CreatePost";
+import CreateProject from "./pages/CreateProject";
 import MemberProfile from "./pages/MemberProfile";
 import Search from "./pages/Search";
 import ImageViewerDemo from "./pages/ImageViewerDemo";
+import Notifications from "./pages/Notifications";
+import AdminReports from "./pages/AdminReports";
 
 const App = () => (
   <AppErrorBoundary>
@@ -68,6 +71,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CreatePost />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/projects/create" 
+              element={
+                <ProtectedRoute>
+                  <CreateProject />
                 </ProtectedRoute>
               } 
             />
@@ -132,6 +143,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Search />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/notifications" 
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/reports" 
+              element={
+                <ProtectedRoute>
+                  <AdminReports />
                 </ProtectedRoute>
               } 
             />
