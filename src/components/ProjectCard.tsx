@@ -2,6 +2,10 @@ import { Heart, ExternalLink, Github, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ShareButton from "@/components/ui/share-button";
+import ShareModal from "@/components/ui/share-modal";
+import { useShareProject } from "@/hooks/useShareProject";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectCardProps {
   id: string;
@@ -35,6 +39,19 @@ const ProjectCard = ({
   demoUrl,
   commentCount = 0
 }: ProjectCardProps) => {
+  const navigate = useNavigate();
+  const {
+    isShareModalOpen,
+    shareUrl,
+    openShareModal,
+    closeShareModal,
+    handleCopyLink,
+    handleDirectLink,
+  } = useShareProject({ projectId: id, projectTitle: title });
+
+  const handleViewDetails = () => {
+    navigate(`/projects/${id}`);
+  };
   return (
     <div className="group bg-card rounded-lg overflow-hidden shadow-soft hover:shadow-vibe transition-all duration-300 hover:-translate-y-1 border border-border/50">
       {/* Project Image */}
@@ -78,7 +95,10 @@ const ProjectCard = ({
         </div>
 
         {/* Title & Description */}
-        <h3 className="font-semibold text-card-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">
+        <h3 
+          className="font-semibold text-card-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors cursor-pointer"
+          onClick={handleViewDetails}
+        >
           {title}
         </h3>
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -127,17 +147,31 @@ const ProjectCard = ({
               <MessageCircle className="w-4 h-4" />
               <span className="text-sm">{commentCount}</span>
             </Button>
+            
+            <ShareButton onShare={openShareModal} />
           </div>
           
           <Button 
             variant="ghost" 
             size="sm"
+            onClick={handleViewDetails}
             className="text-xs text-muted-foreground hover:text-primary transition-colors"
           >
             View Details
           </Button>
         </div>
       </div>
+      
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={closeShareModal}
+        projectId={id}
+        projectTitle={title}
+        shareUrl={shareUrl}
+        onCopyLink={handleCopyLink}
+        onDirectLink={handleDirectLink}
+      />
     </div>
   );
 };

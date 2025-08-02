@@ -153,11 +153,11 @@ export default function GlobalSearch({
 
   const getResultTypeLabel = (type: SearchResult['type']) => {
     switch (type) {
-      case 'project': return 'Project';
-      case 'tip': return 'Tip';
-      case 'user': return 'User';
-      case 'post': return 'Post';
-      default: return 'Content';
+      case 'project': return '프로젝트';
+      case 'tip': return '팁';
+      case 'user': return '사용자';
+      case 'post': return '게시글';
+      default: return '콘텐츠';
     }
   };
 

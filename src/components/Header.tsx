@@ -55,25 +55,25 @@ const Header = () => {
               to="/"
               className="text-foreground hover:text-primary transition-colors font-medium"
             >
-              Showcase
+              홈
             </Link>
             <Link
               to="/lounge"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              Lounge
+              라운지
             </Link>
             <Link
               to="/tips"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              Tips
+              팁
             </Link>
             <Link
               to="/members"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              Members
+              멤버
             </Link>
           </nav>
 
@@ -81,7 +81,7 @@ const Header = () => {
           <div className="flex-1 max-w-md mx-8 hidden lg:block">
             <GlobalSearch
               variant="desktop"
-              placeholder="Search projects, tips, users..."
+              placeholder="프로젝트, 팁, 사용자 검색..."
               className="w-full"
             />
           </div>
@@ -103,7 +103,7 @@ const Header = () => {
               className="hidden sm:flex items-center space-x-2 border-primary/20 hover:border-primary hover:bg-primary/5"
             >
               <Plus className="w-4 h-4" />
-              <span>Share</span>
+              <span>공유</span>
             </Button>
 
             {/* Login/Profile Actions */}
@@ -142,7 +142,7 @@ const Header = () => {
                     onClick={() => navigate("/login")}
                     className="hidden md:flex"
                   >
-                    Sign In
+                    로그인
                   </Button>
 
                   <Button
@@ -150,7 +150,7 @@ const Header = () => {
                     onClick={() => navigate("/signup")}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground border-0"
                   >
-                    Sign Up
+                    회원가입
                   </Button>
                 </>
               )}

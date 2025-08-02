@@ -96,14 +96,19 @@ const Lounge = () => {
   const updatePostMutation = useUpdatePost();
   const deletePostMutation = useDeletePost();
 
-  // Loading timeout
+  // Loading timeout - remove artificial delay and base on actual data loading
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Set page loading to false once we have a result (success or error) or after reasonable timeout
+    if (!isLoading || error) {
       setIsPageLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+    } else {
+      // Fallback timeout to prevent infinite loading
+      const timer = setTimeout(() => {
+        setIsPageLoading(false);
+      }, 10000); // Increased to 10 seconds for network issues
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, error]);
 
   // Real-time updates - moved before early return
   useEffect(() => {
@@ -129,7 +134,7 @@ const Lounge = () => {
   }, []);
 
   // Early return after all hooks are declared
-  if (isPageLoading) {
+  if (isPageLoading && isLoading) {
     return <LoadingScreen message="라운지 로딩중..." />;
   }
 

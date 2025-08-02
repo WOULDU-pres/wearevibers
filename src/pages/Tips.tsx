@@ -38,17 +38,22 @@ const Tips = () => {
     sortBy 
   });
 
-  // Loading timeout
+  // Loading timeout - remove artificial delay and base on actual data loading
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Set page loading to false once we have a result (success or error) or after reasonable timeout
+    if (!loading || error) {
       setIsPageLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+    } else {
+      // Fallback timeout to prevent infinite loading
+      const timer = setTimeout(() => {
+        setIsPageLoading(false);
+      }, 10000); // Increased to 10 seconds for network issues
+      return () => clearTimeout(timer);
+    }
+  }, [loading, error]);
 
   // Early return after all hooks are declared
-  if (isPageLoading) {
+  if (isPageLoading && loading) {
     return <LoadingScreen message="팁 로딩중..." />;
   }
 

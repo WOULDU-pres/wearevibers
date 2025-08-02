@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores';
 import type { Project } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
-import { safeGetUserProjects } from '@/lib/rlsHelper';
+import { safeGetUserProjects, executeWithRLSTimeout } from '@/lib/rlsHelper';
 
 export interface ProjectFilters {
   tech_stack?: string[];
@@ -19,17 +19,12 @@ export const useProjects = (filters?: ProjectFilters) => {
   return useQuery({
     queryKey: ['projects', filters],
     queryFn: async () => {
+      console.log('🔍 Starting projects query with filters:', filters);
+      
+      // 단순화된 쿼리 - JOIN 없이 프로젝트만 먼저 조회
       let query = supabase
         .from('projects')
-        .select(`
-          *,
-          profiles!inner(
-            id,
-            username,
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
@@ -50,10 +45,20 @@ export const useProjects = (filters?: ProjectFilters) => {
         query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
 
-      const { data, error } = await query;
+      // RLS 타임아웃 방지 래퍼 사용
+      const { data, error, isTimeout, wasFixed } = await executeWithRLSTimeout(
+        query,
+        3000, // 3초 타임아웃
+        []
+      );
+      
+      if (isTimeout) {
+        console.warn('⏰ Projects query timed out - returning empty array');
+        return [];
+      }
       
       if (error) {
-        console.error('Error fetching projects:', error);
+        console.error('❌ Error fetching projects:', error);
         
         // 인증 에러인 경우 처리
         if (isAuthError(error)) {
@@ -64,9 +69,59 @@ export const useProjects = (filters?: ProjectFilters) => {
         throw error;
       }
       
-      return data as Project[];
+      if (wasFixed) {
+        console.log('✅ Projects query succeeded after RLS fix');
+      }
+      
+      const projects = data as Project[];
+      console.log(`📊 Projects query successful: ${projects.length} projects found`);
+      
+      // 프로필 정보를 별도로 조회하여 병합 (선택사항)
+      if (projects.length > 0) {
+        try {
+          const userIds = [...new Set(projects.map(p => p.user_id))];
+          const { data: profiles } = await executeWithRLSTimeout(
+            supabase
+              .from('profiles')
+              .select('id, username, full_name, avatar_url')
+              .in('id', userIds),
+            2000,
+            []
+          );
+          
+          // 프로필 정보를 프로젝트에 병합
+          const profilesMap = new Map((profiles as any[])?.map(p => [p.id, p]) || []);
+          
+          return projects.map(project => ({
+            ...project,
+            profiles: profilesMap.get(project.user_id) || {
+              id: project.user_id,
+              username: 'Unknown User',
+              full_name: null,
+              avatar_url: null
+            }
+          }));
+        } catch (profileError) {
+          console.warn('⚠️ Profile fetch failed, returning projects without profile info:', profileError);
+          // 프로필 조회 실패해도 프로젝트는 반환
+          return projects.map(project => ({
+            ...project,
+            profiles: {
+              id: project.user_id,
+              username: 'Unknown User',
+              full_name: null,
+              avatar_url: null
+            }
+          }));
+        }
+      }
+      
+      return projects;
     },
     retry: authAwareRetry,
+    // 캐싱 설정 개선
+    staleTime: 1000 * 60 * 2, // 2분
+    cacheTime: 1000 * 60 * 5, // 5분
   });
 };
 

@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
 import { RetroGrid } from "@/components/magicui/retro-grid";
 import { useAuthStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
+import GlobalSearch from "@/components/GlobalSearch";
 
 const Hero = () => {
   const { user } = useAuthStore();
@@ -77,6 +78,17 @@ const Hero = () => {
           개발자의 감성과 창작 과정을 공유하는 커뮤니티입니다.
         </p>
 
+        {/* 모바일 검색 바 */}
+        <div className="w-full max-w-md mx-auto mb-8 lg:hidden">
+          <div className="relative">
+            <GlobalSearch
+              variant="desktop"
+              placeholder="프로젝트, 팁, 사용자 검색..."
+              className="w-full"
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
           <Button
             size="lg"
@@ -99,20 +111,20 @@ const Hero = () => {
         {/* Stats */}
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-6 sm:space-y-0 sm:space-x-12 text-center">
           <div>
-            <div className="text-3xl font-bold text-primary">1,247</div>
+            <div className="text-3xl font-bold text-primary">베타 테스트</div>
             <div className="text-sm text-muted-foreground">
-              Creative Projects
+              현재 상태
             </div>
           </div>
           <div className="hidden sm:block w-px h-12 bg-border" />
           <div>
-            <div className="text-3xl font-bold text-primary">856</div>
-            <div className="text-sm text-muted-foreground">Active Vibers</div>
+            <div className="text-3xl font-bold text-primary">커뮤니티</div>
+            <div className="text-sm text-muted-foreground">성장 중</div>
           </div>
           <div className="hidden sm:block w-px h-12 bg-border" />
           <div>
-            <div className="text-3xl font-bold text-primary">12,394</div>
-            <div className="text-sm text-muted-foreground">Vibes Shared</div>
+            <div className="text-3xl font-bold text-primary">곧 공개</div>
+            <div className="text-sm text-muted-foreground">정식 출시</div>
           </div>
         </div>
       </div>

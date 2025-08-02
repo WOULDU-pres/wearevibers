@@ -16,10 +16,23 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     storage: window.localStorage,
     storageKey: 'wearevibers-auth-token',
     flowType: 'pkce',
+    // 세션 갱신 설정 개선
+    refreshInterval: 60 * 15, // 15분마다 갱신
   },
   global: {
     headers: {
       "X-Client-Info": "wearevibers-web",
+      "X-Client-Version": "1.0.0",
+    },
+  },
+  // 데이터베이스 연결 설정 개선
+  db: {
+    schema: 'public',
+  },
+  // 연결 설정
+  realtime: {
+    params: {
+      eventsPerSecond: 2,
     },
   },
 });

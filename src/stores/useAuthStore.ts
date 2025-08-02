@@ -9,6 +9,7 @@ import {
   setSentryUser,
   clearSentryUser,
 } from "@/lib/sentry";
+import { safeGetProfile, handleRLSError, executeWithRLSTimeout } from "@/lib/rlsHelper";
 
 type Profile = Tables<"profiles">;
 
@@ -92,89 +93,59 @@ export const useAuthStore = create<AuthState>()(
           try {
             console.log('🔍 AuthStore fetchProfile for user:', userId);
             
-            // Create timeout promise (3 seconds for auth store)
-            const timeoutPromise = new Promise((_, reject) => {
-              setTimeout(() => {
-                reject(new Error('RLS_TIMEOUT: AuthStore profile query timed out - likely RLS permission issue'));
-              }, 3000);
+            // Use safe profile fetcher with built-in RLS handling
+            const { data, error, isTimeout } = await safeGetProfile(userId);
+            
+            console.log('📊 SafeGetProfile result:', { 
+              hasData: !!data, 
+              hasError: !!error, 
+              isTimeout,
+              username: data?.username 
             });
 
-            // Execute query with timeout
-            const queryPromise = supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", userId)
-              .single();
-
-            let queryResult;
-            try {
-              queryResult = await Promise.race([queryPromise, timeoutPromise]);
-            } catch (timeoutError) {
-              if (timeoutError.message?.includes('RLS_TIMEOUT')) {
-                console.warn('🚨 AuthStore profile query timed out - likely RLS permission issue');
-                console.warn('Warning: RLS timeout detected - profile data unavailable');
-                
-                // Set profile to null but don't crash the auth flow
-                get().setProfile(null);
-                return;
-              }
-              throw timeoutError;
-            }
-
-            const { data, error } = queryResult;
-            console.log('📊 AuthStore profile query result:', { data: !!data, error });
-
             if (error) {
-              // Handle RLS timeout in error response
-              if (error.message?.includes('timeout') || error.message?.includes('RLS_TIMEOUT')) {
-                console.warn('🚨 RLS timeout in error response - profile data unavailable');
-                get().setProfile(null);
-                return;
-              }
+              const { isRLSIssue, shouldFallback, userMessage } = handleRLSError(error);
               
-              if (error.code === "PGRST116") {
-                // 프로필이 존재하지 않는 경우 (새 사용자)
-                console.log('ℹ️ Profile not found in AuthStore - new user');
-                get().setProfile(null);
-                return;
-              }
-
-              // 인증 관련 에러인 경우 세션 정리
-              if (
-                error.code === "PGRST301" ||
-                error.message.includes("JWT") ||
-                error.message.includes("expired")
-              ) {
-                console.error(
-                  "Auth error in fetchProfile, signing out:",
-                  error
-                );
+              if (isRLSIssue) {
+                if (shouldFallback) {
+                  console.warn('🚨 RLS issue detected - using fallback behavior');
+                  get().setProfile(null);
+                  return;
+                }
+                
+                // 인증 관련 RLS 에러 - 세션 정리
+                console.error('🔐 Authentication RLS error, signing out:', error);
                 await supabase.auth.signOut();
                 return;
               }
+              
+              // 다른 에러들 처리
+              if (error.message?.includes('세션이 유효하지 않습니다')) {
+                console.warn('⚠️ Invalid session - cleaning up state');
+                get().cleanup();
+                return;
+              }
 
-              console.error("Error fetching profile:", error);
+              console.error('❌ Profile fetch error:', error);
+              get().setProfile(null);
               return;
             }
 
             if (data) {
-              console.log('✅ AuthStore profile fetch successful');
+              if (isTimeout) {
+                console.warn('⏰ Using fallback profile data due to RLS timeout');
+              } else {
+                console.log('✅ AuthStore profile fetch successful');
+              }
               get().setProfile(data);
             } else {
-              console.warn('⚠️ No profile data returned from AuthStore query');
+              console.log('ℹ️ No profile found - new user or profile not created yet');
               get().setProfile(null);
             }
           } catch (error) {
-            console.error('💥 Error in fetchProfile:', error);
+            console.error('💥 Unexpected error in fetchProfile:', error);
 
-            // Handle RLS timeout in catch block
-            if (error.message?.includes('RLS_TIMEOUT')) {
-              console.warn('🚨 RLS timeout in catch block - setting profile to null');
-              get().setProfile(null);
-              return;
-            }
-
-            // 네트워크 에러나 기타 예외 시에도 세션 상태 확인
+            // 세션 상태 확인
             try {
               const {
                 data: { session },
@@ -182,6 +153,9 @@ export const useAuthStore = create<AuthState>()(
               if (!session) {
                 console.log("No valid session found, cleaning up state");
                 get().cleanup();
+              } else {
+                // 세션은 있지만 프로필 조회 실패 - null로 설정하여 앱 동작 유지
+                get().setProfile(null);
               }
             } catch (sessionError) {
               console.error('Error checking session:', sessionError);
@@ -191,14 +165,27 @@ export const useAuthStore = create<AuthState>()(
         },
 
         initialize: async () => {
+          console.log('🚀 Starting auth initialization...');
+          
           try {
+            // 먼저 RLS 상태 체크
+            const { debugRLSIssues } = await import('@/lib/rlsDebugger');
+            console.log('🔍 Running initial RLS diagnostics...');
+            
+            const rlsStatus = await debugRLSIssues();
+            console.log('📊 RLS Status:', {
+              sessionValid: rlsStatus.sessionStatus.tokenValid,
+              profileAccess: rlsStatus.databaseAccess.canAccessProfiles
+            });
+            
+            // 세션 조회
             const {
               data: { session },
               error,
             } = await supabase.auth.getSession();
 
             if (error) {
-              console.error("Error getting session:", error);
+              console.error("❌ Error getting session:", error);
 
               // Sentry로 에러 리포팅
               captureError(
@@ -212,10 +199,18 @@ export const useAuthStore = create<AuthState>()(
 
               get().cleanup();
             } else {
+              console.log('📋 Session found:', {
+                hasSession: !!session,
+                userId: session?.user?.id,
+                email: session?.user?.email
+              });
+              
               get().setSession(session);
               get().setUser(session?.user ?? null);
 
               if (session?.user) {
+                // 프로필 조회 시 더 짧은 타임아웃 사용
+                console.log('👤 Fetching user profile...');
                 await get().fetchProfile(session.user.id);
 
                 // 로그인 성공 시 Sentry 사용자 정보 설정
@@ -229,10 +224,14 @@ export const useAuthStore = create<AuthState>()(
                   "auth",
                   "info"
                 );
+                
+                console.log('✅ Auth initialization completed successfully');
+              } else {
+                console.log('🚪 No active session - user needs to sign in');
               }
             }
           } catch (error) {
-            console.error("Error in initialize:", error);
+            console.error("💥 Error in initialize:", error);
 
             // Sentry로 예외 리포팅
             captureError(error as Error, {
@@ -244,6 +243,7 @@ export const useAuthStore = create<AuthState>()(
           } finally {
             get().setLoading(false);
             get().setInitialized(true);
+            console.log('🏁 Auth initialization process completed');
           }
         },
 
@@ -332,32 +332,13 @@ export const useAuthStore = create<AuthState>()(
           try {
             console.log("🌐 Calling supabase.auth.signOut()...");
             
-            // Create a timeout promise for the signOut call (reduced to 2 seconds for better UX)
-            const timeoutPromise = new Promise((_, reject) => {
-              setTimeout(() => {
-                reject(new Error('RLS_TIMEOUT: SignOut timed out - likely RLS permission issue'));
-              }, 2000);
-            });
+            // Use RLS helper for safer signOut with shorter timeout
+            const { error } = await executeWithRLSTimeout(
+              supabase.auth.signOut(),
+              1500, // 1.5 seconds for better UX
+              null
+            );
 
-            // Race between the signOut call and timeout
-            const signOutPromise = supabase.auth.signOut();
-            
-            let signOutResult;
-            try {
-              signOutResult = await Promise.race([signOutPromise, timeoutPromise]);
-            } catch (timeoutError) {
-              if (timeoutError.message?.includes('RLS_TIMEOUT')) {
-                console.warn("🚨 SignOut timed out - cleaning up local state anyway");
-                // Clean up local state even if API call timed out
-                get().cleanup();
-                get().setLoading(false);
-                addBreadcrumb("User signed out (timeout, local cleanup)", "auth", "info");
-                return { error: null };
-              }
-              throw timeoutError;
-            }
-
-            const { error } = signOutResult;
             console.log("📊 SignOut API response:", { error });
 
             // Always cleanup local state regardless of API response
@@ -374,11 +355,14 @@ export const useAuthStore = create<AuthState>()(
                 "⚠️ SignOut API failed, but local state cleared:",
                 error
               );
-              captureError(new Error(`Sign out failed: ${error.message}`), {
-                authContext: "signOut",
-                errorCode: error.status,
-                errorMessage: error.message,
-              });
+              
+              // Only report non-timeout errors to Sentry
+              if (!error.message?.includes('RLS_TIMEOUT')) {
+                captureError(new Error(`Sign out failed: ${error.message}`), {
+                  authContext: "signOut",
+                  errorMessage: error.message,
+                });
+              }
             }
 
             console.log("🏁 SignOut function completing, setting loading false");
@@ -393,9 +377,13 @@ export const useAuthStore = create<AuthState>()(
             get().setLoading(false);
 
             console.warn("⚠️ SignOut exception, but local state cleared:", error);
-            captureError(error as Error, {
-              authContext: "signOut_exception",
-            });
+            
+            // Only report non-timeout errors to Sentry
+            if (!(error instanceof Error) || !error.message?.includes('RLS_TIMEOUT')) {
+              captureError(error as Error, {
+                authContext: "signOut_exception",
+              });
+            }
 
             console.log("🏁 SignOut function completing after exception");
             // Return success since we cleared local state

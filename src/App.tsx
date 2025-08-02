@@ -26,6 +26,7 @@ import Search from "./pages/Search";
 import ImageViewerDemo from "./pages/ImageViewerDemo";
 import Notifications from "./pages/Notifications";
 import AdminReports from "./pages/AdminReports";
+import ProjectDetail from "./pages/ProjectDetail";
 
 const App = () => (
   <AppErrorBoundary>
@@ -81,6 +82,10 @@ const App = () => (
                   <CreateProject />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/projects/:id" 
+              element={<ProjectDetail />}
             />
             <Route 
               path="/tips" 
