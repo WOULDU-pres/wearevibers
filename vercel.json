@@ -73,28 +73,10 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/health",
-      "destination": "/api/health",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
-    }
-  ],
-  "functions": {
-    "api/health.js": {
-      "maxDuration": 10
-    }
-  },
-  "crons": [
-    {
-      "path": "/api/health",
-      "schedule": "0 */5 * * * *"
     }
   ],
   "env": {

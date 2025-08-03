@@ -1,13 +1,6 @@
 name: Production Monitoring & Health Checks
 
 on:
-  schedule:
-    # Every 5 minutes during business hours (KST 9-18)
-    - cron: "*/5 0-9 * * 1-5" # UTC time
-    # Every hour outside business hours
-    - cron: "0 10-23,0 * * *"
-    # Every 30 minutes on weekends
-    - cron: "*/30 * * * 0,6"
   workflow_dispatch:
     inputs:
       check_type:
@@ -46,7 +39,7 @@ jobs:
           echo "🏥 Running health checks..."
 
           # Test main domain
-          MAIN_RESPONSE=$(curl -s -o /dev/null -w "%{http_code},%{time_total},%{size_download}" https://wearevibers.vercel.app/health)
+          MAIN_RESPONSE=$(curl -s -o /dev/null -w "%{http_code},%{time_total},%{size_download}" https://wearevibers.vercel.app/)
           MAIN_STATUS=$(echo $MAIN_RESPONSE | cut -d',' -f1)
           MAIN_TIME=$(echo $MAIN_RESPONSE | cut -d',' -f2)
           MAIN_SIZE=$(echo $MAIN_RESPONSE | cut -d',' -f3)
@@ -109,17 +102,16 @@ jobs:
       - name: Database connectivity check
         id: database
         run: |
-          echo "🗄️ Checking database connectivity..."
-
-          # Test health endpoint which includes DB check
-          DB_HEALTH=$(curl -s https://wearevibers.vercel.app/health | jq -r '.services.database')
-          echo "database_status=$DB_HEALTH" >> $GITHUB_OUTPUT
-
-          if [ "$DB_HEALTH" != "healthy" ]; then
-            echo "❌ Database connectivity issue: $DB_HEALTH"
-            echo "database_issue=true" >> $GITHUB_OUTPUT
+          echo "🗄️ Basic connectivity check (health endpoint removed)..."
+          
+          # Since health endpoint is removed, just check main site availability
+          if [ "${{ steps.health.outputs.main_status }}" = "200" ]; then
+            echo "database_status=unknown" >> $GITHUB_OUTPUT
+            echo "✅ Application responding (database status not available)"
           else
-            echo "✅ Database connectivity OK"
+            echo "database_status=unavailable" >> $GITHUB_OUTPUT
+            echo "database_issue=true" >> $GITHUB_OUTPUT
+            echo "❌ Application not responding"
           fi
 
       - name: Security check
