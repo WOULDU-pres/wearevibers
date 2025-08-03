@@ -131,9 +131,7 @@ export default defineConfig({
     // 리포터 설정
     reporter: [
       'default',
-      'verbose',
-      'json',
-      'html'
+      'verbose'
     ],
     
     // 출력 파일 설정
@@ -150,8 +148,8 @@ export default defineConfig({
       VITE_SUPABASE_ANON_KEY: 'test-key'
     },
     
-    // UI 모드 설정 (선택사항)
-    ui: true,
+    // UI 모드 설정 (선택사항) - CI에서는 비활성화
+    ui: false,
     open: false, // 자동으로 브라우저 열지 않기
     
     // 스냅샷 테스트 설정
