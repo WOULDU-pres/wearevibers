@@ -187,7 +187,7 @@ export const VibeCount: React.FC<{
     if (enableRealtime) {
       // Realtime vibes are handled by parent component
     }
-  }, [enableRealtime, contentId, contentType]);
+  }, [_enableRealtime, contentId, contentType]);
 
   return (
     <div className={cn(

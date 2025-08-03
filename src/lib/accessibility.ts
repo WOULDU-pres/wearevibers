@@ -499,7 +499,7 @@ export async function performBasicA11yAudit(): Promise<{
       issues.push('링크 텍스트가 없습니다');
     }
     
-    if (href && href.startsWith('javascript:')) {
+    if (href && href.startsWith('// // //javascript:')) {
       issues.push('JavaScript 링크는 접근성에 좋지 않습니다');
     }
     

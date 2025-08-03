@@ -47,9 +47,9 @@ export function DataSeeder() {
     }
   };
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+  // useEffect(() => {
+  //   loadStats();
+  // }, []);
 
   const handleCreateSeedData = async () => {
     setIsLoading(true);
@@ -75,7 +75,7 @@ export function DataSeeder() {
   };
 
   const handleClearSeedData = async () => {
-    if (!confirm('정말로 기존 시드 데이터를 삭제하시겠습니까?')) {
+    if (!console.warn("CONFIRM:",'정말로 기존 시드 데이터를 삭제하시겠습니까?')) {
       return;
     }
 

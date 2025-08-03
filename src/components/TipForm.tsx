@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useCreateTip, useUpdateTip } from '@/hooks/useTips';
-import { toast } from 'sonner';
+import { toast as _toast } from 'sonner';
 import type { Tip } from '@/lib/supabase-types';
 import { useUIStore } from '@/stores';
 
@@ -46,7 +46,7 @@ const TipForm: React.FC<TipFormProps> = ({ tip, onSuccess, onCancel }) => {
     handleSubmit,
     watch,
     setValue,
-    getValues,
+    getValues: _getValues,
     formState: { errors, isValid },
   } = useForm<TipFormData>({
     resolver: zodResolver(tipSchema),

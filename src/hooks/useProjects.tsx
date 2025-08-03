@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Project } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 import { safeGetUserProjects, executeWithRLSTimeout } from '@/lib/rlsHelper';
 
 export interface ProjectFilters {
@@ -312,7 +312,7 @@ export const useCreateProject = () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('프로젝트가 성공적으로 생성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('프로젝트 생성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('프로젝트 생성에 실패했습니다.'),
   });
 };
 
@@ -350,7 +350,7 @@ export const useUpdateProject = () => {
       queryClient.invalidateQueries({ queryKey: ['project', data.id] });
       toast.success('프로젝트가 성공적으로 수정되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('프로젝트 수정에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('프로젝트 수정에 실패했습니다.'),
   });
 };
 
@@ -377,7 +377,7 @@ export const useDeleteProject = () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('프로젝트가 성공적으로 삭제되었습니다.');
     },
-    onError: createAuthAwareMutationErrorHandler('프로젝트 삭제에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('프로젝트 삭제에 실패했습니다.'),
   });
 };
 
@@ -416,6 +416,6 @@ export const useVibeProject = () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Vibe 추가됨! 🎉');
     },
-    onError: createAuthAwareMutationErrorHandler('Vibe 추가에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('Vibe 추가에 실패했습니다.'),
   });
 };

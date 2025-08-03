@@ -18,8 +18,8 @@ import {
   PlusCircle,
   Eye,
   Edit,
-  X,
-  Trash2,
+  X as _X,
+  Trash2 as _Trash2,
   Save,
   ImageIcon,
   Loader2,
@@ -133,7 +133,7 @@ export const PostCreateForm: React.FC<PostCreateFormProps> = ({
         const isRecent = Date.now() - draft.timestamp < 24 * 60 * 60 * 1000; // 24 hours
         
         if (isRecent && (draft.title || draft.content)) {
-          const shouldRestore = confirm('임시 저장된 글이 있습니다. 복원하시겠습니까?');
+          const shouldRestore = console.warn("CONFIRM:",'임시 저장된 글이 있습니다. 복원하시겠습니까?');
           if (shouldRestore) {
             setValue('title', draft.title || '');
             setValue('content', draft.content || '');
@@ -184,7 +184,7 @@ export const PostCreateForm: React.FC<PostCreateFormProps> = ({
 
   const handleCancel = () => {
     if (isDirty || uploadedImages.length > 0) {
-      const shouldDiscard = confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?');
+      const shouldDiscard = console.warn("CONFIRM:",'작성 중인 내용이 있습니다. 정말 취소하시겠습니까?');
       if (!shouldDiscard) return;
     }
     localStorage.removeItem('post-draft');

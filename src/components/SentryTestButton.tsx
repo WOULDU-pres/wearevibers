@@ -41,7 +41,7 @@ export const SentryTestButton = () => {
         'user_interaction',
         'info'
       );
-      alert('브레드크럼이 추가되었습니다. 다른 액션을 수행한 후 에러를 발생시켜 보세요.');
+      console.warn("ALERT:",'브레드크럼이 추가되었습니다. 다른 액션을 수행한 후 에러를 발생시켜 보세요.');
     });
   };
 
@@ -71,7 +71,7 @@ export const SentryTestButton = () => {
       logger.warn("Logger warning test", { level: "warn" });
       logger.error("Logger error test", { level: "error" });
       
-      alert('다양한 로그 레벨이 테스트되었습니다. 콘솔을 확인해보세요.');
+      console.warn("ALERT:",'다양한 로그 레벨이 테스트되었습니다. 콘솔을 확인해보세요.');
     });
   };
 

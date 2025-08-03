@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Tip, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 interface TipFilters {
   category?: string;
@@ -277,7 +277,7 @@ export const useCreateTipComment = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -366,7 +366,7 @@ export const useVibeTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success(newVibedStatus ? 'Vibe 추가됨! 🎉' : 'Vibe 제거됨');
     },
-    onError: createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -456,7 +456,7 @@ export const useBookmarkTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success(newBookmarkedStatus ? '북마크에 추가됨!' : '북마크에서 제거됨');
     },
-    onError: createAuthAwareMutationErrorHandler('북마크 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('북마크 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -503,7 +503,7 @@ export const useCreateTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tips'] });
       toast.success('팁이 성공적으로 게시되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('팁 게시에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팁 게시에 실패했습니다.'),
   });
 };
 
@@ -555,7 +555,7 @@ export const useUpdateTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', data.id] });
       toast.success('팁이 성공적으로 수정되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('팁 수정에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팁 수정에 실패했습니다.'),
   });
 };
 
@@ -582,6 +582,6 @@ export const useDeleteTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tips'] });
       toast.success('팁이 성공적으로 삭제되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('팁 삭제에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팁 삭제에 실패했습니다.'),
   });
 };

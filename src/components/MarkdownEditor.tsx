@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { MDXEditor, headingsPlugin, listsPlugin, quotePlugin, thematicBreakPlugin, markdownShortcutPlugin, codeBlockPlugin, codeMirrorPlugin, tablePlugin, linkPlugin, linkDialogPlugin, imagePlugin, BoldItalicUnderlineToggles, UndoRedo, CodeToggle, ListsToggle, BlockTypeSelect, CreateInsertImage, InsertTable, InsertThematicBreak, toolbarPlugin } from '@mdxeditor/editor';
+import { MDXEditor, headingsPlugin, listsPlugin, quotePlugin, thematicBreakPlugin, markdownShortcutPlugin, codeBlockPlugin, codeMirrorPlugin, tablePlugin, linkPlugin, linkDialogPlugin, imagePlugin, BoldItalicUnderlineToggles, UndoRedo, CodeToggle, ListsToggle, BlockTypeSelect, CreateInsertImage as _CreateInsertImage, InsertTable, InsertThematicBreak, toolbarPlugin } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
 
 interface MarkdownEditorProps {
@@ -32,7 +32,7 @@ const MarkdownEditor = forwardRef<MDXEditor, MarkdownEditorProps>(
             }),
             codeMirrorPlugin({
               codeBlockLanguages: {
-                javascript: 'JavaScript',
+                //javascript: 'JavaScript',
                 typescript: 'TypeScript',
                 jsx: 'JSX',
                 tsx: 'TSX',

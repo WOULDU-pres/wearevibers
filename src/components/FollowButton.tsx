@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2PlusMinusCheck } from 'lucide-react';
+import { Loader2, UserMinus, UserCheck, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FollowButtonProps {

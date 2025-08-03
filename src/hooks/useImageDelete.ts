@@ -66,7 +66,7 @@ export const useImageDelete = (options: ImageDeleteOptions) => {
       const confirmMessage = options.confirmationMessage || 
         '이 이미지를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.';
       
-      const confirmed = window.confirm(confirmMessage);
+      const confirmed = window.console.warn("CONFIRM:",confirmMessage);
       if (!confirmed) return;
     }
 
@@ -83,7 +83,7 @@ export const useImageDelete = (options: ImageDeleteOptions) => {
 
     if (options.showConfirmation !== false) {
       const confirmMessage = `${imageUrls.length}개의 이미지를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`;
-      const confirmed = window.confirm(confirmMessage);
+      const confirmed = window.console.warn("CONFIRM:",confirmMessage);
       if (!confirmed) return;
     }
 

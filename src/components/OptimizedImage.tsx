@@ -7,7 +7,7 @@
  * - 접근성 최적화
  */
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps {
@@ -113,7 +113,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     const ext = optimizedSrc.split('.').pop();
     
     return Object.entries(responsive)
-      .map(([breakpoint, { width: w }]) => `${baseSrc}-${w}w.${ext} ${w}w`)
+      .map(([_breakpoint, { width: w }]) => `${baseSrc}-${w}w.${ext} ${w}w`)
       .join(', ');
   }, [src, optimizedSrc, responsive]);
 
@@ -304,7 +304,6 @@ export const OptimizedBackgroundImage: React.FC<{
         alt={alt}
         className="absolute inset-0 -z-10"
         objectFit="cover"
-        priority,
       />
       {overlay && (
         <div

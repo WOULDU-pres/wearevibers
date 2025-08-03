@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Profile } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 import { handleSupabaseError } from '@/lib/sentry';
 
 export const useProfile = (userId: string) => {
@@ -214,7 +214,7 @@ export const useFollowUser = () => {
       queryClient.invalidateQueries({ queryKey: ['profile', targetUserId] });
       toast.success(newFollowingStatus ? '팔로우했습니다!' : '언팔로우했습니다.');
     },
-    onError: createAuthAwareMutationErrorHandler('팔로우 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팔로우 상태 변경에 실패했습니다.'),
   });
 };
 

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 import type { 
   CommentWithProfile, 
   CommentContentType, 
@@ -220,7 +220,7 @@ export const useCreateComment = () => {
 
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -281,7 +281,7 @@ export const useUpdateComment = () => {
 
       toast.success('댓글이 수정되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler('댓글 수정에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 수정에 실패했습니다.'),
   });
 };
 
@@ -348,7 +348,7 @@ export const useDeleteComment = () => {
 
       toast.success('댓글이 삭제되었습니다.');
     },
-    onError: createAuthAwareMutationErrorHandler('댓글 삭제에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 삭제에 실패했습니다.'),
   });
 };
 
@@ -425,7 +425,7 @@ export const useVibeComment = () => {
         toast.success('댓글에 좋아요를 눌렀습니다! 💝');
       }
     },
-    onError: createAuthAwareMutationErrorHandler('좋아요 처리에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('좋아요 처리에 실패했습니다.'),
   });
 };
 

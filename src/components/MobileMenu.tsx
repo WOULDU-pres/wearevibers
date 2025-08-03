@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu, Home, MessageSquare, Lightbulbs, LogOut, Plus } from "lucide-react";
+import { Menu, Home, MessageSquare, Lightbulb, LogOut, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";

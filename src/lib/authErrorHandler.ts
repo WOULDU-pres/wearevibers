@@ -152,7 +152,7 @@ export const authAwareRetry = (failureCount: number, error: unknown): boolean =>
 /**
  * Mutation에서 사용할 에러 핸들러
  */
-export const createAuthAwareMutationErrorHandler = (customMessage?: string) => {
+export const createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler = (customMessage?: string) => {
   return async (error: unknown) => {
     console.error('Mutation error:', error);
     

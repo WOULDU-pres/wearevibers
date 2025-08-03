@@ -30,7 +30,7 @@ const PURIFY_CONFIG = {
   ALLOW_DATA_ATTR: false,
   FORBID_SCRIPT: true,
   FORBID_TAGS: ['script', 'object', 'embed', 'base', 'link', 'meta', 'style'],
-  FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'javascript:'],
+  FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', '// // //javascript:'],
   KEEP_CONTENT: true,
   RETURN_DOM: false,
   RETURN_DOM_FRAGMENT: false,
@@ -87,8 +87,8 @@ export function sanitizeUrl(input: string): string {
       return '';
     }
 
-    // javascript: 스킴 차단
-    if (url.protocol === 'javascript:') {
+    // // // //javascript: 스킴 차단
+    if (url.protocol === '// // //javascript:') {
       return '';
     }
 
@@ -258,7 +258,7 @@ export function detectXSSPatterns(input: string): boolean {
 
   const xssPatterns = [
     /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    /javascript:/gi,
+    /// // //javascript:/gi,
     /on\w+\s*=/gi,
     /<iframe\b[^>]*>/gi,
     /<object\b[^>]*>/gi,

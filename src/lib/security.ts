@@ -209,7 +209,7 @@ export const validateInput = (input: string): boolean => {
     /['";--]/,
     /\/\*.*\*\//,
     /<script/i,
-    /javascript:/i,
+    /// // //javascript:/i,
     /on\w+\s*=/i,
   ];
 

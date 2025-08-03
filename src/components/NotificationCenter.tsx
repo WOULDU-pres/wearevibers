@@ -3,11 +3,11 @@
 
 import React from 'react';
 
-import { CheckMoreHorizontal } from 'lucide-react';
+import { CheckMoreHorizontal as _CheckMoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuItem as _DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -87,7 +87,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
 };
 
 const NotificationCenter: React.FC = () => {
-  const { data: unreadData, isLoading: unreadLoading } = useUnreadCount();
+  const { data: unreadData, isLoading: _unreadLoading } = useUnreadCount();
   const { data: notificationsData, isLoading: notificationsLoading, error } = useNotifications({ 
     limit: 10 
   });

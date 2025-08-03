@@ -1,4 +1,4 @@
-import { Heart, ExternalGithub, MessageCircle } from "lucide-react";
+import { Heart, ExternalGithub as _ExternalGithub, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

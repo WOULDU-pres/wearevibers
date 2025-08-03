@@ -15,8 +15,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Shield, ShieldOff } from 'lucide-react';
-import { useBlockuseUnblockuseIsUserBlocked } from '@/hooks/useSecurity';
+import { Shield, ShieldOff, UserX, UserCheck } from 'lucide-react';
+import { useIsUserBlocked, useBlockUser, useUnblockUser } from '@/hooks/useSecurity';
 import type { BlockButtonProps } from '@/types/security';
 
 export function BlockButton({

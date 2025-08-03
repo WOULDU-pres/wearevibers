@@ -28,7 +28,7 @@ import type {
   ReportDialogProps,
   ReportReason,
   ReportReasonOption,
-  CreateReportParams,
+  CreateReportParams as _CreateReportParams,
 } from '@/types/security';
 
 // 신고 사유 옵션
@@ -85,8 +85,8 @@ export function ReportDialog({
     updateField,
     validateForm,
     resetForm,
-    errors,
-    hasFieldError,
+    errors: _errors,
+    hasFieldError: _hasFieldError,
     getFieldError,
     shouldShowFieldError,
   } = useFormValidation(validationSchemas.report.createReport, {

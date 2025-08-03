@@ -4,7 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
-import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
+import { PostgrestFilterBuilder as _PostgrestFilterBuilder } from '@supabase/postgrest-js';
 import { debugRLSIssues, attemptRLSFix } from './rlsDebugger';
 
 /**

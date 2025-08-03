@@ -18,7 +18,7 @@ import {
   COMPRESSION_PRESETS, 
   formatFileSize, 
   isValidImageType,
-  estimateCompressionSavings,
+  estimateCompressionSavings as _estimateCompressionSavings,
   type CompressionOptions,
   type ImageMetadata 
 } from '@/utils/imageUtils';
@@ -46,7 +46,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   disabled = false,
   multiple = false,
   maxFiles = 1,
-  showPreview = false,
+  showPreview: _showPreview = false,
   compact = false,
   enableCompression = true,
   compressionOptions,
@@ -59,7 +59,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     setUploadProgress, 
     uploadComplete, 
     setUploadComplete,
-    resetUploadState 
+    resetUploadState: _resetUploadState 
   } = useUIStore();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [compressionEnabled, setCompressionEnabled] = useState(enableCompression);

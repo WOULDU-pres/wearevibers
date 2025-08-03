@@ -26,7 +26,7 @@ export const SearchHighlight: React.FC<SearchHighlightProps> = ({
   const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   
   // Split text into parts and find matches
-  const parts = text.split(regex);
+  const parts: _parts = text.split(regex);
   
   // Generate snippet around the first match if maxLength is specified
   let snippetText = text;

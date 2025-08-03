@@ -177,7 +177,7 @@ class SEOManager {
    */
   addStructuredData(data: StructuredData): void {
     // 기존 구조화 데이터 스크립트 제거
-    const existingScript = document.querySelector('script[type=\"application/ld+json\"]');
+    const existingScript = document.querySelector('script[type="application/ld+json"]');
     if (existingScript) {
       existingScript.remove();
     }
@@ -310,7 +310,7 @@ class SEOManager {
     if (!baseUrl) return;
     
     // 기존 alternate 링크 제거
-    document.querySelectorAll('link[rel=\"alternate\"][hreflang]').forEach(link => {
+    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => {
       link.remove();
     });
     
@@ -328,7 +328,7 @@ class SEOManager {
    * 메타태그 업데이트 헬퍼
    */
   private updateMetaTag(name: string, content: string, type: 'name' | 'property' = 'name'): void {
-    let meta = document.querySelector(`meta[${type}=\"${name}\"]`) as HTMLMetaElement;
+    let meta = document.querySelector(`meta[${type}="${name}"]`) as HTMLMetaElement;
     
     if (!meta) {
       meta = document.createElement('meta');
@@ -343,7 +343,7 @@ class SEOManager {
    * 링크태그 업데이트 헬퍼
    */
   private updateLinkTag(rel: string, href: string): void {
-    let link = document.querySelector(`link[rel=\"${rel}\"]`) as HTMLLinkElement;
+    let link = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement;
     
     if (!link) {
       link = document.createElement('link');
@@ -372,7 +372,7 @@ class SEOManager {
   addPreloadLinks(resources: { href: string; as: string; type?: string; crossorigin?: string }[]): void {
     resources.forEach(resource => {
       // 기존 preload 링크 확인
-      const existingPreload = document.querySelector(`link[rel=\"preload\"][href=\"${resource.href}\"]`);
+      const existingPreload = document.querySelector(`link[rel="preload"][href="${resource.href}"]`);
       if (existingPreload) return;
       
       const link = document.createElement('link');
@@ -398,7 +398,7 @@ class SEOManager {
   addDnsPrefetch(domains: string[]): void {
     domains.forEach(domain => {
       // 기존 dns-prefetch 확인
-      const existingPrefetch = document.querySelector(`link[rel=\"dns-prefetch\"][href=\"${domain}\"]`);
+      const existingPrefetch = document.querySelector(`link[rel="dns-prefetch"][href="${domain}"]`);
       if (existingPrefetch) return;
       
       const link = document.createElement('link');

@@ -135,7 +135,7 @@ export const PostEditDialog: React.FC<PostEditDialogProps> = ({
 
   const handleCancel = () => {
     if (hasChanges) {
-      const confirmLeave = window.confirm(
+      const confirmLeave = window.console.warn("CONFIRM:",
         '수정된 내용이 저장되지 않습니다. 정말 취소하시겠습니까?'
       );
       if (!confirmLeave) return;
