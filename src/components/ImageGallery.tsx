@@ -10,7 +10,7 @@ import {
   MoreHorizontal,
   CheckSquare,
   Image as ImageIcon,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,

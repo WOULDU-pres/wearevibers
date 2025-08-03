@@ -55,7 +55,7 @@ export const useTips = (filters: TipFilters = {}) => {
               id,
               username,
               full_name,
-              avatar_url
+              avatar_url,
             )
           `)
           .eq('status', 'published');
@@ -154,7 +154,7 @@ export const useTip = (tipId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('id', tipId)
@@ -198,7 +198,7 @@ export const useTipComments = (tipId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('content_id', tipId)
@@ -254,7 +254,7 @@ export const useCreateTipComment = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();
@@ -487,7 +487,7 @@ export const useCreateTip = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();
@@ -538,7 +538,7 @@ export const useUpdateTip = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();

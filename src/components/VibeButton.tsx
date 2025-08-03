@@ -105,7 +105,7 @@ export const VibeButton: React.FC<VibeButtonProps> = ({
         'transition-all duration-200 ease-in-out',
         isVibed && 'text-red-500 hover:text-red-600',
         !isVibed && 'text-muted-foreground hover:text-red-500',
-        className
+        className,
       )}
     >
       <div className={cn('flex items-center', sizeClasses.gap)}>
@@ -192,7 +192,7 @@ export const VibeCount: React.FC<{
   return (
     <div className={cn(
       'flex items-center gap-1 text-sm text-muted-foreground',
-      className
+      className,
     )}>
       <Heart className="h-3 w-3 text-red-500" />
       <span className="font-medium">{vibeCount}</span>

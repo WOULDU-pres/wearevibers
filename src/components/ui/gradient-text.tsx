@@ -68,7 +68,7 @@ export function GradientText({
         `inline font-semibold bg-gradient-${direction} from-[var(--color-from)] via-[var(--color-to)] to-[var(--color-from)] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
         animate && "animate-gradient",
         sizeClasses[size],
-        className
+        className,
       )}
       {...props}
     >

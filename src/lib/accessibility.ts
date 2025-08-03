@@ -408,7 +408,7 @@ export function validateImageAlt(alt: string, purpose: 'decorative' | 'informati
   
   return {
     isValid: suggestions.length === 0,
-    suggestions
+    suggestions,
   };
 }
 
@@ -439,7 +439,7 @@ export function validateTouchTargetSize(element: HTMLElement): {
     isValid: suggestions.length === 0,
     width: Math.round(rect.width),
     height: Math.round(rect.height),
-    suggestions
+    suggestions,
   };
 }
 
@@ -546,5 +546,5 @@ export default {
   associateFieldWithError,
   validateImageAlt,
   validateTouchTargetSize,
-  performBasicA11yAudit
+  performBasicA11yAudit,
 };

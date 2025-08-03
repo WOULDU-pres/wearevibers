@@ -238,7 +238,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       ref={containerRef}
       className={cn(
         'relative overflow-hidden',
-        className
+        className,
       )}
       style={{
         width: width ? `${width}px` : undefined,
@@ -304,7 +304,7 @@ export const OptimizedBackgroundImage: React.FC<{
         alt={alt}
         className="absolute inset-0 -z-10"
         objectFit="cover"
-        priority
+        priority,
       />
       {overlay && (
         <div
@@ -330,7 +330,7 @@ export const OptimizedAvatar: React.FC<{
   alt,
   size = 'md',
   fallback,
-  className
+  className,
 }) => {
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -355,7 +355,7 @@ export const OptimizedAvatar: React.FC<{
       className={cn(
         'rounded-full border-2 border-border',
         sizeClasses[size],
-        className
+        className,
       )}
       objectFit="cover"
       fallbackSrc={fallback}
@@ -389,7 +389,7 @@ export const OptimizedImageGallery: React.FC<{
           'grid-cols-3': columns === 3,
           'grid-cols-4': columns === 4
         },
-        className
+        className,
       )}
     >
       {images.map((image, index) => (

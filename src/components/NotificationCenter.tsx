@@ -24,7 +24,7 @@ import {
   useMarkAllAsRead,
   getNotificationIcon,
   getRelativeTime,
-  getNotificationLink
+  getNotificationLink,
 } from '@/hooks/useNotifications';
 import type { Notification } from '@/types/notification';
 

@@ -214,7 +214,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
     <div 
       className={cn(
         "fixed inset-0 z-50 bg-black/95 flex items-center justify-center",
-        className
+        className,
       )}
       onClick={(e) => {
         if (e.target === e.currentTarget) {

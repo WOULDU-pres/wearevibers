@@ -223,7 +223,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(
     } else if (value && typeof value === 'object') {
       sanitized[key] = sanitizeObject(
         value as Record<string, unknown>, 
-        sanitizer
+        sanitizer,
       ) as T[Extract<keyof T, string>];
     }
   }

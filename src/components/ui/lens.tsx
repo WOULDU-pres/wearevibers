@@ -121,7 +121,7 @@ export function Lens({
     >
       {children}
       {isStatic || defaultPosition ? (
-        LensContent
+        LensContent,
       ) : (
         <AnimatePresence mode="popLayout">
           {isHovering && LensContent}

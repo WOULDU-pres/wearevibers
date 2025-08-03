@@ -24,7 +24,7 @@ import {
   MessageCircle,
   Users,
   TrendingUp,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CommentContentType, CommentWithProfile } from '@/types/comment';
@@ -73,7 +73,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     data: comments = [], 
     isLoading, 
     error,
-    refetch 
+    refetch,
   } = useComments(contentId, contentType);
 
   const { 

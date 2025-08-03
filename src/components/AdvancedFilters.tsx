@@ -20,7 +20,7 @@ import {
   
   RotateCcw,
   ChevronDown,
-  ChevronUp 
+  ChevronUp,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';

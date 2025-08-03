@@ -41,7 +41,7 @@ export const MagicCard = React.forwardRef<HTMLDivElement, MagicCardProps>(
         onMouseMove={handleMouseMove}
         className={cn(
           "group relative flex size-full overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900 border text-black dark:text-white",
-          className
+          className,
         )}
       >
         <div className="relative z-10">{children}</div>

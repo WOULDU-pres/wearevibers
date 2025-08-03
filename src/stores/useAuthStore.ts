@@ -336,7 +336,7 @@ export const useAuthStore = create<AuthState>()(
             const { error } = await executeWithRLSTimeout(
               supabase.auth.signOut(),
               1500, // 1.5 seconds for better UX
-              null
+              null,
             );
 
             console.warn("📊 SignOut API response:", { error });
@@ -353,7 +353,7 @@ export const useAuthStore = create<AuthState>()(
               // Log the error but don't prevent logout
               console.warn(
                 "⚠️ SignOut API failed, but local state cleared:",
-                error
+                error,
               );
               
               // Only report non-timeout errors to Sentry

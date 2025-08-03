@@ -63,7 +63,7 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
       <div className={cn(
         'flex items-center gap-2',
         position === 'relative' && 'relative',
-        className
+        className,
       )}>
         <div className="relative">
           <div
@@ -96,7 +96,7 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
   return (
     <div className={cn(
       getPositionClasses(),
-      className
+      className,
     )}>
       <div
         className={cn(
@@ -187,7 +187,7 @@ export const OnlineCount: React.FC<OnlineCountProps> = ({
   return (
     <div className={cn(
       'flex items-center gap-2 text-muted-foreground',
-      className
+      className,
     )}>
       {showIcon && (
         <div className="relative">

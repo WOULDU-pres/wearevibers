@@ -119,7 +119,7 @@ export function useValidation<T extends Record<string, unknown>>(
         if (sanitize) {
           processedData = sanitizeObject(
             fieldData as Record<string, unknown>,
-            sanitizer
+            sanitizer,
           ) as Partial<T>;
         }
 

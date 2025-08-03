@@ -11,7 +11,7 @@ import {
   
   ArrowUpRight,
   History,
-  Lightbulb
+  Lightbulb,
 } from 'lucide-react';
 import { useSearchSuggestions, getSearchHistory, addToSearchHistory, clearSearchHistory } from '@/hooks/useGlobalSearch';
 

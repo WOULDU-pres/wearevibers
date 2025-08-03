@@ -137,7 +137,7 @@ export const useInfiniteProjects = (filters?: ProjectFilters) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('status', 'published')
@@ -198,7 +198,7 @@ export const useProject = (projectId: string) => {
             username,
             full_name,
             avatar_url,
-            bio
+            bio,
           )
         `)
         .eq('id', projectId)

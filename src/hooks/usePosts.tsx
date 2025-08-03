@@ -54,7 +54,7 @@ export const usePosts = (filters: PostFilters = {}) => {
               id,
               username,
               full_name,
-              avatar_url
+              avatar_url,
             )
           `);
 
@@ -142,7 +142,7 @@ export const usePost = (postId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('id', postId)
@@ -186,7 +186,7 @@ export const usePostComments = (postId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('content_id', postId)
@@ -242,7 +242,7 @@ export const useCreateComment = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();
@@ -485,7 +485,7 @@ export const useCreatePost = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();
@@ -535,7 +535,7 @@ export const useUpdatePost = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();

@@ -28,8 +28,8 @@ const ShareModal = ({
   projectId,
   projectTitle, 
   shareUrl, 
-  onCopy
-  onDirectLink 
+  onCopy,
+  onDirectLink,
 }: ShareModalProps) => {
   const [isCopied, setIsCopied] = useState(false);
 

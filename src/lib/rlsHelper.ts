@@ -61,7 +61,7 @@ export async function executeWithRLSTimeout<T>(
       data,
       error,
       isTimeout: false,
-      wasFixed
+      wasFixed,
     };
   } catch (error: unknown) {
     const duration = Date.now() - startTime;
@@ -86,7 +86,7 @@ export async function executeWithRLSTimeout<T>(
         data: fallbackValue,
         error: null,
         isTimeout: true,
-        wasFixed
+        wasFixed,
       };
     }
     
@@ -95,7 +95,7 @@ export async function executeWithRLSTimeout<T>(
       data: null,
       error,
       isTimeout: false,
-      wasFixed
+      wasFixed,
     };
   }
 }
@@ -270,7 +270,7 @@ export async function safeGetProfile(userId: string) {
       .eq('id', userId)
       .single(),
     timeoutMs,
-    null
+    null,
   );
 
   if (result.isTimeout) {

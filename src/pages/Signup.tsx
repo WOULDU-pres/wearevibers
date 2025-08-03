@@ -92,7 +92,7 @@ const Signup = () => {
           <div className="flex items-center justify-center space-x-2 mb-2">
             <img src={logoImg} alt="WeAreVibers" className="w-8 h-8" />
             <span className="text-2xl font-bold text-primary font-semibold">
-              WeAreVibers
+              WeAreVibers,
             </span>
           </div>
           <p className="text-muted-foreground">

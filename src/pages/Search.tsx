@@ -23,7 +23,7 @@ import {
   Eye,
   Calendar,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 import { formatDistanceToNow } from 'date-fns';

@@ -25,7 +25,7 @@ export function BlockButton({
   isBlocked: propIsBlocked,
   onBlock,
   onUnblock,
-  className
+  className,
 }: BlockButtonProps) {
   const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
   const [isUnblockDialogOpen, setIsUnblockDialogOpen] = useState(false);
@@ -206,7 +206,7 @@ export function SimpleBlockToggle({
   username,
   isBlocked: propIsBlocked,
   size = 'sm',
-  className
+  className,
 }: SimpleBlockToggleProps) {
   const { data: isBlockedFromQuery } = useIsUserBlocked(userId);
   const isBlocked = propIsBlocked ?? isBlockedFromQuery ?? false;
@@ -238,7 +238,7 @@ export function SimpleBlockToggle({
       onClick={handleToggle}
       disabled={isLoading}
       className={`${
-        isBlocked 
+        isBlocked
           ? 'text-green-600 hover:text-green-700 hover:bg-green-50' 
           : 'text-red-600 hover:text-red-700 hover:bg-red-50'
       } ${className}`}

@@ -8,7 +8,7 @@ import type {
   CommentContentType, 
   CreateCommentRequest, 
   UpdateCommentRequest,
-  CommentQueryOptions 
+  CommentQueryOptions,
 } from '@/types/comment';
 
 const COMMENTS_PER_PAGE = 20;
@@ -26,7 +26,7 @@ export const useComments = (contentId: string, contentType: CommentContentType) 
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('content_id', contentId)
@@ -107,7 +107,7 @@ export const useComment = (commentId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('id', commentId)
@@ -178,7 +178,7 @@ export const useCreateComment = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();
@@ -232,7 +232,7 @@ export const useUpdateComment = () => {
   return useMutation({
     mutationFn: async ({ 
       commentId, 
-      updates 
+      updates,
     }: { 
       commentId: string; 
       updates: UpdateCommentRequest 
@@ -253,7 +253,7 @@ export const useUpdateComment = () => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .single();

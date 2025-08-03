@@ -4,7 +4,7 @@ import {
   createRoutesFromChildren, 
   matchRoutes, 
   useLocation,
-  useNavigationType
+  useNavigationType,
 } from "react-router-dom";
 
 // Sentry 초기화 함수
@@ -182,7 +182,7 @@ export function startSpan(operation: string, name: string, callback: (span?: unk
       op: operation,
       name,
     },
-    callback
+    callback,
   );
 }
 

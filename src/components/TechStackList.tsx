@@ -98,7 +98,7 @@ export function TechStackAnimatedList({
   return (
     <div className={cn(
       "relative flex h-[400px] w-full flex-col overflow-hidden rounded-lg",
-      className
+      className,
     )}>
       <AnimatedList delay={1500}>
         {techStacks.map((item, idx) => (

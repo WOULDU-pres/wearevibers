@@ -28,7 +28,7 @@ import type {
   ReportDialogProps,
   ReportReason,
   ReportReasonOption,
-  CreateReportParams
+  CreateReportParams,
 } from '@/types/security';
 
 // 신고 사유 옵션
@@ -75,7 +75,7 @@ export function ReportDialog({
   contentType,
   onSubmit,
   isOpen,
-  onClose
+  onClose,
 }: ReportDialogProps) {
   const createReportMutation = useCreateReport();
 

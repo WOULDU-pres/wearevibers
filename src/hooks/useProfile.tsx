@@ -230,7 +230,7 @@ export const useUserProjects = (userId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('user_id', userId)
@@ -268,7 +268,7 @@ export const useUserPosts = (userId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('user_id', userId)

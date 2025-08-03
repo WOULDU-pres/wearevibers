@@ -48,7 +48,7 @@ const searchProjects = async (searchQuery: string, limit: number = 10) => {
         id,
         username,
         full_name,
-        avatar_url
+        avatar_url,
       )
     `)
     .eq('status', 'published');
@@ -81,7 +81,7 @@ const searchTips = async (searchQuery: string, limit: number = 10) => {
         id,
         username,
         full_name,
-        avatar_url
+        avatar_url,
       )
     `)
     .eq('status', 'published');

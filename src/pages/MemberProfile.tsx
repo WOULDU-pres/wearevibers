@@ -142,7 +142,7 @@ const MemberProfile = () => {
                     <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
                       <a href={profile.github_url} target="_blank" rel="noopener noreferrer">
                         <Github className="w-4 h-4" />
-                        GitHub
+                        GitHub,
                       </a>
                     </Button>
                   )}
@@ -150,7 +150,7 @@ const MemberProfile = () => {
                     <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
                       <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer">
                         <Mail className="w-4 h-4" />
-                        LinkedIn
+                        LinkedIn,
                       </a>
                     </Button>
                   )}

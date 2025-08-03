@@ -6,7 +6,7 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { 
   AlertDialog,
@@ -24,7 +24,7 @@ import { useAuthStore } from '@/stores';
 import { 
   useDeleteComment, 
   useVibeComment, 
-  useCommentVibeStatus 
+  useCommentVibeStatus,
 } from '@/hooks/useComments';
 import { 
   Heart, 
@@ -35,7 +35,7 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';

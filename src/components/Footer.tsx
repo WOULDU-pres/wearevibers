@@ -11,7 +11,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2 mb-4">
               <img src={logoImg} alt="WeAreVibers" className="w-8 h-8" />
               <span className="text-lg font-bold text-primary font-semibold">
-                WeAreVibers
+                WeAreVibers,
               </span>
             </div>
             <p className="text-muted-foreground text-sm mb-4">

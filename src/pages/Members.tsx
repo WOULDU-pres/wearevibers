@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,14 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Calendar, Hearts, Filter, TrendingUpPlus } from "lucide-react";
+import { MapPin, Calendar, Hearts, Filter, TrendingUpPlus, Users, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores";
 import { 
   useIsFollowing, 
   useToggleFollow, 
   useOnlineUsersCount,
-  useFollowSuggestions 
+  useFollowSuggestions,
 } from "@/hooks/useFollow";
 import { useUserTotalVibes } from "@/hooks/useVibes";
 import type { Tables } from "@/lib/supabase-types";
@@ -239,7 +240,7 @@ const Members = () => {
   const MemberCard = ({ 
     member, 
     currentUser,
-    onFollowToggle 
+    onFollowToggle,
   }: { 
     member: Profile; 
     currentUser: { id: string } | null; 
@@ -391,7 +392,7 @@ const Members = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-primary font-semibold mb-4">
-            Members
+            Members,
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             창의적인 개발자들과 연결되고, 함께 성장하는 커뮤니티

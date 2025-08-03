@@ -104,7 +104,7 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
         isFollowing && 'hover:bg-destructive hover:text-destructive-foreground',
         isFollowing && !isHovered && 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         !isFollowing && variant === 'default' && 'bg-primary hover:bg-primary/90 text-primary-foreground border-0',
-        className
+        className,
       )}
     >
       <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export const FollowIconButton: React.FC<Omit<FollowButtonProps, 'followText' | '
         isFollowing && 'hover:bg-destructive hover:text-destructive-foreground',
         isFollowing && !isHovered && 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         !isFollowing && variant === 'default' && 'bg-primary hover:bg-primary/90 text-primary-foreground border-0',
-        className
+        className,
       )}
       title={getTooltipText()}
     >

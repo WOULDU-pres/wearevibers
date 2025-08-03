@@ -10,7 +10,7 @@ import type {
   NotificationListResponse, 
   UnreadCountResponse,
   GetNotificationsParams,
-  MarkAsReadParams 
+  MarkAsReadParams,
 } from '@/types/notification';
 
 // ============================================================================
@@ -39,7 +39,7 @@ export const fetchNotifications = async (params: GetNotificationsParams = {}): P
         actor:profiles!actor_id (
           id,
           username,
-          avatar_url
+          avatar_url,
         )
       `)
       .order('created_at', { ascending: false })

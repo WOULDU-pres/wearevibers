@@ -11,9 +11,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { 
     initialize, 
     initialized, 
-    set
-    setProfile, 
-    setSession, 
+    setSession,
     setLoading,
     fetchProfile,
     cleanup 

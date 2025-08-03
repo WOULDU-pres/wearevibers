@@ -277,14 +277,14 @@ export async function attemptRLSFix(): Promise<{
     return {
       success: errors.length === 0,
       actions,
-      errors
+      errors,
     };
   } catch (error) {
     errors.push(`Fix attempt failed: ${error instanceof Error ? error.message : String(error)}`);
     return {
       success: false,
       actions,
-      errors
+      errors,
     };
   }
 }

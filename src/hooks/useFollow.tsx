@@ -99,7 +99,7 @@ export const useFollowers = (userId: string, limit: number = 20) => {
             full_name,
             avatar_url,
             bio,
-            is_online
+            is_online,
           )
         `)
         .eq('following_id', userId)
@@ -133,7 +133,7 @@ export const useFollowing = (userId: string, limit: number = 20) => {
             full_name,
             avatar_url,
             bio,
-            is_online
+            is_online,
           )
         `)
         .eq('follower_id', userId)
@@ -233,7 +233,7 @@ export const useToggleFollow = () => {
         previousFollowStatus, 
         previousFollowerCount, 
         previousFollowingCount, 
-        userId 
+        userId,
       };
     },
     onError: (error, variables, context) => {
@@ -399,7 +399,7 @@ export const useMutualFollows = (userId: string) => {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
           )
         `)
         .eq('follower_id', user.id)
@@ -443,7 +443,7 @@ export const useFollowSuggestions = (limit: number = 10) => {
           bio,
           follower_count,
           project_count,
-          is_online
+          is_online,
         `)
         .neq('id', user.id)
         .not('id', 'in', 

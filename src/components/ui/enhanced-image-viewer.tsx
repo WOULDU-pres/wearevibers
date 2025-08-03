@@ -207,8 +207,8 @@ export function EnhancedImageViewer({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (imageState.scale <= 1) return;
     setIsDragging(true);
-    setDragStart({ x: e.clientX - imageState.translatey: e.clientY - imageState.translateY });
-  }, [imageState.scale, imageState.translateimageState.translateY]);
+    setDragStart({ x: e.clientX - imageState.translateX, y: e.clientY - imageState.translateY });
+  }, [imageState.scale, imageState.translateX, imageState.translateY]);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -229,7 +229,7 @@ export function EnhancedImageViewer({
   // Touch handlers for mobile swipe
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
-    setTouchStart({ x: touch.clienty: touch.clientY });
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
   }, []);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
@@ -274,7 +274,7 @@ export function EnhancedImageViewer({
         exit={{ opacity: 0 }}
         className={cn(
           "fixed inset-0 z-50 bg-gradient-to-br from-black/95 via-black/90 to-black/95 backdrop-blur-md",
-          className
+          className,
         )}
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();

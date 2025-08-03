@@ -7,7 +7,7 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Flag, Shield } from 'lucide-react';
 import { ReportDialog } from './ReportDialog';
@@ -16,7 +16,7 @@ import type { ReportButtonProps } from '@/types/security';
 export function ReportButton({
   contentId,
   contentType,
-  className
+  className,
 }: ReportButtonProps) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
@@ -65,7 +65,7 @@ export function ReportButton({
 export function SimpleReportButton({
   contentId,
   contentType,
-  className
+  className,
 }: ReportButtonProps) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
@@ -112,7 +112,7 @@ export function SecurityActions({
   contentType,
   userId,
   username,
-  className
+  className,
 }: SecurityActionsProps) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 

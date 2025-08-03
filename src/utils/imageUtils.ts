@@ -206,7 +206,7 @@ export const compressImage = async (
           URL.revokeObjectURL(img.src);
         },
         outputFormat,
-        outputQuality
+        outputQuality,
       );
     };
     

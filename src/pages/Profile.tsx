@@ -40,7 +40,7 @@ import {
   Save,
   X,
   Linkedin,
-  Loader2
+  Loader2,
 } from "lucide-react";
 
 const Profile = () => {
@@ -346,7 +346,7 @@ const Profile = () => {
                             <div className="flex items-center space-x-1">
                               <Github className="w-4 h-4" />
                               <a href={profile.github_url} className="hover:text-primary" target="_blank" rel="noopener noreferrer">
-                                GitHub
+                                GitHub,
                               </a>
                             </div>
                           )}
@@ -547,7 +547,7 @@ const Profile = () => {
               <div className="space-y-2">
                 <Label htmlFor="github_url">
                   <Github className="w-4 h-4 mr-2 inline" />
-                  GitHub
+                  GitHub,
                 </Label>
                 <Input
                   id="github_url"
@@ -560,7 +560,7 @@ const Profile = () => {
               <div className="space-y-2">
                 <Label htmlFor="twitter_url">
                   <Twitter className="w-4 h-4 mr-2 inline" />
-                  Twitter
+                  Twitter,
                 </Label>
                 <Input
                   id="twitter_url"
@@ -573,7 +573,7 @@ const Profile = () => {
               <div className="space-y-2">
                 <Label htmlFor="linkedin_url">
                   <Linkedin className="w-4 h-4 mr-2 inline" />
-                  LinkedIn
+                  LinkedIn,
                 </Label>
                 <Input
                   id="linkedin_url"
