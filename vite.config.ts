@@ -18,13 +18,7 @@ export default defineConfig(({ mode }) => ({
     compress: true,
   },
   plugins: [
-    react({
-      // SWC 최적화 옵션
-      plugins: mode === 'production' ? [
-        // React 개발 도구 제거 (프로덕션)
-        ['@swc/plugin-remove-console', {}],
-      ] : [],
-    }),
+    react(),
     mode === "development" && componentTagger(),
     // 벤더 청크 자동 분할
     splitVendorChunkPlugin(),

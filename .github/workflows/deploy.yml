@@ -274,15 +274,6 @@ jobs:
             exit 1
           fi
 
-      - name: Slack notification
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          channel: '#deployments'
-          text: 'Production deployment ${{ job.status }}! 🚀'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   # 롤백 작업
   rollback:
@@ -296,11 +287,3 @@ jobs:
           echo "Rolling back to previous version..."
           # Vercel rollback logic would go here
           
-      - name: Notify rollback
-        uses: 8398a7/action-slack@v3
-        with:
-          status: 'warning'
-          channel: '#deployments'
-          text: '🚨 Production rollback initiated!'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
