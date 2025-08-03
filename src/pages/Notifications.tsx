@@ -2,12 +2,12 @@
 // EPIC-03: 기본 알림 시스템 - STORY-012
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Bell, Check, CheckCheck, Filter, MoreHorizontal } from 'lucide-react';
+
+import { CheckFilter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {

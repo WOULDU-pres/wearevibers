@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { useCallback, useImperativeHandle, useRef } from "react";
 import confetti from "canvas-confetti";
 
 export interface ConfettiRef {
@@ -32,12 +32,10 @@ export default function Confetti({
           ...globalOptions,
           resize: true,
         });
-      } else {
-        if (instanceRef.current) {
+      } else if (instanceRef.current) {
           instanceRef.current.reset();
           instanceRef.current = null;
         }
-      }
     },
     [globalOptions],
   );

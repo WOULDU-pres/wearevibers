@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Calendar, Heart, Users, Filter, TrendingUp, UserPlus } from "lucide-react";
+import { MapPin, Calendar, Hearts, Filter, TrendingUpPlus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores";
 import { 
@@ -79,7 +79,7 @@ const Members = () => {
   const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🔍 Starting Members query with filters:', { sortBy, filterBy });
+      console.warn('🔍 Starting Members query with filters:', { sortBy, filterBy });
       
       // Create a Promise that will timeout after 5 seconds
       const timeoutPromise = new Promise((_, reject) => {
@@ -89,7 +89,7 @@ const Members = () => {
       });
 
       // First, try a very simple query to test RLS with timeout
-      console.log('🧪 Testing basic profiles table access...');
+      console.warn('🧪 Testing basic profiles table access...');
       
       const testQueryPromise = supabase
         .from('profiles')
@@ -99,7 +99,7 @@ const Members = () => {
       // Race between the query and timeout
       const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
       
-      console.log('🧪 Basic profiles query result:', testQuery);
+      console.warn('🧪 Basic profiles query _result:', testQuery);
       
       if (testQuery.error) {
         console.error('❌ Basic profiles query failed:', testQuery.error);
@@ -107,7 +107,7 @@ const Members = () => {
       }
       
       // If basic query works, proceed with full query
-      console.log('✅ Basic query successful, proceeding with full query...');
+      console.warn('✅ Basic query successful, proceeding with full query...');
       
       let query = supabase
         .from('profiles')
@@ -144,11 +144,11 @@ const Members = () => {
 
       query = query.limit(50);
 
-      console.log('🔍 Executing full members query...');
+      console.warn('🔍 Executing full members query...');
       const fullQueryPromise = query;
       const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
       
-      console.log('📊 Full members query result:', { data, error, count: data?.length });
+      console.warn('📊 Full members query _result:', { data, error, count: data?.length });
 
       if (error) {
         console.error('❌ Error fetching members:', error);
@@ -163,7 +163,7 @@ const Members = () => {
         throw error;
       }
 
-      console.log('✅ Members query successful, setting data');
+      console.warn('✅ Members query successful, setting data');
       setMembers(data || []);
     } catch (error) {
       console.error('💥 Members query failed:', error);
@@ -238,7 +238,7 @@ const Members = () => {
   // 멤버 카드 컴포넌트
   const MemberCard = ({ 
     member, 
-    currentUser, 
+    currentUser,
     onFollowToggle 
   }: { 
     member: Profile; 

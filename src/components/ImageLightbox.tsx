@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
 import { 
-  X, 
+  X,
   ChevronLeft, 
   ChevronRight,
   ZoomIn,
@@ -192,8 +193,8 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
     const distanceY = touchStart.y - touchEnd.y;
     const isLeftSwipe = distanceX > 50;
     const isRightSwipe = distanceX < -50;
-    const isUpSwipe = distanceY > 50;
-    const isDownSwipe = distanceY < -50;
+    const _isUpSwipe = distanceY > 50;
+    const _isDownSwipe = distanceY < -50;
 
     // Only handle horizontal swipes for navigation
     if (Math.abs(distanceX) > Math.abs(distanceY)) {

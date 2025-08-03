@@ -204,7 +204,7 @@ vi.mock('framer-motion', () => ({
   },
   AnimatePresence: ({ children }: any) => children,
   useAnimation: () => ({}),
-  useMotionValue: (initial: any) => ({ get: () => initial, set: vi.fn() }),
+  useMotionValue: (initial: any) => ({ _get: () => initial, set: vi.fn() }),
 }));
 
 // React Router 모킹

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { } from 'react';
 import { useAuthStore } from '@/stores';
 import { supabase } from '@/lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -11,7 +11,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { 
     initialize, 
     initialized, 
-    setUser, 
+    set
     setProfile, 
     setSession, 
     setLoading,
@@ -35,12 +35,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           async (event, session) => {
             if (!isSubscribed) return; // 구독이 취소된 경우 무시
             
-            console.log('Auth state changed:', event, session?.user?.email);
+            console.warn('Auth state changed:', event, session?.user?.email);
             
             // INITIAL_SESSION 처리 - OAuth 콜백 후 중요한 이벤트
             if (event === 'INITIAL_SESSION') {
               if (session) {
-                console.log('Initial session found, updating state');
+                console.warn('Initial session found, updating state');
                 setSession(session);
                 setUser(session.user);
                 
@@ -48,14 +48,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   await fetchProfile(session.user.id);
                 }
               } else {
-                console.log('No initial session found');
+                console.warn('No initial session found');
               }
               return;
             }
             
             // 실제 로그아웃 이벤트만 처리
             if (event === 'SIGNED_OUT') {
-              console.log('User signed out, cleaning up state');
+              console.warn('User signed out, cleaning up state');
               
               cleanup();
               
@@ -64,11 +64,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               const publicPaths = ['/', '/login', '/signup', '/demo/image-viewer'];
               
               if (!publicPaths.includes(currentPath)) {
-                console.log('Redirecting to home due to sign out');
+                console.warn('Redirecting to home due to sign out');
                 window.location.href = '/';
               }
             } else if (event === 'TOKEN_REFRESHED') {
-              console.log('Token refreshed successfully');
+              console.warn('Token refreshed successfully');
               setSession(session);
               setUser(session?.user ?? null);
               
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               }
             } else if (event === 'SIGNED_IN') {
               // 로그인 시에만 상태 업데이트
-              console.log('User signed in, updating state');
+              console.warn('User signed in, updating state');
               setSession(session);
               setUser(session?.user ?? null);
               

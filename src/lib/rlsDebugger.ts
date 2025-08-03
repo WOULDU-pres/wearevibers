@@ -37,7 +37,7 @@ export interface RLSDebugResult {
  */
 async function debugSessionStatus() {
   try {
-    console.log('🔍 Starting session debug...');
+    console.warn('🔍 Starting session debug...');
     
     // 1. 현재 세션 상태 확인
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -68,7 +68,7 @@ async function debugSessionStatus() {
     const now = Math.floor(Date.now() / 1000);
     const isExpired = session.expires_at ? session.expires_at <= now : false;
     
-    console.log('📊 Session info:', {
+    console.warn('📊 Session info:', {
       userId: session.user.id,
       email: session.user.email,
       expiresAt: session.expires_at,
@@ -99,7 +99,7 @@ async function debugSessionStatus() {
  * 데이터베이스 테이블 접근 권한 테스트
  */
 async function debugDatabaseAccess(userId: string) {
-  console.log('🔍 Testing database access for user:', userId);
+  console.warn('🔍 Testing database access for user:', userId);
   
   const results = {
     canAccessProfiles: false,
@@ -130,20 +130,20 @@ async function debugDatabaseAccess(userId: string) {
 
   for (const test of testQueries) {
     try {
-      console.log(`🧪 Testing ${test.name} access...`);
+      console.warn(`🧪 Testing ${test.name} access...`);
       
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('TIMEOUT')), 1000);
       });
 
-      const result = await Promise.race([test.query, timeoutPromise]);
+      const _result = await Promise.race([test.query, timeoutPromise]);
       const { data, error } = result as any;
 
       if (error) {
         console.error(`❌ ${test.name} access error:`, error);
         results[`canAccess${test.name.charAt(0).toUpperCase() + test.name.slice(1)}` as keyof typeof results] = false;
       } else {
-        console.log(`✅ ${test.name} access successful`);
+        console.warn(`✅ ${test.name} access successful`);
         results[`canAccess${test.name.charAt(0).toUpperCase() + test.name.slice(1)}` as keyof typeof results] = true;
       }
     } catch (error) {
@@ -159,13 +159,13 @@ async function debugDatabaseAccess(userId: string) {
  * RLS 정책 상태 확인
  */
 async function debugRLSPolicies() {
-  console.log('🔍 Checking RLS policies...');
+  console.warn('🔍 Checking RLS policies...');
   
   try {
     // auth.uid() 함수가 올바르게 작동하는지 테스트
     const { data: uidTest, error: uidError } = await supabase.rpc('get_current_user_id');
     
-    console.log('🆔 Current user ID from RLS:', { data: uidTest, error: uidError });
+    console.warn('🆔 Current user ID from RLS:', { data: uidTest, error: uidError });
 
     // 각 테이블의 RLS 정책 활성화 상태 확인 (가능한 경우)
     return {
@@ -189,7 +189,7 @@ async function debugRLSPolicies() {
  * 메인 RLS 디버깅 함수
  */
 export async function debugRLSIssues(): Promise<RLSDebugResult> {
-  console.log('🚀 Starting comprehensive RLS debugging...');
+  console.warn('🚀 Starting comprehensive RLS debugging...');
   
   const startTime = Date.now();
   
@@ -212,9 +212,9 @@ export async function debugRLSIssues(): Promise<RLSDebugResult> {
   const rlsPolicies = await debugRLSPolicies();
   
   const endTime = Date.now();
-  console.log(`📊 RLS debugging completed in ${endTime - startTime}ms`);
+  console.warn(`📊 RLS debugging completed in ${endTime - startTime}ms`);
   
-  const result: RLSDebugResult = {
+  const _result: RLSDebugResult = {
     sessionStatus,
     databaseAccess,
     rlsPolicies,
@@ -225,7 +225,7 @@ export async function debugRLSIssues(): Promise<RLSDebugResult> {
     }
   };
 
-  console.log('📋 RLS Debug Result:', result);
+  console.warn('📋 RLS Debug Result:', _result);
   return result;
 }
 
@@ -237,7 +237,7 @@ export async function attemptRLSFix(): Promise<{
   actions: string[];
   errors: string[];
 }> {
-  console.log('🔧 Attempting RLS issue fixes...');
+  console.warn('🔧 Attempting RLS issue fixes...');
   
   const actions: string[] = [];
   const errors: string[] = [];
@@ -293,10 +293,10 @@ export async function attemptRLSFix(): Promise<{
  * RLS 상태 지속적 모니터링
  */
 export function startRLSMonitoring() {
-  console.log('📊 Starting RLS monitoring...');
+  console.warn('📊 Starting RLS monitoring...');
   
   const monitorInterval = setInterval(async () => {
-    const result = await debugRLSIssues();
+    const _result = await debugRLSIssues();
     
     // 문제가 감지되면 로깅
     if (!result.sessionStatus.tokenValid || 
@@ -312,7 +312,7 @@ export function startRLSMonitoring() {
   
   // 정리 함수 반환
   return () => {
-    console.log('🛑 Stopping RLS monitoring...');
+    console.warn('🛑 Stopping RLS monitoring...');
     clearInterval(monitorInterval);
   };
 }

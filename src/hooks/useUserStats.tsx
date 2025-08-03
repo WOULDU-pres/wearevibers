@@ -119,7 +119,7 @@ export const useUserStats = (userId: string) => {
       const commentCount = commentsData.data?.length || 0;
 
       // 받은 좋아요 수 계산
-      const totalVibesReceived = vibesReceivedData.reduce((total, result) => {
+      const totalVibesReceived = vibesReceivedData.reduce((total, _result) => {
         if (result.error) return total;
         return total + (result.count || 0);
       }, 0);

@@ -244,11 +244,11 @@ export const useNotificationSubscription = () => {
     isSubscribed: false,
     subscribe: () => {
       // TODO: Supabase Realtime 구독 구현
-      console.log('실시간 알림 구독 시작 (향후 구현 예정)');
+      console.warn('실시간 알림 구독 시작 (향후 구현 예정)');
     },
     unsubscribe: () => {
       // TODO: Supabase Realtime 구독 해제 구현
-      console.log('실시간 알림 구독 해제 (향후 구현 예정)');
+      console.warn('실시간 알림 구독 해제 (향후 구현 예정)');
     }
   };
 };

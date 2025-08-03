@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 interface VirtualizedListOptions {
   itemHeight: number;
@@ -46,7 +46,7 @@ export const useVirtualizedList = ({
 
   // 렌더링할 아이템들 계산
   const visibleItems = useMemo(() => {
-    const result = [];
+    const _result = [];
     for (let i = visibleRange.start; i <= visibleRange.end; i++) {
       result.push({
         index: i,
@@ -159,7 +159,7 @@ export const useAdaptiveVirtualizedList = (
 
   // 보이는 아이템들
   const visibleItems = useMemo(() => {
-    const result = [];
+    const _result = [];
     for (let i = visibleRange.start; i <= visibleRange.end; i++) {
       const offset = itemOffsets.get(i) || 0;
       const height = itemHeights.get(i) || estimatedItemHeight;

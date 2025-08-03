@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/stores';
 import { useCreateComment, useUpdateComment } from '@/hooks/useComments';
@@ -60,8 +60,8 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   const updateComment = useUpdateComment();
 
   // 글자 수 제한
-  const maxLength = DEFAULT_COMMENT_VALIDATION.maxLength;
-  const minLength = DEFAULT_COMMENT_VALIDATION.minLength;
+  const {maxLength} = DEFAULT_COMMENT_VALIDATION;
+  const {minLength} = DEFAULT_COMMENT_VALIDATION;
   const isContentValid = content.trim().length >= minLength && content.length <= maxLength;
   const charactersLeft = maxLength - content.length;
 
@@ -115,22 +115,22 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     try {
       if (isEditing && editingComment) {
         // 댓글 수정
-        const result = await updateComment.mutateAsync({
+        const _result = await updateComment.mutateAsync({
           commentId: editingComment.id,
           updates: { content: content.trim() },
         });
         
-        onSubmit?.(result);
+        onSubmit?.(_result);
       } else {
         // 새 댓글 작성
-        const result = await createComment.mutateAsync({
+        const _result = await createComment.mutateAsync({
           content: content.trim(),
           content_id: contentId,
           content_type: contentType,
           parent_id: parentId,
         });
         
-        onSubmit?.(result);
+        onSubmit?.(_result);
       }
       
       // 폼 초기화 (수정이 아닌 경우만)

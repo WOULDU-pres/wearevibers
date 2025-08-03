@@ -1,14 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, X, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+
 import { Separator } from "@/components/ui/separator";
 
-import { useGlobalSearch } from "@/hooks/useGlobalSearch";
+
 import { cn } from "@/lib/utils";
 
 interface GlobalSearchProps {
@@ -125,7 +125,7 @@ export default function GlobalSearch({
     }
   };
 
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = (_result: SearchResult) => {
     navigate(result.url);
     setIsOpen(false);
     setQuery("");
@@ -211,10 +211,10 @@ export default function GlobalSearch({
                 </div>
               ) : results.length > 0 ? (
                 <div className="space-y-3">
-                  {results.map((result) => (
+                  {results.map((_result) => (
                     <button
                       key={result.id}
-                      onClick={() => handleResultClick(result)}
+                      onClick={() => handleResultClick(_result)}
                       className="w-full text-left p-3 rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-start space-x-3">
@@ -315,10 +315,10 @@ export default function GlobalSearch({
             </div>
           ) : results.length > 0 ? (
             <div className="py-2">
-              {results.map((result) => (
+              {results.map((_result) => (
                 <button
                   key={result.id}
-                  onClick={() => handleResultClick(result)}
+                  onClick={() => handleResultClick(_result)}
                   className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">

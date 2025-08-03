@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SearchAutocomplete } from '@/components/SearchAutocomplete';
 import { AdvancedFilters, FilterOptions } from '@/components/AdvancedFilters';
-import { SearchHighlight, SearchSnippet } from '@/components/SearchHighlight';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,7 +25,7 @@ import {
   ArrowRight,
   TrendingUp
 } from 'lucide-react';
-import { useGlobalSearch } from '@/hooks/useGlobalSearch';
+
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 

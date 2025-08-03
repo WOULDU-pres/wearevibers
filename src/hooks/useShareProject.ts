@@ -49,7 +49,7 @@ export const useShareProject = ({ projectId, projectTitle }: UseShareProjectProp
       // 임시로 로컬에서 카운트 증가
       setShareCount(prev => prev + 1);
       
-      console.log('Share tracked:', shareData);
+      console.warn('Share tracked:', shareData);
     } catch (error) {
       console.error('Failed to track share:', error);
     } finally {

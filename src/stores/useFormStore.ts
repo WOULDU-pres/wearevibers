@@ -68,7 +68,7 @@ const initialCommentForm: CommentForm = {
 
 export const useFormStore = create<FormState>()(
   devtools(
-    (set, get) => ({
+    (set, _get) => ({
       loginForm: initialLoginForm,
       signupForm: initialSignupForm,
       commentForm: initialCommentForm,

@@ -2,8 +2,8 @@
 // EPIC-03: 기본 알림 시스템 - STORY-012
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Bell, Check, CheckCheck, MoreHorizontal } from 'lucide-react';
+
+import { CheckMoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';

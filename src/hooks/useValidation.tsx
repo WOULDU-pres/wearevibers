@@ -54,7 +54,7 @@ export function useValidation<T extends Record<string, unknown>>(
         }
 
         // Zod 스키마 검증
-        const result = await schema.safeParseAsync(processedData);
+        const _result = await schema.safeParseAsync(processedData);
 
         if (result.success) {
           setIsValidating(false);
@@ -123,7 +123,7 @@ export function useValidation<T extends Record<string, unknown>>(
           ) as Partial<T>;
         }
 
-        const result = await fieldSchema.safeParseAsync(processedData);
+        const _result = await fieldSchema.safeParseAsync(processedData);
 
         if (result.success) {
           // 해당 필드의 에러 제거
@@ -347,9 +347,9 @@ export function useAsyncValidation<T>(
         // 디바운싱을 위한 지연
         await new Promise((resolve) => setTimeout(resolve, debounceMs));
 
-        const result = await validator(value);
+        const _result = await validator(value);
         
-        if (result) {
+        if (_result) {
           setIsValid(true);
           setError(null);
         } else {

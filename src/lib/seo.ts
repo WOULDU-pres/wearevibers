@@ -201,7 +201,7 @@ class SEOManager {
       url: window.location.origin,
       potentialAction: {
         '@type': 'SearchAction',
-        target: `${window.location.origin}/search?q={search_term_string}`,
+        tar_get: `${window.location.origin}/search?q={search_term_string}`,
         'query-input': 'required name=search_term_string'
       },
       publisher: {
@@ -413,7 +413,7 @@ class SEOManager {
 export const seoManager = new SEOManager();
 
 // React Hook for SEO
-import { useEffect } from 'react';
+
 import { useLocation } from 'react-router-dom';
 
 export const useSEO = (config: SEOConfig) => {

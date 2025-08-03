@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 interface UseIntersectionObserverOptions extends IntersectionObserverInit {
   freezeOnceVisible?: boolean;
@@ -39,7 +39,7 @@ export const useIntersectionObserver = (
 
       if (frozen) {
         // 한 번 visible 상태가 되면 observer 해제
-        return;
+        
       }
     },
     [frozen]

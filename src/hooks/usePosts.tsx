@@ -15,7 +15,7 @@ export const usePosts = (filters: PostFilters = {}) => {
   return useQuery({
     queryKey: ['posts', filters],
     queryFn: async () => {
-      console.log('🔍 Starting Posts query with filters:', filters);
+      console.warn('🔍 Starting Posts query with filters:', filters);
       
       // Create a Promise that will timeout after 5 seconds
       const timeoutPromise = new Promise((_, reject) => {
@@ -26,7 +26,7 @@ export const usePosts = (filters: PostFilters = {}) => {
 
       try {
         // First, try a very simple query to test RLS with timeout
-        console.log('🧪 Testing basic posts table access...');
+        console.warn('🧪 Testing basic posts table access...');
         
         const testQueryPromise = supabase
           .from('posts')
@@ -36,7 +36,7 @@ export const usePosts = (filters: PostFilters = {}) => {
         // Race between the query and timeout
         const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
         
-        console.log('🧪 Basic posts query result:', testQuery);
+        console.warn('🧪 Basic posts query _result:', testQuery);
         
         if (testQuery.error) {
           console.error('❌ Basic posts query failed:', testQuery.error);
@@ -44,7 +44,7 @@ export const usePosts = (filters: PostFilters = {}) => {
         }
         
         // If basic query works, proceed with full query
-        console.log('✅ Basic query successful, proceeding with full query...');
+        console.warn('✅ Basic query successful, proceeding with full query...');
         
         let query = supabase
           .from('posts')
@@ -79,11 +79,11 @@ export const usePosts = (filters: PostFilters = {}) => {
             query = query.order('created_at', { ascending: false });
         }
 
-        console.log('🔍 Executing full posts query...');
+        console.warn('🔍 Executing full posts query...');
         const fullQueryPromise = query;
         const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
         
-        console.log('📊 Full posts query result:', { data, error, count: data?.length });
+        console.warn('📊 Full posts query _result:', { data, error, count: data?.length });
 
         if (error) {
           console.error('❌ Error fetching posts:', error);
@@ -96,7 +96,7 @@ export const usePosts = (filters: PostFilters = {}) => {
           throw error;
         }
 
-        console.log('✅ Posts query successful, returning data');
+        console.warn('✅ Posts query successful, returning data');
         return data as (Post & {
           profiles: {
             id: string;
@@ -118,7 +118,7 @@ export const usePosts = (filters: PostFilters = {}) => {
       }
     },
     retry: (failureCount, error) => {
-      console.log('🔄 Posts retry attempt:', failureCount, 'Error:', error);
+      console.warn('🔄 Posts retry attempt:', failureCount, 'Error:', error);
       
       // Don't retry RLS timeout errors
       if (error?.message?.includes('RLS_TIMEOUT')) {

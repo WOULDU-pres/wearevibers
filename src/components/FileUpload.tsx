@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Check, Settings, Zap, Info } from 'lucide-react';
+import { Upload, Zap, Info } from 'lucide-react';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { AnimatedCircularProgressBar } from '@/components/ui/animated-circular-progress-bar';
 import { ShinyButton } from '@/components/ui/shiny-button';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUIStore } from '@/stores';
 import { 
-  smartCompress, 
+  
   compressImage, 
   COMPRESSION_PRESETS, 
   formatFileSize, 
@@ -143,7 +143,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       }, 200);
 
       // Call the upload function with potentially compressed file
-      const result = await onUpload(fileToUpload);
+      const _result = await onUpload(fileToUpload);
       
       // Complete the progress
       clearInterval(progressInterval);

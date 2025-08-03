@@ -3,11 +3,11 @@
  * 개발 환경에서만 표시되며, 시드 데이터 생성/삭제 기능 제공
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Database, Plus, Trash2, RefreshCw } from 'lucide-react';
+
+import { Loader2, Database, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   createSeedData, 
@@ -56,8 +56,8 @@ export function DataSeeder() {
     setLastResult(null);
     
     try {
-      const result = await createSeedData();
-      setLastResult(result);
+      const _result = await createSeedData();
+      setLastResult(_result);
       
       if (result.success) {
         toast.success(result.message);
@@ -83,8 +83,8 @@ export function DataSeeder() {
     setLastResult(null);
     
     try {
-      const result = await clearSeedData();
-      setLastResult(result);
+      const _result = await clearSeedData();
+      setLastResult(_result);
       
       if (result.success) {
         toast.success(result.message);

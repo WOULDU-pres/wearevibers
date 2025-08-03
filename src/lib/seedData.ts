@@ -323,7 +323,7 @@ const samplePosts: Omit<Post, 'id' | 'user_id' | 'created_at' | 'updated_at'>[] 
  */
 export async function createSeedData(): Promise<SeedDataResult> {
   try {
-    console.log('🌱 Starting seed data creation...');
+    console.warn('🌱 Starting seed data creation...');
     
     const errors: string[] = [];
     let profilesCreated = 0;
@@ -341,7 +341,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
       };
     }
 
-    console.log('👤 Current user:', user.id);
+    console.warn('👤 Current user:', user.id);
 
     // 2. 현재 사용자의 프로필 생성/업데이트
     const currentUserProfile = {
@@ -370,7 +370,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
       errors.push(`Current user profile creation failed: ${profileError.message}`);
     } else {
       profilesCreated++;
-      console.log('✅ Current user profile created/updated');
+      console.warn('✅ Current user profile created/updated');
     }
 
     // 3. 샘플 사용자들을 위한 임시 사용자 ID 생성 (실제로는 Auth 사용자 생성 필요)
@@ -434,7 +434,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
 
     const success = errors.length === 0;
     
-    console.log('🎯 Seed data creation result:', {
+    console.warn('🎯 Seed data creation _result:', {
       success,
       profilesCreated,
       projectsCreated,
@@ -472,7 +472,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
  */
 export async function clearSeedData(): Promise<SeedDataResult> {
   try {
-    console.log('🧹 Clearing existing seed data...');
+    console.warn('🧹 Clearing existing seed data...');
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -489,7 +489,7 @@ export async function clearSeedData(): Promise<SeedDataResult> {
       supabase.from('projects').delete().eq('user_id', user.id),
     ]);
 
-    console.log('✅ Seed data cleared successfully');
+    console.warn('✅ Seed data cleared successfully');
     
     return {
       success: true,

@@ -14,17 +14,17 @@ export default async function globalSetup() {
   // 테스트용 서버 시작 (필요시)
   // await startTestServer();
   
-  console.log('🧪 Global test setup completed');
+  console.warn('🧪 Global test setup completed');
 }
 
 // 테스트용 서버 시작 (예시)
 async function startTestServer() {
   // Express 서버나 MSW 서버 시작
-  console.log('🚀 Test server started');
+  console.warn('🚀 Test server started');
 }
 
 // 테스트 데이터베이스 초기화 (예시)
 async function initTestDatabase() {
   // 테스트용 데이터베이스 연결 및 초기화
-  console.log('🗄️ Test database initialized');
+  console.warn('🗄️ Test database initialized');
 }

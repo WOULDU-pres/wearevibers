@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useAuthStore } from "@/stores";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/supabase-types";
@@ -9,7 +9,7 @@ import Footer from "@/components/Footer";
 import ProjectCard from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +25,7 @@ import { ConfettiButton } from "@/components/ui/confetti";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
 import { 
-  Settings, 
+  
   Upload, 
   Camera, 
   Heart, 
@@ -59,7 +59,7 @@ const Profile = () => {
       return;
     }
 
-    console.log('🔍 Starting Profile query for user:', user.id);
+    console.warn('🔍 Starting Profile query for user:', user.id);
     setLoading(true);
 
     try {
@@ -78,7 +78,7 @@ const Profile = () => {
         return;
       }
 
-      console.log('✅ Valid session found, proceeding with profile query');
+      console.warn('✅ Valid session found, proceeding with profile query');
       
       // 2. Create timeout promise (reduced to 3 seconds for better UX)
       const timeoutPromise = new Promise((_, reject) => {
@@ -88,13 +88,13 @@ const Profile = () => {
       });
 
       // 3. Use safe profile fetcher with built-in RLS handling
-      console.log('🔍 Using safeGetProfile with built-in RLS protection...');
+      console.warn('🔍 Using safeGetProfile with built-in RLS protection...');
       
       const { data, error, isTimeout } = await safeGetProfile(user.id);
-      console.log('📊 SafeGetProfile result:', { data: !!data, error, isTimeout });
+      console.warn('📊 SafeGetProfile _result:', { data: !!data, error, isTimeout });
       
       if (isTimeout) {
-        console.log('⏰ Profile query timed out - using fallback profile');
+        console.warn('⏰ Profile query timed out - using fallback profile');
         toast.warning('프로필 데이터 로드가 지연되어 기본 정보를 표시합니다.');
         
         if (data) {
@@ -109,7 +109,7 @@ const Profile = () => {
         
         // Handle specific error cases
         if (error.code === 'PGRST116') {
-          console.log('ℹ️ Profile not found - this might be a new user');
+          console.warn('ℹ️ Profile not found - this might be a new user');
           toast.info('프로필을 찾을 수 없습니다. 프로필을 생성해주세요.');
           return;
         }
@@ -125,7 +125,7 @@ const Profile = () => {
       }
       
       if (data) {
-        console.log('✅ Profile query successful, setting data');
+        console.warn('✅ Profile query successful, setting data');
         setProfile(data);
         setFormData(data);
       } else {

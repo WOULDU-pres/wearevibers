@@ -49,7 +49,7 @@ export const useFileUpload = () => {
         handleSupabaseError(error, {
           context: 'fileUpload',
           bucket: options.bucket,
-          filePath: filePath,
+          filePath,
           fileSize: file.size,
           fileType: file.type,
           userId: user.id,
@@ -100,7 +100,7 @@ export const useFileUpload = () => {
   const uploadImage = async (file: File, folder: string = 'general'): Promise<string> => {
     return uploadFile(file, {
       bucket: 'projects',
-      folder: folder,
+      folder,
       upsert: false,
       contentType: file.type,
     });
@@ -125,8 +125,8 @@ export const useFileUpload = () => {
         // Sentry로 에러 리포팅
         handleSupabaseError(error, {
           context: 'fileDelete',
-          bucket: bucket,
-          filePath: filePath,
+          bucket,
+          filePath,
           userId: user.id,
         });
         

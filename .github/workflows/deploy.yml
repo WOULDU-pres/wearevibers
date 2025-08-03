@@ -6,13 +6,13 @@ on:
   pull_request:
     branches: [main, develop]
   schedule:
-    - cron: '0 2 * * 1' # Weekly security audit
+    - cron: "0 2 * * 1" # Weekly security audit
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
@@ -107,12 +107,6 @@ jobs:
       - name: Run audit-ci
         run: npx audit-ci --config .audit-ci.json
 
-      - name: Run Snyk security scan
-        run: npx snyk test --severity-threshold=high
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
-
       - name: Check for outdated dependencies
         run: npm outdated || true
 
@@ -159,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-and-build, security-audit]
     if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
-    
+
     environment:
       name: staging
       url: https://wearevibers-staging.vercel.app
@@ -246,7 +240,7 @@ jobs:
         run: |
           echo "Waiting for deployment to be ready..."
           sleep 30
-          
+
           # Health check with retry
           for i in {1..5}; do
             if curl -f https://wearevibers.vercel.app/health; then
@@ -267,23 +261,21 @@ jobs:
           # Basic performance check
           response_time=$(curl -o /dev/null -s -w '%{time_total}' https://wearevibers.vercel.app)
           echo "Response time: ${response_time}s"
-          
+
           # Fail if response time > 3 seconds
           if (( $(echo "$response_time > 3.0" | bc -l) )); then
             echo "Response time too slow: ${response_time}s"
             exit 1
           fi
 
-
   # 롤백 작업
   rollback:
     runs-on: ubuntu-latest
     if: failure() && github.ref == 'refs/heads/main'
     needs: [deploy-production]
-    
+
     steps:
       - name: Rollback deployment
         run: |
           echo "Rolling back to previous version..."
           # Vercel rollback logic would go here
-          

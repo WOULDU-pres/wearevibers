@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider, MutationCache, QueryCache } from '@ta
 import { isAuthError, handleAuthError } from '@/lib/authErrorHandler';
 import { handleSupabaseError } from '@/lib/sentry';
 import { toast } from 'sonner';
-import { createQueryClient } from '@/lib/query-config';
+import { _createQueryClient } from '@/lib/query-config';
 
 // React Query 에러 핸들러 생성
 const createQueryErrorHandler = () => {

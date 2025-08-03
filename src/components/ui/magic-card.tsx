@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,7 @@ export const MagicCard = React.forwardRef<HTMLDivElement, MagicCardProps>(
         mouseX.set(e.clientX - left);
         mouseY.set(e.clientY - top);
       },
-      [mouseX, mouseY]
+      [mousemouseY]
     );
 
     const maskImage = useMotionTemplate`radial-gradient(${gradientSize}px at ${mouseX}px ${mouseY}px, white, transparent)`;

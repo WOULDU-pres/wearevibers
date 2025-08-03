@@ -1,8 +1,8 @@
-import { Bell, User, Plus, LogOut } from "lucide-react";
+import { Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import GlobalSearch from "@/components/GlobalSearch";
 import MobileMenu from "@/components/MobileMenu";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -13,17 +13,17 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    console.log("🚀 Logout button clicked - handleSignOut called");
+    console.warn("🚀 Logout button clicked - handleSignOut called");
     try {
-      console.log("🔄 Calling signOut function...");
+      console.warn("🔄 Calling signOut function...");
       const { error } = await signOut();
-      console.log("📊 SignOut result:", { error });
+      console.warn("📊 SignOut _result:", { error });
 
       if (error) {
         console.error("❌ SignOut failed:", error);
         toast.error("로그아웃에 실패했습니다.");
       } else {
-        console.log("✅ SignOut successful, navigating to home");
+        console.warn("✅ SignOut successful, navigating to home");
         toast.success("로그아웃되었습니다.");
         navigate("/");
       }

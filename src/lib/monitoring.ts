@@ -221,8 +221,8 @@ class MonitoringService {
 
       const target = event.target as HTMLElement;
       const tagName = target.tagName.toLowerCase();
-      const className = target.className;
-      const id = target.id;
+      const {className} = target;
+      const {id} = target;
 
       this.trackEvent('user_interaction', 'click', tagName, `${id}-${className}`);
     });
@@ -275,7 +275,7 @@ class MonitoringService {
       // Console logging for development
       if (import.meta.env.NODE_ENV === 'development') {
         console.group(`📊 ${type.toUpperCase()} Metric`);
-        console.log(data);
+        console.warn(data);
         console.groupEnd();
       }
 
@@ -311,18 +311,18 @@ class MonitoringService {
 
   // 성능 버지 계산
   public getPerformanceBudget(): {
-    fcp: { target: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
-    lcp: { target: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
-    fid: { target: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
-    cls: { target: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
-    ttfb: { target: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
+    fcp: { tar_get: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
+    lcp: { tar_get: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
+    fid: { tar_get: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
+    cls: { tar_get: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
+    ttfb: { tar_get: number; current?: number; status: 'good' | 'needs-improvement' | 'poor' };
   } {
     return {
-      fcp: { target: 1800, status: 'good' }, // 1.8s
-      lcp: { target: 2500, status: 'good' }, // 2.5s
-      fid: { target: 100, status: 'good' },  // 100ms
-      cls: { target: 0.1, status: 'good' },  // 0.1
-      ttfb: { target: 800, status: 'good' }  // 800ms
+      fcp: { tar_get: 1800, status: 'good' }, // 1.8s
+      lcp: { tar_get: 2500, status: 'good' }, // 2.5s
+      fid: { tar_get: 100, status: 'good' },  // 100ms
+      cls: { tar_get: 0.1, status: 'good' },  // 0.1
+      ttfb: { tar_get: 800, status: 'good' }  // 800ms
     };
   }
 }

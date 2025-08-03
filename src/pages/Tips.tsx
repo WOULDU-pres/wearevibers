@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAutocomplete } from "@/components/SearchAutocomplete";
-import { SearchHighlight, SearchSnippet } from "@/components/SearchHighlight";
-import { Heart, Bookmark, Search, Code, Palette, GitBranch, Layers, PlusCircle, MoreHorizontal } from "lucide-react";
+
+import { Heart, Bookmark, Code, Palette, GitBranch, Layers, PlusCircle } from "lucide-react";
 import { ReportButton } from "@/components/ReportButton";
 import { useTips, useIsTipVibed, useVibeTip, useIsTipBookmarked, useBookmarkTip } from "@/hooks/useTips";
 import { useNavigate } from "react-router-dom";
@@ -58,7 +58,7 @@ const Tips = () => {
   }
 
   // Debug logging
-  console.log('Tips query state:', { tips, loading, error });
+  console.warn('Tips query state:', { tips, loading, error });
 
   const TipCard = ({ tip }: { tip: Record<string, unknown> }) => {
     const { data: isTipVibed } = useIsTipVibed(tip.id);

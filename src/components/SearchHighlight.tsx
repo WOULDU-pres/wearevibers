@@ -49,11 +49,11 @@ export const SearchHighlight: React.FC<SearchHighlightProps> = ({
       snippetText = text.substring(snippetStart, snippetEnd);
       
       // Add ellipsis
-      if (snippetStart > 0) snippetText = '...' + snippetText;
-      if (snippetStart + maxLength < text.length) snippetText = snippetText + '...';
+      if (snippetStart > 0) snippetText = `...${  snippetText}`;
+      if (snippetStart + maxLength < text.length) snippetText = `${snippetText  }...`;
     } else {
       // No match found, just truncate from start
-      snippetText = text.substring(0, maxLength) + '...';
+      snippetText = `${text.substring(0, maxLength)  }...`;
     }
   }
 

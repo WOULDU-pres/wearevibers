@@ -79,7 +79,7 @@ export const generateResponsiveSrcSet = (
 /**
  * 지연 로딩을 위한 placeholder 이미지 생성
  */
-export const generatePlaceholder = (url: string, blur: number = 10): string => {
+export const generatePlaceholder = (url: string, _blur: number = 10): string => {
   return optimizeImage(url, {
     width: 20,
     height: 20,

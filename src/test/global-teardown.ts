@@ -13,20 +13,20 @@ export default async function globalTeardown() {
   // 임시 파일 정리 (필요시)
   // await cleanupTempFiles();
   
-  console.log('🧹 Global test teardown completed');
+  console.warn('🧹 Global test teardown completed');
 }
 
 // 테스트 서버 종료 (예시)
 async function stopTestServer() {
-  console.log('🛑 Test server stopped');
+  console.warn('🛑 Test server stopped');
 }
 
 // 테스트 데이터베이스 정리 (예시)
 async function cleanupTestDatabase() {
-  console.log('🗄️ Test database cleaned up');
+  console.warn('🗄️ Test database cleaned up');
 }
 
 // 임시 파일 정리 (예시)
 async function cleanupTempFiles() {
-  console.log('📁 Temporary files cleaned up');
+  console.warn('📁 Temporary files cleaned up');
 }

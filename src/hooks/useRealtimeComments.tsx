@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import type { CommentWithProfile, CommentContentType } from '@/types/comment';
@@ -33,7 +33,7 @@ export const useRealtimeComments = ({
           filter: `content_id=eq.${contentId}`,
         },
         async (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          console.log('New comment:', payload);
+          console.warn('New comment:', payload);
           
           // 새 댓글의 프로필 정보를 가져오기
           const { data: profileData, error } = await supabase
@@ -106,7 +106,7 @@ export const useRealtimeComments = ({
           filter: `content_id=eq.${contentId}`,
         },
         async (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          console.log('Updated comment:', payload);
+          console.warn('Updated comment:', payload);
 
           // 프로필 정보 포함하여 댓글 업데이트
           const { data: profileData, error } = await supabase
@@ -164,7 +164,7 @@ export const useRealtimeComments = ({
           filter: `content_id=eq.${contentId}`,
         },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          console.log('Deleted comment:', payload);
+          console.warn('Deleted comment:', payload);
 
           const deletedCommentId = payload.old.id;
 

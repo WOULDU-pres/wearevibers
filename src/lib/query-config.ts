@@ -55,7 +55,7 @@ export const queryConfig: DefaultOptions = {
 };
 
 // QueryClient 인스턴스 생성
-export const createQueryClient = () => {
+export const _createQueryClient = () => {
   return new QueryClient({
     defaultOptions: queryConfig,
     logger: {

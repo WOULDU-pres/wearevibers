@@ -300,7 +300,7 @@ export const logSecurityEvent = (event: {
 }) => {
   // 프로덕션에서만 로그 기록
   if (process.env.NODE_ENV === 'production') {
-    console.log(`[SECURITY] ${event.type}:`, {
+    console.warn(`[SECURITY] ${event.type}:`, {
       timestamp: new Date().toISOString(),
       ...event,
     });

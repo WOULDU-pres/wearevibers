@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Lens } from "@/components/ui/lens";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { BorderBeam } from "@/components/ui/border-beam";
@@ -207,8 +207,8 @@ export function EnhancedImageViewer({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (imageState.scale <= 1) return;
     setIsDragging(true);
-    setDragStart({ x: e.clientX - imageState.translateX, y: e.clientY - imageState.translateY });
-  }, [imageState.scale, imageState.translateX, imageState.translateY]);
+    setDragStart({ x: e.clientX - imageState.translatey: e.clientY - imageState.translateY });
+  }, [imageState.scale, imageState.translateimageState.translateY]);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -229,7 +229,7 @@ export function EnhancedImageViewer({
   // Touch handlers for mobile swipe
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setTouchStart({ x: touch.clienty: touch.clientY });
   }, []);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {

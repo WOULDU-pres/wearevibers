@@ -19,7 +19,7 @@ export const isAuthError = (error: unknown): boolean => {
   };
   
   // 디버깅을 위한 로그 추가
-  console.log('🔍 Auth error check:', {
+  console.warn('🔍 Auth error check:', {
     error: err,
     code: err.code,
     message: err.message,
@@ -59,7 +59,7 @@ export const isAuthError = (error: unknown): boolean => {
   );
   
   if (isAuth) {
-    console.log('🚨 Auth error detected!', err);
+    console.warn('🚨 Auth error detected!', err);
   }
   
   return isAuth;
@@ -74,7 +74,7 @@ export const handleAuthError = async (error: unknown, showToast = true): Promise
     return;
   }
 
-  console.log('Auth error detected, signing out user:', error);
+  console.warn('Auth error detected, signing out user:', error);
 
   // Sentry로 인증 에러 리포팅 (Rule 1, 2, 3 적용)
   handleSupabaseError(error, {

@@ -1,6 +1,6 @@
-import { Heart, ExternalLink, Github, MessageCircle } from "lucide-react";
+import { Heart, ExternalGithub, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ShareButton from "@/components/ui/share-button";
 import ShareModal from "@/components/ui/share-modal";

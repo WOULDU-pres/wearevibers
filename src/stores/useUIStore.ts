@@ -29,7 +29,7 @@ export interface UIState {
   setUploadComplete: (complete: boolean) => void;
   setCopied: (copied: boolean) => void;
   setEstimatedReadTime: (time: number) => void;
-  resetUploadState: () => void;
+  _resetUploadState: () => void;
   resetUIState: () => void;
 }
 
@@ -47,7 +47,7 @@ const initialState = {
 
 export const useUIStore = create<UIState>()(
   devtools(
-    (set, get) => ({
+    (set, _get) => ({
       ...initialState,
       
       setActiveCategory: (category: string) =>
@@ -77,7 +77,7 @@ export const useUIStore = create<UIState>()(
       setEstimatedReadTime: (time: number) =>
         set({ estimatedReadTime: time }, false, 'setEstimatedReadTime'),
       
-      resetUploadState: () =>
+      _resetUploadState: () =>
         set(
           {
             uploading: false,

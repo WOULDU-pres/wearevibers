@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, User, Calendar, PlusCircle, Search, TrendingUp, Clock, Filter, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Calendar, PlusCircle, TrendingUp, Clock, Filter, Edit } from "lucide-react";
 import { ReportButton } from "@/components/ReportButton";
 import { usePosts, useVibePost, useIsPostVibed, useUpdatePost, useDeletePost } from "@/hooks/usePosts";
 import { supabase } from "@/lib/supabase";
@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { PostEditDialog } from "@/components/PostEditDialog";
 import { PostDeleteDialog } from "@/components/PostDeleteDialog";
 import type { Post } from "@/types/post";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const loungeCategories = [
   { 

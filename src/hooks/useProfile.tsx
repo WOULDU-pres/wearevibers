@@ -24,7 +24,7 @@ export const useProfile = (userId: string) => {
           method: 'GET',
           endpoint: 'profiles',
           context: 'useProfile',
-          userId: userId,
+          userId,
         });
         
         // 인증 에러인 경우 처리
@@ -60,7 +60,7 @@ export const useProfileStats = (userId: string) => {
             method: 'GET',
             endpoint: 'projects',
             context: 'useProfileStats',
-            userId: userId,
+            userId,
           });
           
           if (isAuthError(projectsError)) {

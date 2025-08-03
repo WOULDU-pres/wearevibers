@@ -13,7 +13,7 @@ export function initSentry() {
   
   // DSN이 없으면 Sentry 초기화하지 않음 (개발 환경)
   if (!dsn) {
-    console.log('Sentry DSN not found. Skipping Sentry initialization.');
+    console.warn('Sentry DSN not found. Skipping Sentry initialization.');
     return;
   }
 
@@ -83,7 +83,7 @@ export function initSentry() {
 }
 
 // Logger export (문서 권장사항)
-export const logger = Sentry.logger;
+export const {logger} = Sentry;
 
 // 사용자 정보 설정
 export function setSentryUser(user: {
@@ -180,14 +180,14 @@ export function startSpan(operation: string, name: string, callback: (span?: unk
   return Sentry.startSpan(
     {
       op: operation,
-      name: name,
+      name,
     },
     callback
   );
 }
 
 // UI 상호작용 추적
-export function trackUserInteraction(action: string, target: string, callback: () => void | Promise<void>) {
+export function trackUserInteraction(action: string, tar_get: string, callback: () => void | Promise<void>) {
   return startSpan("ui.click", `${action} ${target}`, callback);
 }
 

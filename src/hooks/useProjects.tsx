@@ -19,7 +19,7 @@ export const useProjects = (filters?: ProjectFilters) => {
   return useQuery({
     queryKey: ['projects', filters],
     queryFn: async () => {
-      console.log('🔍 Starting projects query with filters:', filters);
+      console.warn('🔍 Starting projects query with filters:', filters);
       
       // 단순화된 쿼리 - JOIN 없이 프로젝트만 먼저 조회
       let query = supabase
@@ -70,11 +70,11 @@ export const useProjects = (filters?: ProjectFilters) => {
       }
       
       if (wasFixed) {
-        console.log('✅ Projects query succeeded after RLS fix');
+        console.warn('✅ Projects query succeeded after RLS fix');
       }
       
       const projects = data as Project[];
-      console.log(`📊 Projects query successful: ${projects.length} projects found`);
+      console.warn(`📊 Projects query successful: ${projects.length} projects found`);
       
       // 프로필 정보를 별도로 조회하여 병합 (선택사항)
       if (projects.length > 0) {
@@ -234,17 +234,17 @@ export const useMyProjects = () => {
         throw new Error('User not authenticated');
       }
 
-      console.log('🔍 Starting MyProjects query for user:', user.id);
+      console.warn('🔍 Starting MyProjects query for user:', user.id);
 
       try {
         // Use safe projects fetcher with built-in RLS handling
-        console.log('🔍 Using safeGetUserProjects with built-in RLS protection...');
+        console.warn('🔍 Using safeGetUserProjects with built-in RLS protection...');
         
         const { data, error, isTimeout } = await safeGetUserProjects(user.id);
-        console.log('📊 SafeGetUserProjects result:', { data: data?.length || 0, error, isTimeout });
+        console.warn('📊 SafeGetUserProjects _result:', { data: data?.length || 0, error, isTimeout });
         
         if (isTimeout) {
-          console.log('⏰ Projects query timed out - returning empty array for better UX');
+          console.warn('⏰ Projects query timed out - returning empty array for better UX');
           return [];
         }
         
@@ -260,7 +260,7 @@ export const useMyProjects = () => {
           throw error;
         }
 
-        console.log('✅ MyProjects query successful:', data?.length || 0, 'projects found');
+        console.warn('✅ MyProjects query successful:', data?.length || 0, 'projects found');
         return (data || []) as Project[];
         
       } catch (error) {

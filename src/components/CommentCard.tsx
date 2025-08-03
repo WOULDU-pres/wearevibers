@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
-  DropdownMenuItem, 
+  
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { 
@@ -29,9 +29,9 @@ import {
 import { 
   Heart, 
   MessageCircle, 
-  MoreHorizontal, 
+  
   Edit, 
-  Trash2, 
+  
   Clock,
   ChevronDown,
   ChevronUp,

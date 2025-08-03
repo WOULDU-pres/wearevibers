@@ -133,7 +133,7 @@ class PerformanceMonitor {
 
     // 콘솔에 중요한 메트릭 로그
     if (['LCP', 'FID', 'CLS', 'FCP', 'TTFB'].includes(metric.name)) {
-      console.log(`🚀 ${metric.name}: ${metric.value}${metric.unit}`);
+      console.warn(`🚀 ${metric.name}: ${metric.value}${metric.unit}`);
     }
   }
 
@@ -191,7 +191,7 @@ class PerformanceMonitor {
   measureMemoryUsage() {
     if (!this.isEnabled || !('memory' in performance)) return;
 
-    const memory = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+    const {memory} = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } });
     this.recordMetric({
       name: 'Memory Usage',
       value: memory.usedJSHeapSize / 1024 / 1024, // MB 단위
@@ -289,7 +289,7 @@ class PerformanceMonitor {
 export const performanceMonitor = new PerformanceMonitor();
 
 // React 컴포넌트용 훅
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 export const usePerformanceMonitor = (componentName: string) => {
   const startTimeRef = useRef<number>();

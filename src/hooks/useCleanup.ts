@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 /**
  * 메모리 누수 방지를 위한 cleanup 훅들
@@ -210,7 +210,7 @@ export const useMemoryLeakDetector = (componentName: string) => {
     if (process.env.NODE_ENV !== 'development') return;
 
     const mountTime = Date.now();
-    console.log(`🔧 [${componentName}] Component mounted at ${mountTime}`);
+    console.warn(`🔧 [${componentName}] Component mounted at ${mountTime}`);
 
     // 컴포넌트가 장시간 마운트되어 있는지 확인
     const checkLongMount = setTimeout(() => {
@@ -221,7 +221,7 @@ export const useMemoryLeakDetector = (componentName: string) => {
       clearTimeout(checkLongMount);
       const unmountTime = Date.now();
       const duration = unmountTime - mountTime;
-      console.log(`🔧 [${componentName}] Component unmounted after ${duration}ms`);
+      console.warn(`🔧 [${componentName}] Component unmounted after ${duration}ms`);
     };
   }, [componentName]);
 };

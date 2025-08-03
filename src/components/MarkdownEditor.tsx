@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { MDXEditor, headingsPlugin, listsPlugin, quotePlugin, thematicBreakPlugin, markdownShortcutPlugin, codeBlockPlugin, codeMirrorPlugin, tablePlugin, linkPlugin, linkDialogPlugin, imagePlugin, BoldItalicUnderlineToggles, UndoRedo, CodeToggle, ListsToggle, BlockTypeSelect, CreateLink, InsertImage, InsertTable, InsertThematicBreak, toolbarPlugin, diffSourcePlugin, sandpackPlugin } from '@mdxeditor/editor';
+import { MDXEditor, headingsPlugin, listsPlugin, quotePlugin, thematicBreakPlugin, markdownShortcutPlugin, codeBlockPlugin, codeMirrorPlugin, tablePlugin, linkPlugin, linkDialogPlugin, imagePlugin, BoldItalicUnderlineToggles, UndoRedo, CodeToggle, ListsToggle, BlockTypeSelect, CreateInsertImage, InsertTable, InsertThematicBreak, toolbarPlugin } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
 
 interface MarkdownEditorProps {

@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
-  DropdownMenuItem, 
+  
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Flag, Shield } from 'lucide-react';
 import { ReportDialog } from './ReportDialog';
-import type { ReportButtonProps, CreateReportParams } from '@/types/security';
+import type { ReportButtonProps } from '@/types/security';
 
 export function ReportButton({
   contentId,
@@ -22,7 +22,7 @@ export function ReportButton({
 
   const handleReportSubmit = (params: CreateReportParams) => {
     // 신고 완료 후 추가 처리가 필요하면 여기서 수행
-    console.log('신고 완료:', params);
+    console.warn('신고 완료:', params);
   };
 
   return (
@@ -70,7 +70,7 @@ export function SimpleReportButton({
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const handleReportSubmit = (params: CreateReportParams) => {
-    console.log('신고 완료:', params);
+    console.warn('신고 완료:', params);
   };
 
   return (
@@ -117,7 +117,7 @@ export function SecurityActions({
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const handleReportSubmit = (params: CreateReportParams) => {
-    console.log('신고 완료:', params);
+    console.warn('신고 완료:', params);
   };
 
   return (

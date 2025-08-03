@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { performanceMonitor } from '@/lib/performance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { Button } from '@/components/ui/button';
 
 interface WebVital {
@@ -214,7 +214,7 @@ export const PerformanceMonitor: React.FC = () => {
             <Button
               onClick={() => {
                 const report = performanceMonitor.generateReport();
-                console.log('Performance Report:', report);
+                console.warn('Performance Report:', report);
               }}
               variant="outline"
               size="sm"

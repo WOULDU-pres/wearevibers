@@ -33,10 +33,10 @@ export async function executeWithRLSTimeout<T>(
     });
 
     // 쿼리와 타임아웃을 race
-    const result = await Promise.race([queryBuilder, timeoutPromise]);
+    const _result = await Promise.race([queryBuilder, timeoutPromise]);
     
     const duration = Date.now() - startTime;
-    console.log(`⚡ Query completed in ${duration}ms`);
+    console.warn(`⚡ Query completed in ${duration}ms`);
     
     const { data, error } = result as { data: T | null; error: unknown };
     
@@ -45,12 +45,12 @@ export async function executeWithRLSTimeout<T>(
       
       // 권한 에러인 경우 자동 수정 시도
       if (enableAutoFix && isPermissionError(error)) {
-        console.log('🔧 Attempting automatic RLS fix...');
+        console.warn('🔧 Attempting automatic RLS fix...');
         const fixResult = await attemptRLSFix();
         wasFixed = fixResult.success;
         
         if (wasFixed) {
-          console.log('✅ RLS issue fixed, retrying query...');
+          console.warn('✅ RLS issue fixed, retrying query...');
           // 수정 후 쿼리 재시도 (한 번만)
           return executeWithRLSTimeout(queryBuilder, timeoutMs, fallbackValue, false);
         }
@@ -71,12 +71,12 @@ export async function executeWithRLSTimeout<T>(
       
       // 타임아웃 시 진단 실행
       if (enableAutoFix) {
-        console.log('🔍 Running RLS diagnostics...');
+        console.warn('🔍 Running RLS diagnostics...');
         const debugResult = await debugRLSIssues();
         
         // 세션 문제가 감지되면 수정 시도
         if (!debugResult.sessionStatus.tokenValid) {
-          console.log('🔧 Session issue detected, attempting fix...');
+          console.warn('🔧 Session issue detected, attempting fix...');
           const fixResult = await attemptRLSFix();
           wasFixed = fixResult.success;
         }
@@ -145,7 +145,7 @@ export async function validateUserSession() {
       return { isValid: false, user: null, session: null };
     }
 
-    console.log('✅ Session validation successful for user:', session.user.id);
+    console.warn('✅ Session validation successful for user:', session.user.id);
     return { isValid: true, user: session.user, session };
   } catch (error) {
     if (error.message?.includes('SESSION_TIMEOUT')) {
@@ -165,14 +165,14 @@ export async function validateUserSession() {
 export function handleRLSError(error: unknown): {
   isRLSIssue: boolean;
   shouldFallback: boolean;
-  userMessage: string;
+  _userMessage: string;
   errorType: 'timeout' | 'permission' | 'not_found' | 'network' | 'unknown';
 } {
   if (!error) {
     return {
       isRLSIssue: false,
       shouldFallback: false,
-      userMessage: '',
+      _userMessage: '',
       errorType: 'unknown'
     };
   }
@@ -180,14 +180,14 @@ export function handleRLSError(error: unknown): {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorCode = (error as { code?: string })?.code;
   
-  console.log('🔍 Analyzing error:', { errorMessage, errorCode });
+  console.warn('🔍 Analyzing error:', { errorMessage, errorCode });
   
   // RLS 타임아웃 감지
   if (errorMessage.includes('RLS_TIMEOUT') || errorMessage.includes('timeout')) {
     return {
       isRLSIssue: true,
       shouldFallback: true,
-      userMessage: '데이터를 불러오는 중 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
+      _userMessage: '데이터를 불러오는 중 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
       errorType: 'timeout'
     };
   }
@@ -205,7 +205,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: true,
       shouldFallback: false,
-      userMessage: '권한 문제가 발생했습니다. 다시 로그인해주세요.',
+      _userMessage: '권한 문제가 발생했습니다. 다시 로그인해주세요.',
       errorType: 'permission'
     };
   }
@@ -215,7 +215,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: false,
       shouldFallback: true,
-      userMessage: '',
+      _userMessage: '',
       errorType: 'not_found'
     };
   }
@@ -230,7 +230,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: false,
       shouldFallback: true,
-      userMessage: '네트워크 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.',
+      _userMessage: '네트워크 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.',
       errorType: 'network'
     };
   }
@@ -238,7 +238,7 @@ export function handleRLSError(error: unknown): {
   return {
     isRLSIssue: false,
     shouldFallback: false,
-    userMessage: '알 수 없는 오류가 발생했습니다.',
+    _userMessage: '알 수 없는 오류가 발생했습니다.',
     errorType: 'unknown'
   };
 }
@@ -249,7 +249,7 @@ export function handleRLSError(error: unknown): {
  * @returns 프로필 데이터 또는 fallback
  */
 export async function safeGetProfile(userId: string) {
-  console.log('🔍 SafeGetProfile for user:', userId);
+  console.warn('🔍 SafeGetProfile for user:', userId);
   
   // 세션 검증
   const { isValid, user, session } = await validateUserSession();
@@ -260,10 +260,10 @@ export async function safeGetProfile(userId: string) {
   // AuthStore에서는 더 짧은 타임아웃 사용 (1.5초)
   const timeoutMs = 1500;
   
-  console.log(`⏱️ Starting profile query with ${timeoutMs}ms timeout`);
+  console.warn(`⏱️ Starting profile query with ${timeoutMs}ms timeout`);
   
   // RLS 타임아웃 방지 쿼리 실행
-  const result = await executeWithRLSTimeout(
+  const _result = await executeWithRLSTimeout(
     supabase
       .from('profiles')
       .select('*')
@@ -304,7 +304,7 @@ export async function safeGetProfile(userId: string) {
       updated_at: new Date().toISOString()
     };
     
-    console.log('📝 Generated fallback profile:', {
+    console.warn('📝 Generated fallback profile:', {
       id: fallbackProfile.id,
       username: fallbackProfile.username,
       full_name: fallbackProfile.full_name,
@@ -317,7 +317,7 @@ export async function safeGetProfile(userId: string) {
   if (result.error) {
     console.error('❌ Profile query error:', result.error);
   } else if (result.data) {
-    console.log('✅ Profile query successful:', {
+    console.warn('✅ Profile query successful:', {
       id: result.data.id,
       username: result.data.username,
       full_name: result.data.full_name
@@ -333,7 +333,7 @@ export async function safeGetProfile(userId: string) {
  * @returns 프로젝트 목록 또는 빈 배열
  */
 export async function safeGetUserProjects(userId: string) {
-  console.log('🔍 SafeGetUserProjects for user:', userId);
+  console.warn('🔍 SafeGetUserProjects for user:', userId);
   
   // 세션 검증
   const { isValid } = await validateUserSession();
@@ -342,7 +342,7 @@ export async function safeGetUserProjects(userId: string) {
   }
 
   // RLS 타임아웃 방지 쿼리 실행
-  const result = await executeWithRLSTimeout(
+  const _result = await executeWithRLSTimeout(
     supabase
       .from('projects')
       .select('*')

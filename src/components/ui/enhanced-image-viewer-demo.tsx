@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { EnhancedImageViewer } from "./enhanced-image-viewer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Image, Play, Star } from "lucide-react";
 
 // 샘플 이미지들 (Unsplash에서 제공)

@@ -85,7 +85,7 @@ export function AppErrorBoundary({ children }: AppErrorBoundaryProps) {
       }}
       onReset={() => {
         // 에러 상태 초기화 시 추가 정리 작업이 필요한 경우 여기에 구현
-        console.log('Error boundary reset');
+        console.warn('Error boundary reset');
         
         // 브레드크럼 추가
         addBreadcrumb(

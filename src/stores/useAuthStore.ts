@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools, subscribeWithSelector, persist } from "zustand/middleware";
-import { User, Session, AuthError } from "@supabase/supabase-js";
+import { Session, AuthError } from "@supabase/supabase-js";
 import type { Tables } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import {
@@ -42,9 +42,9 @@ export interface AuthState {
 
   // Internal actions
   setUser: (user: User | null) => void;
-  setProfile: (profile: Profile | null) => void;
+  _setProfile: (profile: Profile | null) => void;
   setSession: (session: Session | null) => void;
-  setLoading: (loading: boolean) => void;
+  _setLoading: (loading: boolean) => void;
   setInitialized: (initialized: boolean) => void;
   fetchProfile: (userId: string) => Promise<void>;
   initialize: () => Promise<void>;
@@ -54,7 +54,7 @@ export interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     devtools(
-      subscribeWithSelector((set, get) => ({
+      subscribeWithSelector((set, _get) => ({
         // Initial state
         user: null,
         profile: null,
@@ -65,13 +65,13 @@ export const useAuthStore = create<AuthState>()(
         // Internal actions
         setUser: (user: User | null) => set({ user }, false, "setUser"),
 
-        setProfile: (profile: Profile | null) =>
+        _setProfile: (profile: Profile | null) =>
           set({ profile, loading: false }, false, "setProfile"),
 
         setSession: (session: Session | null) =>
           set({ session }, false, "setSession"),
 
-        setLoading: (loading: boolean) => set({ loading }, false, "setLoading"),
+        _setLoading: (loading: boolean) => set({ loading }, false, "setLoading"),
 
         setInitialized: (initialized: boolean) =>
           set({ initialized }, false, "setInitialized"),
@@ -91,12 +91,12 @@ export const useAuthStore = create<AuthState>()(
 
         fetchProfile: async (userId: string) => {
           try {
-            console.log('🔍 AuthStore fetchProfile for user:', userId);
+            console.warn('🔍 AuthStore fetchProfile for user:', userId);
             
             // Use safe profile fetcher with built-in RLS handling
             const { data, error, isTimeout } = await safeGetProfile(userId);
             
-            console.log('📊 SafeGetProfile result:', { 
+            console.warn('📊 SafeGetProfile _result:', { 
               hasData: !!data, 
               hasError: !!error, 
               isTimeout,
@@ -135,11 +135,11 @@ export const useAuthStore = create<AuthState>()(
               if (isTimeout) {
                 console.warn('⏰ Using fallback profile data due to RLS timeout');
               } else {
-                console.log('✅ AuthStore profile fetch successful');
+                console.warn('✅ AuthStore profile fetch successful');
               }
               get().setProfile(data);
             } else {
-              console.log('ℹ️ No profile found - new user or profile not created yet');
+              console.warn('ℹ️ No profile found - new user or profile not created yet');
               get().setProfile(null);
             }
           } catch (error) {
@@ -151,7 +151,7 @@ export const useAuthStore = create<AuthState>()(
                 data: { session },
               } = await supabase.auth.getSession();
               if (!session) {
-                console.log("No valid session found, cleaning up state");
+                console.warn("No valid session found, cleaning up state");
                 get().cleanup();
               } else {
                 // 세션은 있지만 프로필 조회 실패 - null로 설정하여 앱 동작 유지
@@ -165,15 +165,15 @@ export const useAuthStore = create<AuthState>()(
         },
 
         initialize: async () => {
-          console.log('🚀 Starting auth initialization...');
+          console.warn('🚀 Starting auth initialization...');
           
           try {
             // 먼저 RLS 상태 체크
             const { debugRLSIssues } = await import('@/lib/rlsDebugger');
-            console.log('🔍 Running initial RLS diagnostics...');
+            console.warn('🔍 Running initial RLS diagnostics...');
             
             const rlsStatus = await debugRLSIssues();
-            console.log('📊 RLS Status:', {
+            console.warn('📊 RLS Status:', {
               sessionValid: rlsStatus.sessionStatus.tokenValid,
               profileAccess: rlsStatus.databaseAccess.canAccessProfiles
             });
@@ -199,7 +199,7 @@ export const useAuthStore = create<AuthState>()(
 
               get().cleanup();
             } else {
-              console.log('📋 Session found:', {
+              console.warn('📋 Session found:', {
                 hasSession: !!session,
                 userId: session?.user?.id,
                 email: session?.user?.email
@@ -210,7 +210,7 @@ export const useAuthStore = create<AuthState>()(
 
               if (session?.user) {
                 // 프로필 조회 시 더 짧은 타임아웃 사용
-                console.log('👤 Fetching user profile...');
+                console.warn('👤 Fetching user profile...');
                 await get().fetchProfile(session.user.id);
 
                 // 로그인 성공 시 Sentry 사용자 정보 설정
@@ -225,9 +225,9 @@ export const useAuthStore = create<AuthState>()(
                   "info"
                 );
                 
-                console.log('✅ Auth initialization completed successfully');
+                console.warn('✅ Auth initialization completed successfully');
               } else {
-                console.log('🚪 No active session - user needs to sign in');
+                console.warn('🚪 No active session - user needs to sign in');
               }
             }
           } catch (error) {
@@ -243,7 +243,7 @@ export const useAuthStore = create<AuthState>()(
           } finally {
             get().setLoading(false);
             get().setInitialized(true);
-            console.log('🏁 Auth initialization process completed');
+            console.warn('🏁 Auth initialization process completed');
           }
         },
 
@@ -260,7 +260,7 @@ export const useAuthStore = create<AuthState>()(
               // 로그인 실패 시 Sentry 리포팅
               captureError(new Error(`Sign in failed: ${error.message}`), {
                 authContext: "signIn",
-                email: email,
+                email,
                 errorCode: error.status,
                 errorMessage: error.message,
               });
@@ -274,7 +274,7 @@ export const useAuthStore = create<AuthState>()(
             get().setLoading(false);
             captureError(error as Error, {
               authContext: "signIn_exception",
-              email: email,
+              email,
             });
             return { error: error as AuthError };
           }
@@ -303,7 +303,7 @@ export const useAuthStore = create<AuthState>()(
               // 회원가입 실패 시 Sentry 리포팅
               captureError(new Error(`Sign up failed: ${error.message}`), {
                 authContext: "signUp",
-                email: email,
+                email,
                 username: userData.username,
                 errorCode: error.status,
                 errorMessage: error.message,
@@ -318,7 +318,7 @@ export const useAuthStore = create<AuthState>()(
             get().setLoading(false);
             captureError(error as Error, {
               authContext: "signUp_exception",
-              email: email,
+              email,
               username: userData.username,
             });
             return { error: error as AuthError };
@@ -326,11 +326,11 @@ export const useAuthStore = create<AuthState>()(
         },
 
         signOut: async () => {
-          console.log("🔄 SignOut function started, setting loading...");
+          console.warn("🔄 SignOut function started, setting loading...");
           get().setLoading(true);
 
           try {
-            console.log("🌐 Calling supabase.auth.signOut()...");
+            console.warn("🌐 Calling supabase.auth.signOut()...");
             
             // Use RLS helper for safer signOut with shorter timeout
             const { error } = await executeWithRLSTimeout(
@@ -339,15 +339,15 @@ export const useAuthStore = create<AuthState>()(
               null
             );
 
-            console.log("📊 SignOut API response:", { error });
+            console.warn("📊 SignOut API response:", { error });
 
             // Always cleanup local state regardless of API response
             // This handles cases where the token is expired and signOut API fails
-            console.log("🧹 Cleaning up local state...");
+            console.warn("🧹 Cleaning up local state...");
             get().cleanup();
 
             if (!error) {
-              console.log("✅ SignOut successful");
+              console.warn("✅ SignOut successful");
               addBreadcrumb("User signed out manually", "auth", "info");
             } else {
               // Log the error but don't prevent logout
@@ -365,14 +365,14 @@ export const useAuthStore = create<AuthState>()(
               }
             }
 
-            console.log("🏁 SignOut function completing, setting loading false");
+            console.warn("🏁 SignOut function completing, setting loading false");
             get().setLoading(false);
             // Always return success since we cleared local state
             return { error: null };
           } catch (error) {
             // Even if there's an exception, cleanup local state
             console.warn("💥 SignOut exception occurred:", error);
-            console.log("🧹 Exception cleanup - clearing local state...");
+            console.warn("🧹 Exception cleanup - clearing local state...");
             get().cleanup();
             get().setLoading(false);
 
@@ -385,7 +385,7 @@ export const useAuthStore = create<AuthState>()(
               });
             }
 
-            console.log("🏁 SignOut function completing after exception");
+            console.warn("🏁 SignOut function completing after exception");
             // Return success since we cleared local state
             return { error: null };
           }
@@ -398,7 +398,7 @@ export const useAuthStore = create<AuthState>()(
             ? window.location.origin 
             : (import.meta.env.VITE_SITE_URL || window.location.origin);
 
-          console.log('OAuth redirect URL:', redirectUrl);
+          console.warn('OAuth redirect URL:', redirectUrl);
 
           const { error } = await supabase.auth.signInWithOAuth({
             provider,

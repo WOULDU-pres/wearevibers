@@ -68,7 +68,7 @@ const TechStackItem = ({ name, category, icon, color, experience }: TechStack) =
         <div
           className="flex size-8 items-center justify-center rounded-lg"
           style={{
-            backgroundColor: color + "20",
+            backgroundColor: `${color  }20`,
             border: `1px solid ${color}40`
           }}
         >

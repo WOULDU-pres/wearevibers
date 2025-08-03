@@ -7,7 +7,7 @@
  * - 접근성 최적화
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps {

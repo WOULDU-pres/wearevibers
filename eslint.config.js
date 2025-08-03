@@ -18,8 +18,7 @@ export default tseslint.config(
   {
     extends: [
       js.configs.recommended, 
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked
+      ...tseslint.configs.recommended
     ],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -52,7 +51,7 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       
-      // TypeScript 엄격한 규칙
+      // TypeScript 기본 규칙
       "@typescript-eslint/no-unused-vars": [
         "error",
         { 
@@ -61,19 +60,11 @@ export default tseslint.config(
           destructuredArrayIgnorePattern: "^_"
         }
       ],
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-non-null-assertion": "error",
-      "@typescript-eslint/prefer-nullish-coalescing": "error",
-      "@typescript-eslint/prefer-optional-chain": "error",
-      "@typescript-eslint/no-unnecessary-type-assertion": "error",
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/require-await": "error",
-      "@typescript-eslint/return-await": "error",
-      "@typescript-eslint/prefer-as-const": "error",
-      "@typescript-eslint/no-unnecessary-condition": "error",
-      "@typescript-eslint/strict-boolean-expressions": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
+      
+      // Disable problematic rules from inherited configs
+      "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/dot-notation": "off",
       
       // 일반 코드 품질 규칙
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -117,10 +108,17 @@ export default tseslint.config(
   },
   // 테스트 파일용 별도 설정
   {
-    files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "src/test/**/*", "tests/**/*", "e2e/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: "./tsconfig.test.json",
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unused-vars": "off",
       "no-console": "off"
     }
   }

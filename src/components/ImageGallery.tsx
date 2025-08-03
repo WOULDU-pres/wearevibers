@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  Trash2, 
-  X, 
+  
+  
   Eye, 
   Download, 
   MoreHorizontal,

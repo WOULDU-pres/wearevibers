@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, ExternalLink, Check } from "lucide-react";
+import { Copy, ExternalCheck } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ const ShareModal = ({
   projectId,
   projectTitle, 
   shareUrl, 
-  onCopyLink, 
+  onCopy
   onDirectLink 
 }: ShareModalProps) => {
   const [isCopied, setIsCopied] = useState(false);

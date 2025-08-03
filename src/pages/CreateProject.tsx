@@ -15,9 +15,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ArrowLeft, Upload, Link as LinkIcon, Github, Globe, Palette, Code, Layers, X, Plus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload as LinkIcon, Github, Globe, Palette, Code, Layers, Plus, Loader2 } from 'lucide-react';
 
 // Form validation schema
 const createProjectSchema = z.object({

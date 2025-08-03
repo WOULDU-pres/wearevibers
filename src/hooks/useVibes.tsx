@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
@@ -303,7 +303,7 @@ export const useRealtimeVibes = (contentId: string, contentType: VibeContentType
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`Subscribed to vibes for ${contentType}:${contentId}`);
+          console.warn(`Subscribed to vibes for ${contentType}:${contentId}`);
         } else if (status === 'CHANNEL_ERROR') {
           console.error(`Error subscribing to vibes for ${contentType}:${contentId}`);
         }
