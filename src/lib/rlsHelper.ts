@@ -125,7 +125,15 @@ function isPermissionError(error: unknown): boolean {
  */
 export async function validateUserSession() {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    // 세션 조회에도 타임아웃 적용 (1초)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('SESSION_TIMEOUT: Session validation timed out'));
+      }, 1000);
+    });
+
+    const sessionPromise = supabase.auth.getSession();
+    const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
     
     if (error) {
       console.error('❌ Session validation error:', error);
@@ -137,8 +145,13 @@ export async function validateUserSession() {
       return { isValid: false, user: null, session: null };
     }
 
+    console.log('✅ Session validation successful for user:', session.user.id);
     return { isValid: true, user: session.user, session };
   } catch (error) {
+    if (error.message?.includes('SESSION_TIMEOUT')) {
+      console.warn('🚨 Session validation timed out - using fallback');
+      return { isValid: false, user: null, session: null };
+    }
     console.error('💥 Session validation failed:', error);
     return { isValid: false, user: null, session: null };
   }

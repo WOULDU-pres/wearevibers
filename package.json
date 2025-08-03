@@ -1,14 +1,93 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "wearevibers",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "WeAreVibers - Modern social platform for vibrant communities",
   "type": "module",
+  "homepage": "https://wearevibers.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/wearevibers.git"
+  },
+  "keywords": ["social", "community", "react", "typescript", "vite", "supabase"],
+  "author": "WeAreVibers Team",
+  "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "vite --port 8080 --host",
+    "build": "tsc && vite build",
+    "build:dev": "tsc && vite build --mode development",
+    "build:analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "build:stats": "vite build --mode production --json > dist/stats.json",
+    "preview": "vite preview --port 4173 --host",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "lint:strict": "eslint . --ext ts,tsx --max-warnings 0",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run src/**/*.{test,spec}.{ts,tsx}",
+    "test:integration": "vitest run tests/integration/**/*.{test,spec}.{ts,tsx}",
+    
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:chrome": "playwright test --project='Desktop Chrome'",
+    "test:e2e:firefox": "playwright test --project='Desktop Firefox'",
+    "test:e2e:safari": "playwright test --project='Desktop Safari'",
+    "test:e2e:mobile": "playwright test --project='Mobile Chrome' --project='Mobile Safari'",
+    "test:e2e:accessibility": "playwright test --project='Accessibility Tests'",
+    "test:e2e:performance": "playwright test --project='Performance Tests'",
+    "test:e2e:visual": "playwright test --project='Visual Tests'",
+    "test:e2e:report": "playwright show-report",
+    
+    "test:all": "npm run test:run && npm run test:e2e",
+    "test:ci": "npm run lint:strict && npm run type-check && npm run test:coverage && npm run test:e2e",
+    "security:audit": "npm audit --audit-level high",
+    "security:fix": "npm audit fix",
+    "security:scan": "npx audit-ci --config .audit-ci.json",
+    "security:check": "npm run security:audit && npm run security:scan",
+    "deps:update": "npx npm-check-updates -u",
+    "deps:check": "npx npm-check-updates",
+    "deps:audit": "npm run deps:check && npm run security:check",
+    "lighthouse": "lhci autorun",
+    "lighthouse:mobile": "lhci autorun --preset=mobile",
+    "lighthouse:ci": "lhci autorun --config=lighthouserc.js",
+    "lighthouse:upload": "lhci upload",
+    "performance:analyze": "npm run build:analyze && npm run lighthouse",
+    "performance:audit": "npm run lighthouse:ci && npm run test:e2e:performance",
+    "performance:budget": "bundlesize",
+    "backup": "./scripts/backup-restore.sh backup",
+    "backup:restore": "./scripts/backup-restore.sh restore",
+    "deploy:staging": "vercel --env NODE_ENV=development",
+    "deploy:production": "vercel --prod",
+    "deploy:preview": "vercel",
+    "clean": "rm -rf dist node_modules/.vite .tsbuildinfo",
+    "clean:all": "rm -rf dist node_modules package-lock.json .tsbuildinfo && npm install",
+    "clean:cache": "rm -rf node_modules/.vite node_modules/.cache .tsbuildinfo",
+    "clean:test": "rm -rf coverage test-results playwright-report",
+    
+    "setup:dev": "npm install && npm run type-check && npm run lint",
+    "setup:e2e": "npx playwright install",
+    "setup:all": "npm run setup:dev && npm run setup:e2e",
+    
+    "validate": "npm run quality:check && npm run test:all",
+    "validate:ci": "npm run test:ci && npm run performance:budget",
+    
+    "quality:check": "npm run lint:strict && npm run type-check && npm run test:coverage",
+    "quality:fix": "npm run lint:fix && npm run format",
+    "quality:audit": "npm run quality:check && npm run security:check && npm run performance:audit",
+    
+    "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,md}'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx,js,jsx,json,md}'",
+    "postinstall": "npm run type-check",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {}\"",
+    "precommit": "lint-staged",
+    "prepush": "npm run quality:check"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -99,6 +178,44 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.1",
+    "@lhci/cli": "^0.13.0",
+    "audit-ci": "^7.1.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "npm-check-updates": "^17.1.1",
+    "vite-bundle-analyzer": "^0.10.7",
+    "vitest": "^2.0.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run type-check && npm run security:audit"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

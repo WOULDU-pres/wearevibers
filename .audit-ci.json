@@ -1,11 +1,20 @@
 {
-  "moderate": false,
+  "low": true,
+  "moderate": true,
   "high": true,
   "critical": true,
+  "report-type": "full",
   "allowlist": [],
   "skip-dev": true,
-  "advisories": [],
+  "package-manager": "npm",
+  "output-format": "text",
   "registry": "https://registry.npmjs.org/",
-  "report-type": "summary",
-  "output-format": "text"
+  "retry": {
+    "count": 3,
+    "delay": 1000
+  },
+  "summary": true,
+  "advisories": [],
+  "whitelist": [],
+  "pass-enoaudit": true
 }
