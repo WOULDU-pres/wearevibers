@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { handleSupabaseError } from '@/lib/sentry';
 
 /**
  * 인증 관련 에러인지 확인하는 함수
@@ -69,19 +68,12 @@ export const isAuthError = (error: unknown): boolean => {
  * 인증 에러 처리 함수
  * 세션 만료 시 자동 로그아웃 및 사용자 알림
  */
-export const handleAuthError = async (_error: unknown, showToast = true): Promise<void> => {
+export const handleAuthError = async (error: unknown, showToast = true): Promise<void> => {
   if (!isAuthError(error)) {
     return;
   }
 
   console.warn('Auth error detected, signing out user:', error);
-
-  // Sentry로 인증 에러 리포팅 (Rule 1, 2, 3 적용)
-  handleSupabaseError(error, {
-    method: 'auth',
-    endpoint: 'session_validation',
-    context: 'handleAuthError',
-  });
 
   try {
     // Supabase 세션 정리

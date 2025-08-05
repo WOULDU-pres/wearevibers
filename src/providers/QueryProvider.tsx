@@ -1,7 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider, MutationCache, QueryCache } from '@tanstack/react-query';
 import { isAuthError, handleAuthError } from '@/lib/authErrorHandler';
-import { handleSupabaseError } from '@/lib/sentry';
 import { toast } from 'sonner';
 import { _createQueryClient } from '@/lib/query-config';
 
@@ -13,14 +12,7 @@ const createQueryErrorHandler = () => {
     // 인증 에러인 경우 세션 만료 처리
     if (isAuthError(error)) {
       await handleAuthError(error, false); // Toast는 여기서 비활성화
-      return;
     }
-    
-    // Sentry로 에러 리포팅
-    handleSupabaseError(error, {
-      context: 'React Query',
-      errorType: 'Query Error',
-    });
   };
 };
 
@@ -34,14 +26,8 @@ const createMutationErrorHandler = () => {
       return;
     }
     
-    // Sentry로 에러 리포팅
-    handleSupabaseError(error, {
-      context: 'React Query',
-      errorType: 'Mutation Error',
-    });
-    
     // 일반 에러는 사용자에게 알림
-    const _errorMessage = error instanceof Error ? error.message : '요청 처리 중 오류가 발생했습니다.';
+    const errorMessage = error instanceof Error ? error.message : '요청 처리 중 오류가 발생했습니다.';
     toast.error(errorMessage);
   };
 };

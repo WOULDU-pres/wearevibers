@@ -2,7 +2,6 @@ import React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { captureError, addBreadcrumb } from '@/lib/sentry';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -63,36 +62,9 @@ export function AppErrorBoundary({ children }: AppErrorBoundaryProps) {
       FallbackComponent={ErrorFallback}
       onError={(error, errorInfo) => {
         console.error('App Error Boundary caught an error:', error, errorInfo);
-        
-        // Sentry로 에러 정보 전송
-        captureError(error, {
-          errorBoundary: 'AppErrorBoundary',
-          errorInfo: {
-            componentStack: errorInfo.componentStack,
-            errorBoundary: errorInfo.errorBoundary,
-          },
-          url: window.location.href,
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-        });
-
-        // 브레드크럼 추가
-        addBreadcrumb(
-          `Error caught by AppErrorBoundary: ${error.message}`,
-          'error',
-          'error'
-        );
       }}
       onReset={() => {
-        // 에러 상태 초기화 시 추가 정리 작업이 필요한 경우 여기에 구현
         console.warn('Error boundary reset');
-        
-        // 브레드크럼 추가
-        addBreadcrumb(
-          'Error boundary reset by user',
-          'user',
-          'info'
-        );
       }}
     >
       {children}

@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores';
 import type { Profile } from '@/lib/supabase-types';
 import { toast } from 'sonner';
 import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
-import { handleSupabaseError } from '@/lib/sentry';
 
 export const useProfile = (userId: string) => {
   return useQuery({
@@ -20,7 +19,7 @@ export const useProfile = (userId: string) => {
         console.error('Error fetching profile:', error);
         
         // Sentry로 에러 리포팅
-        handleSupabaseError(error, {
+        console.error(error, {
           method: 'GET',
           endpoint: 'profiles',
           context: 'useProfile',
@@ -56,7 +55,7 @@ export const useProfileStats = (userId: string) => {
           .eq('status', 'published');
 
         if (projectsError) {
-          handleSupabaseError(projectsError, {
+          console.error(projectsError, {
             method: 'GET',
             endpoint: 'projects',
             context: 'useProfileStats',

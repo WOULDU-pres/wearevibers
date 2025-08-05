@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 // import { toast } from 'sonner'; // Toast 알림 (필요시 활성화)
-import { handleSupabaseError, addBreadcrumb } from '@/lib/sentry';
 
 export interface UploadOptions {
   bucket: string;
@@ -46,7 +45,7 @@ export const useFileUpload = () => {
         console.error('Supabase upload error:', error);
         
         // Sentry로 에러 리포팅
-        handleSupabaseError(error, {
+        console.error('Upload error:', error, {
           context: 'fileUpload',
           bucket: options.bucket,
           filePath,
@@ -64,7 +63,7 @@ export const useFileUpload = () => {
         .getPublicUrl(data.path);
 
       // 성공 시 브레드크럼 추가
-      addBreadcrumb(
+      console.warn(
         `File uploaded successfully: ${fileName}`,
         'storage',
         'info'
@@ -123,7 +122,7 @@ export const useFileUpload = () => {
         console.error('File deletion error:', error);
         
         // Sentry로 에러 리포팅
-        handleSupabaseError(error, {
+        console.error('Upload error:', error, {
           context: 'fileDelete',
           bucket,
           filePath,

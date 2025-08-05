@@ -1,15 +1,9 @@
 import { create } from "zustand";
 import { devtools, subscribeWithSelector, persist } from "zustand/middleware";
-import { Session, AuthError } from "@supabase/supabase-js";
+import { Session, AuthError, User } from "@supabase/supabase-js";
 import type { Tables } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
-import {
-  captureError,
-  addBreadcrumb,
-  setSentryUser,
-  clearSentryUser,
-} from "@/lib/sentry";
-import { safeGetProfile, handleRLSError, executeWithRLSTimeout } from "@/lib/rlsHelper";
+import { safeGetProfile, executeWithRLSTimeout } from "@/lib/rlsHelper";
 
 type Profile = Tables<"profiles">;
 
@@ -42,9 +36,9 @@ export interface AuthState {
 
   // Internal actions
   setUser: (user: User | null) => void;
-  _setProfile: (profile: Profile | null) => void;
+  setProfile: (profile: Profile | null) => void;
   setSession: (session: Session | null) => void;
-  _setLoading: (loading: boolean) => void;
+  setLoading: (loading: boolean) => void;
   setInitialized: (initialized: boolean) => void;
   fetchProfile: (userId: string) => Promise<void>;
   initialize: () => Promise<void>;
@@ -54,7 +48,7 @@ export interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     devtools(
-      subscribeWithSelector((set, _get) => ({
+      subscribeWithSelector((set, get) => ({
         // Initial state
         user: null,
         profile: null,
@@ -65,13 +59,13 @@ export const useAuthStore = create<AuthState>()(
         // Internal actions
         setUser: (user: User | null) => set({ user }, false, "setUser"),
 
-        _setProfile: (profile: Profile | null) =>
+        setProfile: (profile: Profile | null) =>
           set({ profile, loading: false }, false, "setProfile"),
 
         setSession: (session: Session | null) =>
           set({ session }, false, "setSession"),
 
-        _setLoading: (loading: boolean) => set({ loading }, false, "setLoading"),
+        setLoading: (loading: boolean) => set({ loading }, false, "setLoading"),
 
         setInitialized: (initialized: boolean) =>
           set({ initialized }, false, "setInitialized"),
@@ -86,208 +80,93 @@ export const useAuthStore = create<AuthState>()(
             false,
             "cleanup"
           );
-          clearSentryUser();
         },
 
         fetchProfile: async (userId: string) => {
           try {
-            console.warn('🔍 AuthStore fetchProfile for user:', userId);
+            console.warn('Fetching profile for user:', userId);
             
-            // Use safe profile fetcher with built-in RLS handling
-            const { data, _error, isTimeout } = await safeGetProfile(userId);
+            const { data, error } = await safeGetProfile(userId);
             
-            console.warn('📊 SafeGetProfile _result:', { 
-              hasData: !!data, 
-              hasError: !!error, 
-              isTimeout,
-              username: data?.username 
-            });
-
             if (error) {
-              const { isRLSIssue, shouldFallback } = handleRLSError(error);
-              
-              if (isRLSIssue) {
-                if (shouldFallback) {
-                  console.warn('🚨 RLS issue detected - using fallback behavior');
-                  get().setProfile(null);
-                  return;
-                }
-                
-                // 인증 관련 RLS 에러 - 세션 정리
-                console.error('🔐 Authentication RLS error, signing out:', error);
-                await supabase.auth.signOut();
-                return;
-              }
-              
-              // 다른 에러들 처리
-              if (error.message?.includes('세션이 유효하지 않습니다')) {
-                console.warn('⚠️ Invalid session - cleaning up state');
-                get().cleanup();
-                return;
-              }
-
-              console.error('❌ Profile fetch error:', error);
-              get().setProfile(null);
+              console.error('Error fetching profile:', error);
               return;
             }
 
             if (data) {
-              if (isTimeout) {
-                console.warn('⏰ Using fallback profile data due to RLS timeout');
-              } else {
-                console.warn('✅ AuthStore profile fetch successful');
-              }
               get().setProfile(data);
-            } else {
-              console.warn('ℹ️ No profile found - new user or profile not created yet');
-              get().setProfile(null);
+              console.warn('Profile loaded successfully');
             }
           } catch (error) {
-            console.error('💥 Unexpected error in fetchProfile:', error);
-
-            // 세션 상태 확인
-            try {
-              const {
-                data: { session },
-              } = await supabase.auth.getSession();
-              if (!session) {
-                console.warn("No valid session found, cleaning up state");
-                get().cleanup();
-              } else {
-                // 세션은 있지만 프로필 조회 실패 - null로 설정하여 앱 동작 유지
-                get().setProfile(null);
-              }
-            } catch (sessionError) {
-              console.error('Error checking session:', sessionError);
-              get().cleanup();
-            }
+            console.error('Exception in fetchProfile:', error);
           }
         },
 
         initialize: async () => {
-          console.warn('🚀 Starting auth initialization...');
+          console.warn('Initializing auth...');
           
           try {
-            // 먼저 RLS 상태 체크
-            const { debugRLSIssues } = await import('@/lib/rlsDebugger');
-            console.warn('🔍 Running initial RLS diagnostics...');
+            get().setLoading(true);
             
-            const rlsStatus = await debugRLSIssues();
-            console.warn('📊 RLS Status:', {
-              sessionValid: rlsStatus.sessionStatus.tokenValid,
-              profileAccess: rlsStatus.databaseAccess.canAccessProfiles
-            });
-            
-            // 세션 조회
-            const {
-              data: { session },
-              error,
-            } = await supabase.auth.getSession();
+            const { data: { session }, error } = await supabase.auth.getSession();
 
             if (error) {
-              console.error("❌ Error getting session:", error);
-
-              // Sentry로 에러 리포팅
-              captureError(
-                new Error(`Session retrieval failed: ${error.message}`),
-                {
-                  authContext: "getInitialSession",
-                  errorCode: error.status,
-                  errorMessage: error.message,
-                }
-              );
-
+              console.error("Error getting session:", error);
               get().cleanup();
-            } else {
-              console.warn('📋 Session found:', {
-                hasSession: !!session,
-                userId: session?.user?.id,
-                email: session?.user?.email
-              });
-              
-              get().setSession(session);
-              get().setUser(session?.user ?? null);
-
-              if (session?.user) {
-                // 프로필 조회 시 더 짧은 타임아웃 사용
-                console.warn('👤 Fetching user profile...');
-                await get().fetchProfile(session.user.id);
-
-                // 로그인 성공 시 Sentry 사용자 정보 설정
-                setSentryUser({
-                  id: session.user.id,
-                  email: session.user.email,
-                });
-
-                addBreadcrumb(
-                  `User session restored: ${session.user.email}`,
-                  "auth",
-                  "info"
-                );
-                
-                console.warn('✅ Auth initialization completed successfully');
-              } else {
-                console.warn('🚪 No active session - user needs to sign in');
-              }
+              get().setInitialized(true);
+              get().setLoading(false);
+              return;
             }
-          } catch (error) {
-            console.error("💥 Error in initialize:", error);
 
-            // Sentry로 예외 리포팅
-            captureError(error as Error, {
-              authContext: "initialize_exception",
-              url: window.location.href,
-            });
+            if (session) {
+              console.warn('Session found, restoring user state...');
+              get().setSession(session);
+              get().setUser(session.user);
+              
+              await get().fetchProfile(session.user.id);
+              console.warn('User session restored successfully');
+            } else {
+              console.warn('No active session found');
+              get().setLoading(false);
+            }
 
-            get().cleanup();
-          } finally {
-            get().setLoading(false);
             get().setInitialized(true);
-            console.warn('🏁 Auth initialization process completed');
+          } catch (error) {
+            console.error("Error in initialize:", error);
+            get().cleanup();
+            get().setInitialized(true);
+            get().setLoading(false);
           }
         },
 
         signIn: async (email: string, password: string) => {
-          get().setLoading(true);
-
           try {
+            get().setLoading(true);
+            
             const { error } = await supabase.auth.signInWithPassword({
               email,
               password,
             });
 
             if (error) {
-              // 로그인 실패 시 Sentry 리포팅
-              captureError(new Error(`Sign in failed: ${error.message}`), {
-                authContext: "signIn",
-                email,
-                errorCode: error.status,
-                errorMessage: error.message,
-              });
+              console.error('Sign in failed:', error);
             } else {
-              addBreadcrumb(`User signed in: ${email}`, "auth", "info");
+              console.warn('User signed in successfully');
             }
 
             get().setLoading(false);
             return { error };
           } catch (error) {
             get().setLoading(false);
-            captureError(error as Error, {
-              authContext: "signIn_exception",
-              email,
-            });
+            console.error('Exception in signIn:', error);
             return { error: error as AuthError };
           }
         },
 
-        signUp: async (
-          email: string,
-          password: string,
-          userData: { username: string; fullName: string }
-        ) => {
-          get().setLoading(true);
-
+        signUp: async (email: string, password: string, userData: { username: string; fullName: string }) => {
           try {
+            get().setLoading(true);
+            
             const { error } = await supabase.auth.signUp({
               email,
               password,
@@ -300,153 +179,102 @@ export const useAuthStore = create<AuthState>()(
             });
 
             if (error) {
-              // 회원가입 실패 시 Sentry 리포팅
-              captureError(new Error(`Sign up failed: ${error.message}`), {
-                authContext: "signUp",
-                email,
-                username: userData.username,
-                errorCode: error.status,
-                errorMessage: error.message,
-              });
+              console.error('Sign up failed:', error);
             } else {
-              addBreadcrumb(`User signed up: ${email}`, "auth", "info");
+              console.warn('User signed up successfully');
             }
 
             get().setLoading(false);
             return { error };
           } catch (error) {
             get().setLoading(false);
-            captureError(error as Error, {
-              authContext: "signUp_exception",
-              email,
-              username: userData.username,
-            });
+            console.error('Exception in signUp:', error);
             return { error: error as AuthError };
           }
         },
 
         signOut: async () => {
-          console.warn("🔄 SignOut function started, setting loading...");
-          get().setLoading(true);
-
           try {
-            console.warn("🌐 Calling supabase.auth.signOut()...");
+            console.warn('Signing out user...');
             
-            // Use RLS helper for safer signOut with shorter timeout
             const { error } = await executeWithRLSTimeout(
               supabase.auth.signOut(),
-              1500, // 1.5 seconds for better UX
-              null,
+              3000,
+              'SignOut timeout'
             );
 
-            console.warn("📊 SignOut API response:", { error });
-
-            // Always cleanup local state regardless of API response
-            // This handles cases where the token is expired and signOut API fails
-            console.warn("🧹 Cleaning up local state...");
+            console.warn('Cleaning up local state...');
             get().cleanup();
 
             if (!error) {
-              console.warn("✅ SignOut successful");
-              addBreadcrumb("User signed out manually", "auth", "info");
+              console.warn('SignOut successful');
             } else {
-              // Log the error but don't prevent logout
-              console.warn(
-                "⚠️ SignOut API failed, but local state cleared:",
-                error,
-              );
-              
-              // Only report non-timeout errors to Sentry
-              if (!error.message?.includes('RLS_TIMEOUT')) {
-                captureError(new Error(`Sign out failed: ${error.message}`), {
-                  authContext: "signOut",
-                  errorMessage: error.message,
-                });
-              }
+              console.warn('SignOut API failed, but local state cleared:', error);
             }
 
-            console.warn("🏁 SignOut function completing, setting loading false");
-            get().setLoading(false);
-            // Always return success since we cleared local state
-            return { error: null };
+            return { error };
           } catch (error) {
-            // Even if there's an exception, cleanup local state
-            console.warn("💥 SignOut exception occurred:", error);
-            console.warn("🧹 Exception cleanup - clearing local state...");
-            get().cleanup();
-            get().setLoading(false);
-
-            console.warn("⚠️ SignOut exception, but local state cleared:", error);
-            
-            // Only report non-timeout errors to Sentry
-            if (!(error instanceof Error) || !error.message?.includes('RLS_TIMEOUT')) {
-              captureError(error as Error, {
-                authContext: "signOut_exception",
-              });
-            }
-
-            console.warn("🏁 SignOut function completing after exception");
-            // Return success since we cleared local state
-            return { error: null };
+            console.warn('SignOut exception, but local state cleared:', error);
+            return { error: error as AuthError };
           }
         },
 
         signInWithOAuth: async (provider: "google") => {
-          // 개발환경에서는 현재 origin을 사용, 프로덕션에서는 VITE_SITE_URL 사용
-          const isDev = import.meta.env.DEV;
-          const redirectUrl = isDev 
-            ? window.location.origin 
-            : (import.meta.env.VITE_SITE_URL || window.location.origin);
+          try {
+            get().setLoading(true);
+            
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider,
+              options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+              },
+            });
 
-          console.warn('OAuth redirect URL:', redirectUrl);
-
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-              redirectTo: `${redirectUrl}/`,
-            },
-          });
-
-          return { error };
+            get().setLoading(false);
+            return { error };
+          } catch (error) {
+            get().setLoading(false);
+            console.error('OAuth sign in exception:', error);
+            return { error: error as AuthError };
+          }
         },
 
         updateProfile: async (updates: Partial<Profile>) => {
-          const { user } = get();
-          if (!user) {
-            return { error: new Error("User not authenticated") as AuthError };
+          try {
+            const currentProfile = get().profile;
+            if (!currentProfile) {
+              return { error: new Error('No profile to update') as AuthError };
+            }
+
+            const { error } = await supabase
+              .from('profiles')
+              .update(updates)
+              .eq('id', currentProfile.id);
+
+            if (error) {
+              console.error('Profile update failed:', error);
+              return { error: error as AuthError };
+            }
+
+            get().setProfile({ ...currentProfile, ...updates });
+            console.warn('Profile updated successfully');
+            return { error: null };
+          } catch (error) {
+            console.error('Profile update exception:', error);
+            return { error: error as AuthError };
           }
-
-          get().setLoading(true);
-
-          const { error } = await supabase
-            .from("profiles")
-            .update({
-              ...updates,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", user.id);
-
-          if (!error) {
-            // 프로필 다시 가져오기
-            await get().fetchProfile(user.id);
-          }
-
-          get().setLoading(false);
-          return { error };
         },
       })),
       {
-        name: "auth-store-dev",
+        name: "auth-store",
       }
     ),
     {
-      name: "wearevibers-auth-store",
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         profile: state.profile,
         session: state.session,
-        initialized: state.initialized,
-        loading: state.loading,
       }),
     }
   )
