@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 interface UseIntersectionObserverOptions extends IntersectionObserverInit {
   freezeOnceVisible?: boolean;
@@ -100,7 +100,7 @@ export const useInfiniteScroll = (
  */
 export const useLazyImage = (src: string, placeholder?: string) => {
   const [imageSrc, setImageSrc] = useState(placeholder || '');
-  const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null);
+  const [_imageRef, _setImageRef] = useState<HTMLImageElement | null>(null);
   
   const { isIntersecting } = useIntersectionObserver({
     freezeOnceVisible: true,
@@ -115,7 +115,7 @@ export const useLazyImage = (src: string, placeholder?: string) => {
 
   return {
     imageSrc,
-    setImageRef,
+    setImageRef: _setImageRef,
     isLoaded: imageSrc === src,
   };
 };

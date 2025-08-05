@@ -18,14 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Calendar, Hearts, Filter, TrendingUpPlus, Users, Search } from "lucide-react";
+import { Calendar, Filter, Users, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores";
 import { 
   useIsFollowing, 
   useToggleFollow, 
   useOnlineUsersCount,
-  useFollowSuggestions,
 } from "@/hooks/useFollow";
 import { useUserTotalVibes } from "@/hooks/useVibes";
 import type { Tables } from "@/lib/supabase-types";
@@ -147,7 +146,7 @@ const Members = () => {
 
       console.warn('🔍 Executing full members query...');
       const fullQueryPromise = query;
-      const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+      const { data, _error } = await Promise.race([fullQueryPromise, timeoutPromise]);
       
       console.warn('📊 Full members query _result:', { data, error, count: data?.length });
 

@@ -67,7 +67,7 @@ export const COMPRESSION_PRESETS = {
 export const supportsWebP = (): Promise<boolean> => {
   return new Promise((resolve) => {
     const webP = new Image();
-    webP.onload = webP.onerror = () => {
+    webP.onload = webP.on_error = () => {
       resolve(webP.height === 2);
     };
     webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
@@ -84,7 +84,7 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
       resolve({ width: img.naturalWidth, height: img.naturalHeight });
       URL.revokeObjectURL(img.src);
     };
-    img.onerror = reject;
+    img.on_error = reject;
     img.src = URL.createObjectURL(file);
   });
 };
@@ -210,7 +210,7 @@ export const compressImage = async (
       );
     };
     
-    img.onerror = reject;
+    img.on_error = reject;
     img.src = URL.createObjectURL(file);
   });
 };

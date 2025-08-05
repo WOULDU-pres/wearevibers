@@ -40,7 +40,7 @@ async function debugSessionStatus() {
     console.warn('🔍 Starting session debug...');
     
     // 1. 현재 세션 상태 확인
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { session }, _error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError) {
       console.error('❌ Session error:', sessionError);
@@ -136,8 +136,8 @@ async function debugDatabaseAccess(userId: string) {
         setTimeout(() => reject(new Error('TIMEOUT')), 1000);
       });
 
-      const _result = await Promise.race([test.query, timeoutPromise]);
-      const { data, error } = result as any;
+      const result = await Promise.race([test.query, timeoutPromise]);
+      const { data: _data, error } = result as { data: unknown; error: unknown };
 
       if (error) {
         console.error(`❌ ${test.name} access error:`, error);
@@ -163,7 +163,7 @@ async function debugRLSPolicies() {
   
   try {
     // auth.uid() 함수가 올바르게 작동하는지 테스트
-    const { data: uidTest, error: uidError } = await supabase.rpc('get_current_user_id');
+    const { data: uidTest, _error: uidError } = await supabase.rpc('get_current_user_id');
     
     console.warn('🆔 Current user ID from RLS:', { data: uidTest, error: uidError });
 
@@ -240,12 +240,12 @@ export async function attemptRLSFix(): Promise<{
   console.warn('🔧 Attempting RLS issue fixes...');
   
   const actions: string[] = [];
-  const errors: string[] = [];
+  const _errors: string[] = [];
   
   try {
     // 1. 세션 갱신 시도
     actions.push('Refreshing session...');
-    const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+    const { data: { session }, _error: refreshError } = await supabase.auth.refreshSession();
     
     if (refreshError) {
       errors.push(`Session refresh failed: ${refreshError.message}`);
@@ -261,7 +261,7 @@ export async function attemptRLSFix(): Promise<{
     if (session?.user) {
       actions.push('Testing database connection with new session...');
       
-      const { data: testData, error: testError } = await supabase
+      const { data: _testData, error: testError } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', session.user.id)

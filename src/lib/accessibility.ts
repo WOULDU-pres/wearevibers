@@ -171,12 +171,10 @@ export class FocusTrap {
         event.preventDefault();
         this.lastFocusableElement?.focus();
       }
-    } else {
+    } else if (document.activeElement === this.lastFocusableElement) {
       // Tab (정방향)
-      if (document.activeElement === this.lastFocusableElement) {
-        event.preventDefault();
-        this.firstFocusableElement?.focus();
-      }
+      event.preventDefault();
+      this.firstFocusableElement?.focus();
     }
   };
 

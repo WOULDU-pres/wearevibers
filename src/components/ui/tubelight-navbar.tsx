@@ -17,7 +17,7 @@ interface NavBarProps {
 }
 
 export function NavBar({ items, activeItem, onItemChange, className }: NavBarProps) {
-  const [isMobile: _isMobile, setIsMobile] = useState(false)
+  const [_isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {

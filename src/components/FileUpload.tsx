@@ -117,7 +117,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           const compressionResult = await compressImage(file, effectiveOptions);
           
           fileToUpload = compressionResult.file;
-          metadata = compressionResult.metadata;
+          ({ metadata } = compressionResult);
           setCompressionMetadata(metadata);
           
           toast.success(
@@ -183,7 +183,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       filesToProcess.forEach(file => handleFileUpload(file));
     } else {
       // Handle single file
-      const file = acceptedFiles[0];
+      const [file] = acceptedFiles;
       if (file) {
         handleFileUpload(file);
       }

@@ -228,14 +228,14 @@ export function EnhancedImageViewer({
 
   // Touch handlers for mobile swipe
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
+    const [touch] = e.touches;
     setTouchStart({ x: touch.clientX, y: touch.clientY });
   }, []);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (!touchStart) return;
     
-    const touch = e.changedTouches[0];
+    const [touch] = e.changedTouches;
     const diffX = touchStart.x - touch.clientX;
     const diffY = touchStart.y - touch.clientY;
     

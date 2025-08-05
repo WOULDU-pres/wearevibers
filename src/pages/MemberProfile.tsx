@@ -1,15 +1,15 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent /*, CardHeader, CardTitle */ } from "@/components/ui/card";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, MapPin, Calendar, GitBranch, Stars, ArrowLeft, Github, Globe, Mail } from "lucide-react";
+import { Heart, /* MapPin, */ Calendar, /* GitBranch, Stars, */ ArrowLeft, Github, Globe, Mail } from "lucide-react";
 import { BlockButton } from "@/components/BlockButton";
 import { ReportButton } from "@/components/ReportButton";
 import { useParams, useNavigate } from "react-router-dom";
-import { useProfile, useProfileStats, useIsFollowing, useFollowuseUserProjects, useUserPosts } from "@/hooks/useProfile";
+import { useProfile, useProfileStats, useIsFollowing, /* useFollowuseUserProjects, */ useUserPosts } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -21,7 +21,7 @@ const MemberProfile = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const { data: profile, isLoading: profileLoading, error: profileError } = useProfile(id!);
+  const { data: profile, isLoading: profileLoading, _error: profileError } = useProfile(id!);
   const { data: stats, isLoading: statsLoading } = useProfileStats(id!);
   const { data: isFollowing, isLoading: followingLoading } = useIsFollowing(id!);
   const { data: userProjects, isLoading: projectsLoading } = useUserProjects(id!);

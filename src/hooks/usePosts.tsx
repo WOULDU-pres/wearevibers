@@ -81,7 +81,7 @@ export const usePosts = (filters: PostFilters = {}) => {
 
         console.warn('🔍 Executing full posts query...');
         const fullQueryPromise = query;
-        const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+        const { data, _error } = await Promise.race([fullQueryPromise, timeoutPromise]);
         
         console.warn('📊 Full posts query _result:', { data, error, count: data?.length });
 
@@ -134,7 +134,7 @@ export const usePost = (postId: string) => {
   return useQuery({
     queryKey: ['post', postId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('posts')
         .select(`
           *,
@@ -178,7 +178,7 @@ export const usePostComments = (postId: string) => {
   return useQuery({
     queryKey: ['comments', 'post', postId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -228,7 +228,7 @@ export const useCreateComment = () => {
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .insert({
           content,
@@ -265,7 +265,7 @@ export const useCreateComment = () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -277,7 +277,7 @@ export const useIsPostVibed = (postId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
@@ -362,7 +362,7 @@ export const useVibePost = () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       toast.success(newVibedStatus ? 'Vibe 추가됨! 🎉' : 'Vibe 제거됨');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -374,7 +374,7 @@ export const useIsCommentVibed = (commentId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
@@ -406,7 +406,7 @@ export const useVibeComment = () => {
   const { user } = useAuthStore();
 
   return useMutation({
-    mutationFn: async ({ commentId, postId, isVibed }: { commentId: string; postId: string; isVibed: boolean }) => {
+    mutationFn: async ({ commentId, _postId, isVibed }: { commentId: string; postId: string; isVibed: boolean }) => {
       if (!user) throw new Error('User not authenticated');
 
       if (isVibed) {
@@ -456,7 +456,7 @@ export const useVibeComment = () => {
       queryClient.invalidateQueries({ queryKey: ['is-comment-vibed', user?.id, commentId] });
       queryClient.invalidateQueries({ queryKey: ['comments', 'post', postId] });
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 Vibe 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('댓글 Vibe 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -473,7 +473,7 @@ export const useCreatePost = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('posts')
         .insert({
           ...postData,
@@ -501,7 +501,7 @@ export const useCreatePost = () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       toast.success('게시글이 성공적으로 작성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('게시글 작성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('게시글 작성에 실패했습니다.'),
   });
 };
 
@@ -521,7 +521,7 @@ export const useUpdatePost = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('posts')
         .update({
           ...postData,
@@ -552,7 +552,7 @@ export const useUpdatePost = () => {
       queryClient.invalidateQueries({ queryKey: ['post', data.id] });
       toast.success('게시글이 성공적으로 수정되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('게시글 수정에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('게시글 수정에 실패했습니다.'),
   });
 };
 
@@ -579,6 +579,6 @@ export const useDeletePost = () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       toast.success('게시글이 성공적으로 삭제되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('게시글 삭제에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('게시글 삭제에 실패했습니다.'),
   });
 };

@@ -45,7 +45,7 @@ export const useImageDelete = (options: ImageDeleteOptions) => {
       await deleteFile(options.bucket, filePath);
       return { imageUrl, filePath };
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success('이미지가 성공적으로 삭제되었습니다.');
       
       // Invalidate related queries

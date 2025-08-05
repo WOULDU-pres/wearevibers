@@ -94,7 +94,7 @@ export const useAuthStore = create<AuthState>()(
             console.warn('🔍 AuthStore fetchProfile for user:', userId);
             
             // Use safe profile fetcher with built-in RLS handling
-            const { data, error, isTimeout } = await safeGetProfile(userId);
+            const { data, _error, isTimeout } = await safeGetProfile(userId);
             
             console.warn('📊 SafeGetProfile _result:', { 
               hasData: !!data, 
@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
             });
 
             if (error) {
-              const { isRLSIssue, shouldFallback, userMessage } = handleRLSError(error);
+              const { isRLSIssue, shouldFallback } = handleRLSError(error);
               
               if (isRLSIssue) {
                 if (shouldFallback) {

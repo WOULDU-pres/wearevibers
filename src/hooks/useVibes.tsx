@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry } from '@/lib/authErrorHandler';
 
 export interface Vibe {
   id: string;
@@ -26,7 +26,7 @@ export const useVibeCount = (contentId: string, contentType: VibeContentType) =>
   return useQuery({
     queryKey: ['vibe-count', contentType, contentId],
     queryFn: async () => {
-      const { count, error } = await supabase
+      const { count, _error } = await supabase
         .from('vibes')
         .select('*', { count: 'exact', head: true })
         .eq('content_id', contentId)
@@ -53,7 +53,7 @@ export const useVibeStatus = (contentId: string, contentType: VibeContentType) =
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)

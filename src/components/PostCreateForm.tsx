@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,26 +28,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useFileUpload } from '@/hooks/useFileUpload';
 
-const postSchema = z.object({
-  title: z.string()
-    .min(3, '제목은 최소 3글자 이상이어야 합니다.')
-    .max(200, '제목은 200글자를 초과할 수 없습니다.'),
-  content: z.string()
-    .min(10, '내용은 최소 10글자 이상이어야 합니다.')
-    .max(5000, '내용은 5000글자를 초과할 수 없습니다.'),
-  category: z.enum(['desk-setup', 'coding-playlist', 'ide-theme', 'free-talk'], {
-    required_error: '카테고리를 선택해주세요.',
-  }),
-});
-
-type PostFormData = z.infer<typeof postSchema>;
-
-interface PostCreateFormProps {
-  onSubmit: (data: PostFormData & { image_urls: string[] }) => Promise<void>;
-  onCancel: () => void;
-  isLoading?: boolean;
-  initialData?: Partial<PostFormData>;
-}
+import { postSchema, type PostFormData, type PostCreateFormProps } from "@/types";
 
 const categories = [
   { 

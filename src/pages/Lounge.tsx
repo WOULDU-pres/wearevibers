@@ -86,7 +86,7 @@ const Lounge = () => {
   const currentCategory = loungeCategories.find(cat => cat.id === activeCategory)?.value;
 
   // Fetch posts with filters - moved before early return
-  const { data: posts, isLoading, error } = usePosts({
+  const { data: posts, isLoading, _error } = usePosts({
     category: currentCategory,
     search: searchQuery || undefined,
     sortBy,
@@ -108,7 +108,7 @@ const Lounge = () => {
       }, 10000); // Increased to 10 seconds for network issues
       return () => clearTimeout(timer);
     }
-  }, [isLoading, error]);
+  }, [isLoading]);
 
   // Real-time updates - moved before early return
   useEffect(() => {
@@ -116,13 +116,13 @@ const Lounge = () => {
       .channel('posts-realtime')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'posts' },
-        (payload) => {
+        (_payload) => {
           toast.success('새로운 게시글이 등록되었습니다! 🎉');
         }
       )
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'posts' },
-        (payload) => {
+        (_payload) => {
           // Silently update without notification for likes/comments
         }
       )

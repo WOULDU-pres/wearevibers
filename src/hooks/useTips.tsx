@@ -87,7 +87,7 @@ export const useTips = (filters: TipFilters = {}) => {
 
         console.warn('🔍 Executing full query...');
         const fullQueryPromise = query;
-        const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+        const { data, _error } = await Promise.race([fullQueryPromise, timeoutPromise]);
         
         console.warn('📊 Full query _result:', { data, error, count: data?.length });
 
@@ -146,7 +146,7 @@ export const useTip = (tipId: string) => {
   return useQuery({
     queryKey: ['tip', tipId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('tips')
         .select(`
           *,
@@ -190,7 +190,7 @@ export const useTipComments = (tipId: string) => {
   return useQuery({
     queryKey: ['comments', 'tip', tipId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -240,7 +240,7 @@ export const useCreateTipComment = () => {
     mutationFn: async ({ tipId, content }: { tipId: string; content: string }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .insert({
           content,
@@ -277,7 +277,7 @@ export const useCreateTipComment = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -289,7 +289,7 @@ export const useIsTipVibed = (tipId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
@@ -366,7 +366,7 @@ export const useVibeTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success(newVibedStatus ? 'Vibe 추가됨! 🎉' : 'Vibe 제거됨');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('Vibe 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -378,7 +378,7 @@ export const useIsTipBookmarked = (tipId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('bookmarks')
         .select('id')
         .eq('user_id', user.id)
@@ -456,7 +456,7 @@ export const useBookmarkTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', tipId] });
       toast.success(newBookmarkedStatus ? '북마크에 추가됨!' : '북마크에서 제거됨');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('북마크 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('북마크 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -474,7 +474,7 @@ export const useCreateTip = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('tips')
         .insert({
           ...tipData,
@@ -503,7 +503,7 @@ export const useCreateTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tips'] });
       toast.success('팁이 성공적으로 게시되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팁 게시에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('팁 게시에 실패했습니다.'),
   });
 };
 
@@ -524,7 +524,7 @@ export const useUpdateTip = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('tips')
         .update({
           ...tipData,
@@ -555,7 +555,7 @@ export const useUpdateTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tip', data.id] });
       toast.success('팁이 성공적으로 수정되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팁 수정에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('팁 수정에 실패했습니다.'),
   });
 };
 
@@ -582,6 +582,6 @@ export const useDeleteTip = () => {
       queryClient.invalidateQueries({ queryKey: ['tips'] });
       toast.success('팁이 성공적으로 삭제되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팁 삭제에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('팁 삭제에 실패했습니다.'),
   });
 };

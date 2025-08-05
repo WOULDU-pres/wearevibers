@@ -68,7 +68,7 @@ export function initSentry() {
       ];
 
       if (event.exception?.values?.[0]?.value) {
-        const errorMessage = event.exception.values[0].value;
+        const _errorMessage = event.exception.values[0].value;
         if (ignoredErrors.some(ignored => errorMessage.includes(ignored))) {
           return null;
         }
@@ -130,7 +130,7 @@ export function captureError(error: Error, context?: Record<string, unknown>) {
 // 수동 메시지 보고
 export function captureMessage(
   message: string, 
-  level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
+  level: 'fatal' | '_error' | 'warning' | 'info' | 'debug' = 'info',
   context?: Record<string, unknown>
 ) {
   if (context) {
@@ -228,7 +228,7 @@ export class NetworkError extends Error {
 // Supabase 에러 처리를 위한 유틸리티
 export function handleSupabaseError(error: unknown, context: Record<string, unknown> = {}) {
   // Supabase 에러 정보 추출
-  const supabaseContext = {
+  const _supabaseContext = {
     ...context,
     supabase: {
       code: error?.code,

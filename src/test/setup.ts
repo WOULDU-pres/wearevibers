@@ -192,13 +192,13 @@ vi.mock('react', async () => {
 // Framer Motion 모킹 (애니메이션 테스트 시 유용)
 vi.mock('framer-motion', () => ({
   motion: {
-    div: React.forwardRef(({ children, ...props }: any, ref: any) => 
+    div: React.forwardRef(({ children, ...props }: unknown, ref: any) => 
       React.createElement('div', { ref, ...props }, children)
     ),
-    span: React.forwardRef(({ children, ...props }: any, ref: any) => 
+    span: React.forwardRef(({ children, ...props }: unknown, ref: any) => 
       React.createElement('span', { ref, ...props }, children)
     ),
-    button: React.forwardRef(({ children, ...props }: any, ref: any) => 
+    button: React.forwardRef(({ children, ...props }: unknown, ref: any) => 
       React.createElement('button', { ref, ...props }, children)
     ),
   },

@@ -103,7 +103,7 @@ class MonitoringService {
         timestamp: Date.now(),
         url: window.location.href,
         userAgent: navigator.userAgent,
-        connectionType: (navigator as any).connection?.effectiveType
+        connectionType: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType
       };
 
       this.sendMetric('performance', performanceMetric);
@@ -120,7 +120,7 @@ class MonitoringService {
   private initErrorTracking(): void {
     // 전역 에러 핸들러
     window.addEventListener('error', (event) => {
-      const errorMetric: ErrorMetric = {
+      const _errorMetric: ErrorMetric = {
         message: event.message,
         stack: event.error?.stack,
         filename: event.filename,
@@ -137,7 +137,7 @@ class MonitoringService {
 
     // Promise rejection 핸들러
     window.addEventListener('unhandledrejection', (event) => {
-      const errorMetric: ErrorMetric = {
+      const _errorMetric: ErrorMetric = {
         message: `Unhandled Promise Rejection: ${event.reason}`,
         stack: event.reason?.stack,
         filename: 'unknown',
@@ -256,7 +256,7 @@ class MonitoringService {
     this.sendMetric('user', userMetric);
   }
 
-  public trackCustomMetric(name: string, value: number, attributes?: Record<string, any>): void {
+  public trackCustomMetric(name: string, value: number, attributes?: Record<string, unknown>): void {
     const customMetric: PerformanceMetric = {
       name: `custom_${name}`,
       value,
@@ -270,13 +270,11 @@ class MonitoringService {
     this.sendMetric('custom', customMetric);
   }
 
-  private async sendMetric(type: string, data: any): Promise<void> {
+  private async sendMetric(type: string, data: unknown): Promise<void> {
     try {
       // Console logging for development
       if (import.meta.env.NODE_ENV === 'development') {
-        console.group(`📊 ${type.toUpperCase()} Metric`);
-        console.warn(data);
-        console.groupEnd();
+        console.warn(`📊 ${type.toUpperCase()} Metric:`, data);
       }
 
       // Send to external monitoring service
@@ -342,7 +340,7 @@ export const useMonitoring = () => {
 // 타입 선언 확장
 declare global {
   interface Window {
-    Sentry?: any;
+    Sentry?: unknown;
   }
 }
 

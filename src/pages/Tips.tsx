@@ -32,7 +32,7 @@ const Tips = () => {
   const { user } = useAuthStore();
 
   // Fetch tips data - moved before early return
-  const { data: tips = [], isLoading: loading, error } = useTips({ 
+  const { data: tips = [], isLoading: loading, _error } = useTips({ 
     category: selectedCategory, 
     search: searchQuery,
     sortBy 
@@ -50,7 +50,7 @@ const Tips = () => {
       }, 10000); // Increased to 10 seconds for network issues
       return () => clearTimeout(timer);
     }
-  }, [loading, error]);
+  }, [loading]);
 
   // Early return after all hooks are declared
   if (isPageLoading && loading) {

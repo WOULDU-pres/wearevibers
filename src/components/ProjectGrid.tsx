@@ -144,7 +144,7 @@ const ProjectGrid = () => {
     : mockProjects.filter(project => project.category === activeCategory);
 
   // Get category count for stats
-  const getCategoryCount: _getCategoryCount = (category: string) => {
+  const _getCategoryCount = (category: string) => {
     if (category === "all") return mockProjects.length;
     return mockProjects.filter(project => project.category === category).length;
   };

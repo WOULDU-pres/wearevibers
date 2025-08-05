@@ -3,9 +3,8 @@
 
 import React, { useState } from 'react';
 
-import { CheckFilter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -127,7 +126,7 @@ const NotificationList: React.FC<NotificationListProps> = ({ filter = 'all' }) =
                      filter === 'unread' ? { is_read: false } : 
                      { type: filter as NotificationType };
 
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications({
+  const { data, isLoading, _error, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications({
     ...queryParams,
     limit: 20
   });

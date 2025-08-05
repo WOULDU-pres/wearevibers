@@ -59,7 +59,7 @@ export const _createQueryClient = () => {
   return new QueryClient({
     defaultOptions: queryConfig,
     logger: {
-      log: console.log,
+      log: console.warn,
       warn: console.warn,
       error: process.env.NODE_ENV === 'development' ? console.error : () => {},
     }

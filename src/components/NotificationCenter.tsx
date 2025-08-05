@@ -88,7 +88,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
 
 const NotificationCenter: React.FC = () => {
   const { data: unreadData, isLoading: _unreadLoading } = useUnreadCount();
-  const { data: notificationsData, isLoading: notificationsLoading, error } = useNotifications({ 
+  const { data: notificationsData, isLoading: notificationsLoading, _error } = useNotifications({ 
     limit: 10 
   });
   const markAsReadMutation = useMarkAsRead();

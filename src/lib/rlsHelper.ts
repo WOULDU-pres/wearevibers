@@ -38,7 +38,7 @@ export async function executeWithRLSTimeout<T>(
     const duration = Date.now() - startTime;
     console.warn(`⚡ Query completed in ${duration}ms`);
     
-    const { data, error } = result as { data: T | null; error: unknown };
+    const { data, _error } = result as { data: T | null; error: unknown };
     
     if (error) {
       console.warn('⚠️ Query completed with error:', error);
@@ -106,8 +106,8 @@ export async function executeWithRLSTimeout<T>(
 function isPermissionError(error: unknown): boolean {
   if (!error) return false;
   
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorCode = (error as { code?: string })?.code;
+  const _errorMessage = error instanceof Error ? error.message : String(error);
+  const _errorCode = (error as { code?: string })?.code;
   
   return (
     errorCode === 'PGRST301' || 
@@ -133,7 +133,7 @@ export async function validateUserSession() {
     });
 
     const sessionPromise = supabase.auth.getSession();
-    const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
+    const { data: { session }, _error } = await Promise.race([sessionPromise, timeoutPromise]);
     
     if (error) {
       console.error('❌ Session validation error:', error);
@@ -177,8 +177,8 @@ export function handleRLSError(error: unknown): {
     };
   }
 
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorCode = (error as { code?: string })?.code;
+  const _errorMessage = error instanceof Error ? error.message : String(error);
+  const _errorCode = (error as { code?: string })?.code;
   
   console.warn('🔍 Analyzing error:', { errorMessage, errorCode });
   

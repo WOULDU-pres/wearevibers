@@ -13,7 +13,7 @@ import logoImg from "@/assets/logo.png";
 import { useFormStore } from "@/stores";
 
 const Signup = () => {
-  const { signupForm, updateSignupForm, resetSignupForm } = useFormStore();
+  const { signupForm, updateSignupForm } = useFormStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const { signUp, signInWithOAuth, loading } = useAuthStore();
@@ -61,7 +61,7 @@ const Signup = () => {
         toast.success('회원가입이 완료되었습니다! 이메일을 확인해주세요.');
         navigate('/login');
       }
-    } catch (error) {
+    } catch {
       toast.error('예상치 못한 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -76,7 +76,7 @@ const Signup = () => {
         toast.error(error.message || '소셜 가입에 실패했습니다.');
       }
       // OAuth는 리다이렉트되므로 성공 메시지는 여기서 표시하지 않음
-    } catch (error) {
+    } catch {
       toast.error('예상치 못한 오류가 발생했습니다.');
     }
   };

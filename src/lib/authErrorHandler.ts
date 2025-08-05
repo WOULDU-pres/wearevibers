@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { handleSupabaseError, AuthError } from '@/lib/sentry';
+import { handleSupabaseError } from '@/lib/sentry';
 
 /**
  * 인증 관련 에러인지 확인하는 함수
@@ -69,7 +69,7 @@ export const isAuthError = (error: unknown): boolean => {
  * 인증 에러 처리 함수
  * 세션 만료 시 자동 로그아웃 및 사용자 알림
  */
-export const handleAuthError = async (error: unknown, showToast = true): Promise<void> => {
+export const handleAuthError = async (_error: unknown, showToast = true): Promise<void> => {
   if (!isAuthError(error)) {
     return;
   }
@@ -152,7 +152,7 @@ export const authAwareRetry = (failureCount: number, error: unknown): boolean =>
 /**
  * Mutation에서 사용할 에러 핸들러
  */
-export const createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler = (customMessage?: string) => {
+export const createAuthAwareMutationErrorHandler = (customMessage?: string) => {
   return async (error: unknown) => {
     console.error('Mutation error:', error);
     

@@ -60,7 +60,7 @@ export const PostEditDialog: React.FC<PostEditDialogProps> = ({
     content: post.content || '',
     category: post.category || 'free-talk',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [_errors, setErrors] = useState<Record<string, string>>({});
   const [hasChanges, setHasChanges] = useState(false);
 
   // 원본 데이터와 비교하여 변경사항 감지

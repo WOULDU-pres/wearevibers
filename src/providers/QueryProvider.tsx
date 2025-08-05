@@ -41,7 +41,7 @@ const createMutationErrorHandler = () => {
     });
     
     // 일반 에러는 사용자에게 알림
-    const errorMessage = error instanceof Error ? error.message : '요청 처리 중 오류가 발생했습니다.';
+    const _errorMessage = error instanceof Error ? error.message : '요청 처리 중 오류가 발생했습니다.';
     toast.error(errorMessage);
   };
 };
@@ -85,7 +85,7 @@ const queryClient = new QueryClient({
     }
   },
   logger: {
-    log: console.log,
+    log: console.warn,
     warn: console.warn,
     error: process.env.NODE_ENV === 'development' ? console.error : () => {},
   }

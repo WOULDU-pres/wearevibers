@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, ExternalCheck } from "lucide-react";
+import { Copy, Check, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,6 @@ import { toast } from "sonner";
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
-  projectId: string;
   projectTitle: string;
   shareUrl: string;
   onCopyLink: () => void;
@@ -25,10 +24,9 @@ interface ShareModalProps {
 const ShareModal = ({ 
   isOpen, 
   onClose, 
-  projectId,
   projectTitle, 
   shareUrl, 
-  onCopy,
+  onCopyLink,
   onDirectLink,
 }: ShareModalProps) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -44,7 +42,7 @@ const ShareModal = ({
       setTimeout(() => {
         setIsCopied(false);
       }, 3000);
-    } catch (error) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement("textarea");
       textArea.value = shareUrl;
@@ -61,7 +59,7 @@ const ShareModal = ({
         setTimeout(() => {
           setIsCopied(false);
         }, 3000);
-      } catch (fallbackError) {
+      } catch {
         toast.error("링크 복사에 실패했습니다. 수동으로 복사해주세요.");
       }
       

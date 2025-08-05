@@ -34,7 +34,7 @@ export const VibeButton: React.FC<VibeButtonProps> = ({
   showText = false,
   className,
   disabled = false,
-  enableRealtime = true,
+  _enableRealtime = true,
   useDebouncedToggle = false,
   debounceDelay = 300,
 }) => {
@@ -187,7 +187,7 @@ export const VibeCount: React.FC<{
     if (enableRealtime) {
       // Realtime vibes are handled by parent component
     }
-  }, [_enableRealtime, contentId, contentType]);
+  }, [enableRealtime, contentId, contentType]);
 
   return (
     <div className={cn(

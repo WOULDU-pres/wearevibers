@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
-import { toast } from 'sonner';
+// import { toast } from 'sonner'; // Toast 알림 (필요시 활성화)
 import { handleSupabaseError, addBreadcrumb } from '@/lib/sentry';
 
 export interface UploadOptions {

@@ -29,7 +29,7 @@ export const MagicCard = React.forwardRef<HTMLDivElement, MagicCardProps>(
         mouseX.set(e.clientX - left);
         mouseY.set(e.clientY - top);
       },
-      [mousemouseY]
+      [mouseX, mouseY]
     );
 
     const maskImage = useMotionTemplate`radial-gradient(${gradientSize}px at ${mouseX}px ${mouseY}px, white, transparent)`;

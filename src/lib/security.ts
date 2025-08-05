@@ -50,7 +50,7 @@ export const validatePasswordStrength = (password: string): {
   errors: string[];
   score: number;
 } => {
-  const errors: string[] = [];
+  const _errors: string[] = [];
   let score = 0;
 
   // 최소 길이
@@ -115,7 +115,7 @@ export const validateUsername = (username: string): {
   isValid: boolean;
   errors: string[];
 } => {
-  const errors: string[] = [];
+  const _errors: string[] = [];
 
   // 길이 검증
   if (username.length < 3) {
@@ -159,7 +159,7 @@ export const validateFileUpload = (file: File): {
   isValid: boolean;
   errors: string[];
 } => {
-  const errors: string[] = [];
+  const _errors: string[] = [];
 
   // 파일 크기 제한 (10MB)
   const maxSize = 10 * 1024 * 1024;

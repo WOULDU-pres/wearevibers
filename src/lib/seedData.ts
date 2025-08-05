@@ -21,7 +21,7 @@ export interface SeedDataResult {
 /**
  * 샘플 프로필 데이터
  */
-const sampleProfiles: Omit<Profile, 'id' | 'created_at' | 'updated_at'>[] = [
+const _sampleProfiles: Omit<Profile, 'id' | 'created_at' | 'updated_at'>[] = [
   {
     username: 'devjohn',
     full_name: 'John Developer',
@@ -325,14 +325,14 @@ export async function createSeedData(): Promise<SeedDataResult> {
   try {
     console.warn('🌱 Starting seed data creation...');
     
-    const errors: string[] = [];
+    const _errors: string[] = [];
     let profilesCreated = 0;
     let projectsCreated = 0;
     let tipsCreated = 0;
     let postsCreated = 0;
 
     // 1. 현재 인증된 사용자 확인
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, _error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return {
         success: false,
@@ -362,7 +362,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
     };
 
     // 현재 사용자 프로필 upsert
-    const { error: profileError } = await supabase
+    const { _error: profileError } = await supabase
       .from('profiles')
       .upsert(currentUserProfile, { onConflict: 'id' });
 
@@ -378,7 +378,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
     
     // 4. 현재 사용자로 샘플 프로젝트 생성
     for (const project of sampleProjects) {
-      const { error: projectError } = await supabase
+      const { _error: projectError } = await supabase
         .from('projects')
         .insert({
           ...project,
@@ -394,7 +394,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
 
     // 5. 현재 사용자로 샘플 팁 생성
     for (const tip of sampleTips) {
-      const { error: tipError } = await supabase
+      const { _error: tipError } = await supabase
         .from('tips')
         .insert({
           ...tip,
@@ -410,7 +410,7 @@ export async function createSeedData(): Promise<SeedDataResult> {
 
     // 6. 현재 사용자로 샘플 포스트 생성
     for (const post of samplePosts) {
-      const { error: postError } = await supabase
+      const { _error: postError } = await supabase
         .from('posts')
         .insert({
           ...post,
@@ -474,7 +474,7 @@ export async function clearSeedData(): Promise<SeedDataResult> {
   try {
     console.warn('🧹 Clearing existing seed data...');
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, _error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return {
         success: false,

@@ -50,7 +50,7 @@ export const fetchNotifications = async (params: GetNotificationsParams = {}): P
     if (is_read !== undefined) query = query.eq('is_read', is_read);
     if (type) query = query.eq('type', type);
 
-    const { data, error, count } = await query;
+    const { data, _error, count } = await query;
 
     if (error) {
       console.error('알림 조회 에러:', error);
@@ -58,7 +58,7 @@ export const fetchNotifications = async (params: GetNotificationsParams = {}): P
     }
 
     // 읽지 않은 알림 개수 별도 조회
-    const { count: unreadCount, error: countError } = await supabase
+    const { count: unreadCount, _error: countError } = await supabase
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user_id || '')
@@ -84,7 +84,7 @@ export const fetchNotifications = async (params: GetNotificationsParams = {}): P
  */
 export const fetchUnreadCount = async (user_id: string): Promise<UnreadCountResponse> => {
   try {
-    const { count, error } = await supabase
+    const { count, _error } = await supabase
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user_id)
@@ -189,7 +189,7 @@ export const useUnreadCount = () => {
  */
 export const useMarkAsRead = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
+  const { _user } = useAuthStore();
 
   return useMutation({
     mutationFn: markNotificationAsRead,
@@ -234,8 +234,8 @@ export const useMarkAllAsRead = () => {
  * 실시간 알림 구독을 위한 Hook (향후 확장용)
  */
 export const useNotificationSubscription = () => {
-  const { user } = useAuthStore();
-  const queryClient = useQueryClient();
+  const { _user } = useAuthStore();
+  const _queryClient = useQueryClient();
 
   // 향후 Supabase Realtime 구독 로직 추가 예정
   // 현재는 폴링 방식 사용
@@ -243,12 +243,43 @@ export const useNotificationSubscription = () => {
   return {
     isSubscribed: false,
     subscribe: () => {
-      // TODO: Supabase Realtime 구독 구현
-      console.warn('실시간 알림 구독 시작 (향후 구현 예정)');
+      if (!user?.id) {
+        console.warn('사용자 인증이 필요합니다.');
+        return;
+      }
+
+      // Supabase Realtime 구독 구현
+      const channel = supabase
+        .channel('notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            // 새 알림이 도착했을 때 처리
+            queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+            // 브라우저 알림 (권한이 있는 경우)
+            if (Notification.permission === 'granted') {
+              new Notification(payload.new.title || '새 알림', {
+                body: payload.new.message,
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        )
+        .subscribe();
+
+      console.warn('실시간 알림 구독이 활성화되었습니다.');
+      return channel;
     },
     unsubscribe: () => {
-      // TODO: Supabase Realtime 구독 해제 구현
-      console.warn('실시간 알림 구독 해제 (향후 구현 예정)');
+      // 실시간 구독 해제
+      supabase.removeAllChannels();
+      console.warn('실시간 알림 구독이 해제되었습니다.');
     }
   };
 };

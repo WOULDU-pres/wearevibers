@@ -1,4 +1,4 @@
-import React, { } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { supabase } from '@/lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -12,7 +12,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initialize, 
     initialized, 
     setSession,
-    setLoading,
     fetchProfile,
     cleanup 
   } = useAuthStore();

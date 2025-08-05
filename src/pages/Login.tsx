@@ -12,7 +12,7 @@ import logoImg from "@/assets/logo.png";
 import { useFormStore } from "@/stores";
 
 const Login = () => {
-  const { loginForm, updateLoginForm, resetLoginForm } = useFormStore();
+  const { loginForm, updateLoginForm, _resetLoginForm } = useFormStore();
   const [isLoading, setIsLoading] = useState(false);
   
   const { signIn, signInWithOAuth, loading } = useAuthStore();
@@ -36,7 +36,7 @@ const Login = () => {
         toast.success('로그인 성공!');
         navigate(redirectTo, { replace: true });
       }
-    } catch (error) {
+    } catch {
       toast.error('예상치 못한 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -51,7 +51,7 @@ const Login = () => {
         toast.error(error.message || '소셜 로그인에 실패했습니다.');
       }
       // OAuth는 리다이렉트되므로 성공 메시지는 여기서 표시하지 않음
-    } catch (error) {
+    } catch {
       toast.error('예상치 못한 오류가 발생했습니다.');
     }
   };
@@ -65,7 +65,7 @@ const Login = () => {
     try {
       // Magic link 기능은 향후 구현 예정
       toast.info('Magic link 기능은 곧 제공될 예정입니다.');
-    } catch (error) {
+    } catch {
       toast.error('Magic link 전송에 실패했습니다.');
     }
   };

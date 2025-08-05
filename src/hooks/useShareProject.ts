@@ -12,7 +12,7 @@ interface UseShareProjectProps {
   projectTitle: string;
 }
 
-export const useShareProject = ({ projectId, projectTitle }: UseShareProjectProps) => {
+export const useShareProject = ({ projectId, _projectTitle }: UseShareProjectProps) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareCount, setShareCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,25 +28,47 @@ export const useShareProject = ({ projectId, projectTitle }: UseShareProjectProp
     try {
       setIsLoading(true);
       
-      // TODO: API 엔드포인트 구현 후 실제 호출
-      // const response = await fetch(`/api/projects/${projectId}/share`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     ...shareData,
-      //     userAgent: navigator.userAgent,
-      //     referrer: document.referrer,
-      //   }),
-      // });
-      
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   setShareCount(data.shareCount);
-      // }
+      // Supabase를 통한 프로젝트 공유 구현
+      const { data: projectData, error: fetchError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .single();
 
-      // 임시로 로컬에서 카운트 증가
+      if (fetchError || !projectData) {
+        throw new Error('프로젝트를 찾을 수 없습니다.');
+      }
+
+      // 공유 URL 생성 (현재 도메인 기반)
+      const shareUrl = `${window.location.origin}/projects/${projectId}`;
+      
+      // Web Share API 지원 확인
+      if (navigator.share) {
+        await navigator.share({
+          title: projectData.title,
+          text: projectData.description,
+          url: shareUrl,
+        });
+      } else {
+        // 클립보드에 복사
+        await navigator.clipboard.writeText(shareUrl);
+      }
+
+      // 공유 활동 기록 (선택적)
+      const { error: insertError } = await supabase
+        .from('project_shares')
+        .insert({
+          project_id: projectId,
+          platform: shareData.platform,
+          shared_at: new Date().toISOString(),
+          user_id: shareData.userId || null
+        });
+
+      if (insertError) {
+        console.warn('공유 기록 저장 실패:', insertError.message);
+      }
+
+      // 공유 카운트 업데이트
       setShareCount(prev => prev + 1);
       
       console.warn('Share tracked:', shareData);
@@ -73,7 +95,7 @@ export const useShareProject = ({ projectId, projectTitle }: UseShareProjectProp
       projectId,
       shareType: 'copy_link',
     });
-  }, [trackShare]);
+  }, [trackShare, projectId]);
 
   // 직접 링크 열기 핸들러
   const handleDirectLink = useCallback(() => {
@@ -81,7 +103,7 @@ export const useShareProject = ({ projectId, projectTitle }: UseShareProjectProp
       projectId,
       shareType: 'direct_link',
     });
-  }, [trackShare]);
+  }, [trackShare, projectId]);
 
   const shareUrl = generateShareUrl(projectId);
 

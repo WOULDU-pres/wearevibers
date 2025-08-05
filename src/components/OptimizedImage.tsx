@@ -49,7 +49,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className,
   sizes = '100vw',
   priority = false,
-  quality = 75,
+  _quality = 75,
   placeholder = 'empty',
   blurDataURL,
   onLoad,
@@ -113,7 +113,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     const ext = optimizedSrc.split('.').pop();
     
     return Object.entries(responsive)
-      .map(([_breakpoint, { width: w }]) => `${baseSrc}-${w}w.${ext} ${w}w`)
+      .map(([, { width: w }]) => `${baseSrc}-${w}w.${ext} ${w}w`)
       .join(', ');
   }, [src, optimizedSrc, responsive]);
 

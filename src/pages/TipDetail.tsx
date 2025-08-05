@@ -18,7 +18,7 @@ const TipDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: tip, isLoading: tipLoading, error: tipError } = useTip(id!);
+  const { data: tip, isLoading: tipLoading, _error: tipError } = useTip(id!);
   const { data: isTipVibed, isLoading: vibedLoading } = useIsTipVibed(id!);
   const { data: isTipBookmarked } = useIsTipBookmarked(id!);
   const vibeTipMutation = useVibeTip();

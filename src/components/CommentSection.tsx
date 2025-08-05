@@ -18,7 +18,6 @@ import { useRealtimeComments } from '@/hooks/useRealtimeComments';
 import { useAuthStore } from '@/stores';
 import { 
   MessageSquare, 
-  SortAsc, 
   SortAsc,
   RefreshCw,
   MessageCircle,

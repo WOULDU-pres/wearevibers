@@ -29,13 +29,13 @@ export function useValidation<T extends Record<string, unknown>>(
   schema: z.ZodSchema<T>,
   options: ValidationOptions = {}
 ) {
-  const [errors, setErrors] = useState<Record<keyof T, string>>({});
+  const [_errors, setErrors] = useState<Record<keyof T, string>>({});
   const [isValidating, setIsValidating] = useState(false);
 
   const {
     sanitize = true,
     sanitizer = contentSanitizers.title,
-    abortEarly = false,
+    _abortEarly = false,
   } = options;
 
   /**
@@ -91,7 +91,7 @@ export function useValidation<T extends Record<string, unknown>>(
             fieldErrors,
           };
         }
-      } catch (error) {
+      } catch {
         setIsValidating(false);
         return {
           success: false,
@@ -142,7 +142,7 @@ export function useValidation<T extends Record<string, unknown>>(
           }));
           return false;
         }
-      } catch (error) {
+      } catch {
         setErrors((prev) => ({
           ...prev,
           [fieldName]: '유효성 검사 중 오류가 발생했습니다.',
@@ -193,7 +193,7 @@ export function useValidation<T extends Record<string, unknown>>(
     (fieldName: keyof T): boolean => {
       return fieldName in errors;
     },
-    [errors]
+    []
   );
 
   /**
@@ -203,7 +203,7 @@ export function useValidation<T extends Record<string, unknown>>(
     (fieldName: keyof T): string | undefined => {
       return errors[fieldName];
     },
-    [errors]
+    []
   );
 
   return {
@@ -330,11 +330,11 @@ export function useFormValidation<T extends Record<string, unknown>>(
  */
 export function useAsyncValidation<T>(
   validator: (value: T) => Promise<boolean>,
-  errorMessage = '유효하지 않은 값입니다.',
+  _errorMessage = '유효하지 않은 값입니다.',
   debounceMs = 500
 ) {
   const [isValidating, setIsValidating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
 
   const validate = useCallback(
@@ -356,7 +356,7 @@ export function useAsyncValidation<T>(
           setIsValid(false);
           setError(errorMessage);
         }
-      } catch (err) {
+      } catch {
         setIsValid(false);
         setError('검증 중 오류가 발생했습니다.');
       } finally {
@@ -365,7 +365,7 @@ export function useAsyncValidation<T>(
 
       return isValid;
     },
-    [validator, errorMessage, debounceMs, isValid]
+    [validator, debounceMs, isValid]
   );
 
   const reset = useCallback(() => {

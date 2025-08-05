@@ -13,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Search as SearchIcon, 
-  Filter, 
   Grid3X3, 
   List, 
   Users, 
@@ -23,7 +22,6 @@ import {
   Eye,
   Calendar,
   ArrowRight,
-  TrendingUp,
 } from 'lucide-react';
 
 import { formatDistanceToNow } from 'date-fns';
@@ -41,13 +39,13 @@ const defaultFilters: FilterOptions = {
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [filters, setFilters] = useState<FilterOptions>(defaultFilters);
   const [activeTab, setActiveTab] = useState<'all' | 'projects' | 'tips' | 'users'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
-  const { data: searchResults, isLoading, error } = useGlobalSearch({
+  const { data: searchResults, isLoading, _error } = useGlobalSearch({
     query,
     filters: {
       ...filters,

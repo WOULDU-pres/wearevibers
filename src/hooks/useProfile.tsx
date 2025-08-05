@@ -3,14 +3,14 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Profile } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 import { handleSupabaseError } from '@/lib/sentry';
 
 export const useProfile = (userId: string) => {
   return useQuery({
     queryKey: ['profile', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -49,7 +49,7 @@ export const useProfileStats = (userId: string) => {
     queryFn: async () => {
       try {
         // Get projects count
-        const { count: projectsCount, error: projectsError } = await supabase
+        const { count: projectsCount, _error: projectsError } = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
@@ -71,7 +71,7 @@ export const useProfileStats = (userId: string) => {
         }
 
         // Get total vibes count across all user content
-        const { data: vibesData, error: vibesError } = await supabase
+        const { data: vibesData, _error: vibesError } = await supabase
           .from('vibes')
           .select('content_id, content_type')
           .or(`and(content_type.eq.project,content_id.in.(${
@@ -124,7 +124,7 @@ export const useIsFollowing = (targetUserId: string) => {
     queryFn: async () => {
       if (!user || user.id === targetUserId) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('follows')
         .select('id')
         .eq('follower_id', user.id)
@@ -214,7 +214,7 @@ export const useFollowUser = () => {
       queryClient.invalidateQueries({ queryKey: ['profile', targetUserId] });
       toast.success(newFollowingStatus ? '팔로우했습니다!' : '언팔로우했습니다.');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('팔로우 상태 변경에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('팔로우 상태 변경에 실패했습니다.'),
   });
 };
 
@@ -222,7 +222,7 @@ export const useUserProjects = (userId: string) => {
   return useQuery({
     queryKey: ['user-projects', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('projects')
         .select(`
           *,
@@ -260,7 +260,7 @@ export const useUserPosts = (userId: string) => {
   return useQuery({
     queryKey: ['user-posts', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('posts')
         .select(`
           *,

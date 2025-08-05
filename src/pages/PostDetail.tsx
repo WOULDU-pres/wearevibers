@@ -23,7 +23,7 @@ const PostDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const { data: post, isLoading: postLoading, error: postError } = usePost(id!);
+  const { data: post, isLoading: postLoading, _error: postError } = usePost(id!);
   const { data: isPostVibed, isLoading: vibedLoading } = useIsPostVibed(id!);
   const vibePostMutation = useVibePost();
   const updatePostMutation = useUpdatePost();

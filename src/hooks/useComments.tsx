@@ -8,17 +8,17 @@ import type {
   CommentContentType, 
   CreateCommentRequest, 
   UpdateCommentRequest,
-  CommentQueryOptions,
+  
 } from '@/types/comment';
 
-const COMMENTS_PER_PAGE = 20;
+const _COMMENTS_PER_PAGE = 20;
 
 // 댓글 목록 조회 (중첩 구조로)
 export const useComments = (contentId: string, contentType: CommentContentType) => {
   return useQuery({
     queryKey: ['comments', contentType, contentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -99,7 +99,7 @@ export const useComment = (commentId: string) => {
   return useQuery({
     queryKey: ['comment', commentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -139,7 +139,7 @@ export const useCommentCount = (contentId: string, contentType: CommentContentTy
   return useQuery({
     queryKey: ['comment-count', contentType, contentId],
     queryFn: async () => {
-      const { count, error } = await supabase
+      const { count, _error } = await supabase
         .from('comments')
         .select('*', { count: 'exact', head: true })
         .eq('content_id', contentId)
@@ -166,7 +166,7 @@ export const useCreateComment = () => {
     mutationFn: async (commentData: CreateCommentRequest) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .insert({
           ...commentData,
@@ -220,7 +220,7 @@ export const useCreateComment = () => {
 
       toast.success('댓글이 작성되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('댓글 작성에 실패했습니다.'),
   });
 };
 
@@ -239,7 +239,7 @@ export const useUpdateComment = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('comments')
         .update({
           ...updates,
@@ -281,7 +281,7 @@ export const useUpdateComment = () => {
 
       toast.success('댓글이 수정되었습니다!');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 수정에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('댓글 수정에 실패했습니다.'),
   });
 };
 
@@ -295,7 +295,7 @@ export const useDeleteComment = () => {
       if (!user) throw new Error('User not authenticated');
 
       // 먼저 댓글 정보를 가져와서 어떤 콘텐츠의 댓글인지 확인
-      const { data: commentData, error: fetchError } = await supabase
+      const { data: commentData, _error: fetchError } = await supabase
         .from('comments')
         .select('content_id, content_type, user_id')
         .eq('id', commentId)
@@ -348,7 +348,7 @@ export const useDeleteComment = () => {
 
       toast.success('댓글이 삭제되었습니다.');
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('댓글 삭제에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('댓글 삭제에 실패했습니다.'),
   });
 };
 
@@ -376,7 +376,7 @@ export const useVibeComment = () => {
         }
 
         // 댓글의 좋아요 수 감소
-        const { error: updateError } = await supabase
+        const { _error: updateError } = await supabase
           .from('comments')
           .update({ vibe_count: supabase.rpc('decrement', { current_count: 'vibe_count' }) })
           .eq('id', commentId);
@@ -401,7 +401,7 @@ export const useVibeComment = () => {
         }
 
         // 댓글의 좋아요 수 증가
-        const { error: updateError } = await supabase
+        const { _error: updateError } = await supabase
           .from('comments')
           .update({ vibe_count: supabase.rpc('increment', { current_count: 'vibe_count' }) })
           .eq('id', commentId);
@@ -425,7 +425,7 @@ export const useVibeComment = () => {
         toast.success('댓글에 좋아요를 눌렀습니다! 💝');
       }
     },
-    onError: createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler('좋아요 처리에 실패했습니다.'),
+    onError: createAuthAwareMutationErrorHandler('좋아요 처리에 실패했습니다.'),
   });
 };
 
@@ -438,7 +438,7 @@ export const useCommentVibeStatus = (commentId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)

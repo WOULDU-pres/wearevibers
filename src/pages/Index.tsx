@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ProjectGrid from "@/components/ProjectGrid";
 import Footer from "@/components/Footer";
-import { SentryTestButton } from "@/components/SentryTestButton";
+// import { SentryTestButton } from "@/components/SentryTestButton"; // Sentry 테스트 버튼 (개발용)
 import { DataSeeder } from "@/components/dev/DataSeeder";
 
 const Index = () => {

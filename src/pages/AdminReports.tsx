@@ -41,19 +41,19 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
-  AlertTriangle,
+  // AlertTriangle,
   CheckCircle,
   Clock,
   XCircle,
-  Eye,
+  // Eye,
   Shield,
   FileText,
   Users,
-  TrendingUp,
-  Trash2,
+  // TrendingUp,
+  // Trash2,
 } from 'lucide-react';
 import { useReports, useReportStats, useProcessReport } from '@/hooks/useSecurity';
-import { REPORT_REASON_OPTIONS } from '@/components/ReportDialog';
+import { REPORT_REASON_OPTIONS } from '@/lib/constants/report-reasons';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import type { Report, ReportStatus } from '@/types/security';
