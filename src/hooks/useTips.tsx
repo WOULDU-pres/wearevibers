@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Tip, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 interface TipFilters {
   category?: string;
@@ -87,7 +87,7 @@ export const useTips = (filters: TipFilters = {}) => {
 
         console.warn('🔍 Executing full query...');
         const fullQueryPromise = query;
-        const { data, _error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+        const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
         
         console.warn('📊 Full query _result:', { data, error, count: data?.length });
 
@@ -146,7 +146,7 @@ export const useTip = (tipId: string) => {
   return useQuery({
     queryKey: ['tip', tipId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('tips')
         .select(`
           *,
@@ -190,7 +190,7 @@ export const useTipComments = (tipId: string) => {
   return useQuery({
     queryKey: ['comments', 'tip', tipId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -240,7 +240,7 @@ export const useCreateTipComment = () => {
     mutationFn: async ({ tipId, content }: { tipId: string; content: string }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .insert({
           content,
@@ -289,7 +289,7 @@ export const useIsTipVibed = (tipId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
@@ -378,7 +378,7 @@ export const useIsTipBookmarked = (tipId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('bookmarks')
         .select('id')
         .eq('user_id', user.id)
@@ -474,7 +474,7 @@ export const useCreateTip = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('tips')
         .insert({
           ...tipData,
@@ -524,7 +524,7 @@ export const useUpdateTip = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('tips')
         .update({
           ...tipData,

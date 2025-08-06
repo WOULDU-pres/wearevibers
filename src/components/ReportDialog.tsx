@@ -1,7 +1,7 @@
 // ReportDialog.tsx - 신고 다이얼로그 컴포넌트
 // EPIC-04: 보안 및 안정성 - STORY-015
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,

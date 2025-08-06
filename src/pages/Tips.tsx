@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAutocomplete } from "@/components/SearchAutocomplete";
+import { SearchHighlight } from "@/components/SearchHighlight";
 
 import { Heart, Bookmark, Code, Palette, GitBranch, Layers, PlusCircle } from "lucide-react";
 import { ReportButton } from "@/components/ReportButton";
@@ -23,6 +24,30 @@ const tipCategories = [
   { name: "ui-ux", value: "ui-ux", icon: Code },
 ];
 
+// Simple SearchSnippet component
+const SearchSnippet = ({ content, searchTerm, maxLength = 150 }: { content: string, searchTerm: string, maxLength?: number }) => {
+  const text = String(content || '');
+  if (text.length <= maxLength) return <span>{text}</span>;
+  
+  const snippet = `${text.substring(0, maxLength)}...`;
+  if (!searchTerm) return <span>{snippet}</span>;
+  
+  const regex = new RegExp(`(${searchTerm})`, 'gi');
+  const parts = snippet.split(regex);
+  
+  return (
+    <span>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800">{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </span>
+  );
+};
+
 const Tips = () => {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const navigate = useNavigate();
@@ -32,7 +57,7 @@ const Tips = () => {
   const { user } = useAuthStore();
 
   // Fetch tips data - moved before early return
-  const { data: tips = [], isLoading: loading, _error } = useTips({ 
+  const { data: tips = [], isLoading: loading, error } = useTips({ 
     category: selectedCategory, 
     search: searchQuery,
     sortBy 
@@ -50,7 +75,7 @@ const Tips = () => {
       }, 10000); // Increased to 10 seconds for network issues
       return () => clearTimeout(timer);
     }
-  }, [loading]);
+  }, [loading, error]);
 
   // Early return after all hooks are declared
   if (isPageLoading && loading) {
@@ -197,6 +222,7 @@ const Tips = () => {
       </CardContent>
     </Card>
   );
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />

@@ -33,12 +33,12 @@ export async function executeWithRLSTimeout<T>(
     });
 
     // 쿼리와 타임아웃을 race
-    const _result = await Promise.race([queryBuilder, timeoutPromise]);
+    const result = await Promise.race([queryBuilder, timeoutPromise]);
     
     const duration = Date.now() - startTime;
     console.warn(`⚡ Query completed in ${duration}ms`);
     
-    const { data, _error } = result as { data: T | null; error: unknown };
+    const { data, error } = result as { data: T | null; error: unknown };
     
     if (error) {
       console.warn('⚠️ Query completed with error:', error);
@@ -106,8 +106,8 @@ export async function executeWithRLSTimeout<T>(
 function isPermissionError(error: unknown): boolean {
   if (!error) return false;
   
-  const _errorMessage = error instanceof Error ? error.message : String(error);
-  const _errorCode = (error as { code?: string })?.code;
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorCode = (error as { code?: string })?.code;
   
   return (
     errorCode === 'PGRST301' || 
@@ -133,7 +133,7 @@ export async function validateUserSession() {
     });
 
     const sessionPromise = supabase.auth.getSession();
-    const { data: { session }, _error } = await Promise.race([sessionPromise, timeoutPromise]);
+    const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
     
     if (error) {
       console.error('❌ Session validation error:', error);
@@ -165,20 +165,20 @@ export async function validateUserSession() {
 export function handleRLSError(error: unknown): {
   isRLSIssue: boolean;
   shouldFallback: boolean;
-  _userMessage: string;
+  userMessage: string;
   errorType: 'timeout' | 'permission' | 'not_found' | 'network' | 'unknown';
 } {
   if (!error) {
     return {
       isRLSIssue: false,
       shouldFallback: false,
-      _userMessage: '',
+      userMessage: '',
       errorType: 'unknown'
     };
   }
 
-  const _errorMessage = error instanceof Error ? error.message : String(error);
-  const _errorCode = (error as { code?: string })?.code;
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorCode = (error as { code?: string })?.code;
   
   console.warn('🔍 Analyzing error:', { errorMessage, errorCode });
   
@@ -187,7 +187,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: true,
       shouldFallback: true,
-      _userMessage: '데이터를 불러오는 중 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
+      userMessage: '데이터를 불러오는 중 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
       errorType: 'timeout'
     };
   }
@@ -205,7 +205,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: true,
       shouldFallback: false,
-      _userMessage: '권한 문제가 발생했습니다. 다시 로그인해주세요.',
+      userMessage: '권한 문제가 발생했습니다. 다시 로그인해주세요.',
       errorType: 'permission'
     };
   }
@@ -215,7 +215,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: false,
       shouldFallback: true,
-      _userMessage: '',
+      userMessage: '',
       errorType: 'not_found'
     };
   }
@@ -230,7 +230,7 @@ export function handleRLSError(error: unknown): {
     return {
       isRLSIssue: false,
       shouldFallback: true,
-      _userMessage: '네트워크 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.',
+      userMessage: '네트워크 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.',
       errorType: 'network'
     };
   }
@@ -238,7 +238,7 @@ export function handleRLSError(error: unknown): {
   return {
     isRLSIssue: false,
     shouldFallback: false,
-    _userMessage: '알 수 없는 오류가 발생했습니다.',
+    userMessage: '알 수 없는 오류가 발생했습니다.',
     errorType: 'unknown'
   };
 }
@@ -263,7 +263,7 @@ export async function safeGetProfile(userId: string) {
   console.warn(`⏱️ Starting profile query with ${timeoutMs}ms timeout`);
   
   // RLS 타임아웃 방지 쿼리 실행
-  const _result = await executeWithRLSTimeout(
+  const result = await executeWithRLSTimeout(
     supabase
       .from('profiles')
       .select('*')
@@ -342,7 +342,7 @@ export async function safeGetUserProjects(userId: string) {
   }
 
   // RLS 타임아웃 방지 쿼리 실행
-  const _result = await executeWithRLSTimeout(
+  const result = await executeWithRLSTimeout(
     supabase
       .from('projects')
       .select('*')

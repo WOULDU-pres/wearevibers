@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Post, Comment } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 
 interface PostFilters {
   category?: string;
@@ -81,7 +81,7 @@ export const usePosts = (filters: PostFilters = {}) => {
 
         console.warn('🔍 Executing full posts query...');
         const fullQueryPromise = query;
-        const { data, _error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+        const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
         
         console.warn('📊 Full posts query _result:', { data, error, count: data?.length });
 
@@ -134,7 +134,7 @@ export const usePost = (postId: string) => {
   return useQuery({
     queryKey: ['post', postId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('posts')
         .select(`
           *,
@@ -178,7 +178,7 @@ export const usePostComments = (postId: string) => {
   return useQuery({
     queryKey: ['comments', 'post', postId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -228,7 +228,7 @@ export const useCreateComment = () => {
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .insert({
           content,
@@ -277,7 +277,7 @@ export const useIsPostVibed = (postId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
@@ -374,7 +374,7 @@ export const useIsCommentVibed = (commentId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
@@ -406,7 +406,7 @@ export const useVibeComment = () => {
   const { user } = useAuthStore();
 
   return useMutation({
-    mutationFn: async ({ commentId, _postId, isVibed }: { commentId: string; postId: string; isVibed: boolean }) => {
+    mutationFn: async ({ commentId, postId: _postId, isVibed }: { commentId: string; postId: string; isVibed: boolean }) => {
       if (!user) throw new Error('User not authenticated');
 
       if (isVibed) {
@@ -473,7 +473,7 @@ export const useCreatePost = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('posts')
         .insert({
           ...postData,
@@ -521,7 +521,7 @@ export const useUpdatePost = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('posts')
         .update({
           ...postData,

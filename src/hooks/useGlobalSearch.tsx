@@ -56,7 +56,7 @@ const searchProjects = async (searchQuery: string, limit: number = 10) => {
   // Full text search on title and description
   query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
 
-  const { data, _error } = await query
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -89,7 +89,7 @@ const searchTips = async (searchQuery: string, limit: number = 10) => {
   // Full text search on title and content
   query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`);
 
-  const { data, _error } = await query
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -113,7 +113,7 @@ const searchUsers = async (searchQuery: string, limit: number = 10) => {
   // Search in username, full_name, and bio
   query = query.or(`username.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`);
 
-  const { data, _error } = await query
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(limit);
 

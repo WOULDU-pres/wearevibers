@@ -86,7 +86,7 @@ const Lounge = () => {
   const currentCategory = loungeCategories.find(cat => cat.id === activeCategory)?.value;
 
   // Fetch posts with filters - moved before early return
-  const { data: posts, isLoading, _error } = usePosts({
+  const { data: posts, isLoading, error } = usePosts({
     category: currentCategory,
     search: searchQuery || undefined,
     sortBy,
@@ -108,7 +108,7 @@ const Lounge = () => {
       }, 10000); // Increased to 10 seconds for network issues
       return () => clearTimeout(timer);
     }
-  }, [isLoading]);
+  }, [isLoading, error]);
 
   // Real-time updates - moved before early return
   useEffect(() => {

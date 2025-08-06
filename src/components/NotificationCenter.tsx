@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import { CheckMoreHorizontal as _CheckMoreHorizontal } from 'lucide-react';
+import { CheckMoreHorizontal as _CheckMoreHorizontal, Bell } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,8 +111,8 @@ const NotificationCenter: React.FC = () => {
   };
 
   // 에러 상태
-  if (error) {
-    console.error('알림 조회 에러:', error);
+  if (_error) {
+    console.error('알림 조회 에러:', _error);
   }
 
   return (

@@ -22,6 +22,7 @@
   "scripts": {
     "dev": "vite --port 8080 --host",
     "build": "tsc && vite build",
+    "build:analyze": "npm run build && npx vite-bundle-analyzer",
     "preview": "vite preview --port 4173 --host",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -116,6 +117,7 @@
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
+    "terser": "^5.43.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.19",

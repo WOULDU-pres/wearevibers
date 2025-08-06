@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import type { Project } from '@/lib/supabase-types';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 import { safeGetUserProjects, executeWithRLSTimeout } from '@/lib/rlsHelper';
 
 export interface ProjectFilters {
@@ -46,7 +46,7 @@ export const useProjects = (filters?: ProjectFilters) => {
       }
 
       // RLS 타임아웃 방지 래퍼 사용
-      const { data, _error, isTimeout, wasFixed } = await executeWithRLSTimeout(
+      const { data, error, isTimeout, wasFixed } = await executeWithRLSTimeout(
         query,
         3000, // 3초 타임아웃
         []
@@ -80,7 +80,7 @@ export const useProjects = (filters?: ProjectFilters) => {
       if (projects.length > 0) {
         try {
           const userIds = [...new Set(projects.map(p => p.user_id))];
-          const { _data: profiles } = await executeWithRLSTimeout(
+          const { data: profiles } = await executeWithRLSTimeout(
             supabase
               .from('profiles')
               .select('id, username, full_name, avatar_url')
@@ -161,7 +161,7 @@ export const useInfiniteProjects = (filters?: ProjectFilters) => {
         query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
 
-      const { data: _data, error } = await query;
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching projects:', error);
@@ -176,8 +176,8 @@ export const useInfiniteProjects = (filters?: ProjectFilters) => {
       }
       
       return {
-        projects: _data as Project[],
-        nextCursor: _data.length === PROJECTS_PER_PAGE ? pageParam + 1 : undefined,
+        projects: data as Project[],
+        nextCursor: data.length === PROJECTS_PER_PAGE ? pageParam + 1 : undefined,
       };
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -189,7 +189,7 @@ export const useProject = (projectId: string) => {
   return useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
@@ -240,8 +240,8 @@ export const useMyProjects = () => {
         // Use safe projects fetcher with built-in RLS handling
         console.warn('🔍 Using safeGetUserProjects with built-in RLS protection...');
         
-        const { data, _error, isTimeout } = await safeGetUserProjects(user.id);
-        console.warn('📊 SafeGetUserProjects _result:', { _data: _data?.length || 0, error, isTimeout });
+        const { data, error, isTimeout } = await safeGetUserProjects(user.id);
+        console.warn('📊 SafeGetUserProjects result:', { data: data?.length || 0, error, isTimeout });
         
         if (isTimeout) {
           console.warn('⏰ Projects query timed out - returning empty array for better UX');
@@ -292,7 +292,7 @@ export const useCreateProject = () => {
     mutationFn: async (projectData: Omit<Project, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'vibe_count' | 'profiles'>) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .insert({
           ...projectData,
@@ -327,7 +327,7 @@ export const useUpdateProject = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .update({
           ...updates,
@@ -390,7 +390,7 @@ export const useVibeProject = () => {
       if (!user) throw new Error('User not authenticated');
 
       // First, increment the vibe count
-      const { _error: updateError } = await supabase.rpc('increment_vibe_count', {
+      const { error: updateError } = await supabase.rpc('increment_vibe_count', {
         project_id: projectId
       });
 
@@ -400,7 +400,7 @@ export const useVibeProject = () => {
       }
 
       // Then record the vibe in the vibes table
-      const { _error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('vibes')
         .insert({
           user_id: user.id,

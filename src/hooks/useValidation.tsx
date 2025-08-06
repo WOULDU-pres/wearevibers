@@ -29,13 +29,12 @@ export function useValidation<T extends Record<string, unknown>>(
   schema: z.ZodSchema<T>,
   options: ValidationOptions = {}
 ) {
-  const [_errors, setErrors] = useState<Record<keyof T, string>>({});
+  const [errors, setErrors] = useState<Record<keyof T, string>>({});
   const [isValidating, setIsValidating] = useState(false);
 
   const {
     sanitize = true,
     sanitizer = contentSanitizers.title,
-    _abortEarly = false,
   } = options;
 
   /**
@@ -54,7 +53,7 @@ export function useValidation<T extends Record<string, unknown>>(
         }
 
         // Zod 스키마 검증
-        const _result = await schema.safeParseAsync(processedData);
+        const result = await schema.safeParseAsync(processedData);
 
         if (result.success) {
           setIsValidating(false);
@@ -123,7 +122,7 @@ export function useValidation<T extends Record<string, unknown>>(
           ) as Partial<T>;
         }
 
-        const _result = await fieldSchema.safeParseAsync(processedData);
+        const result = await fieldSchema.safeParseAsync(processedData);
 
         if (result.success) {
           // 해당 필드의 에러 제거
@@ -193,7 +192,7 @@ export function useValidation<T extends Record<string, unknown>>(
     (fieldName: keyof T): boolean => {
       return fieldName in errors;
     },
-    []
+    [errors]
   );
 
   /**
@@ -203,7 +202,7 @@ export function useValidation<T extends Record<string, unknown>>(
     (fieldName: keyof T): string | undefined => {
       return errors[fieldName];
     },
-    []
+    [errors]
   );
 
   return {
@@ -330,11 +329,11 @@ export function useFormValidation<T extends Record<string, unknown>>(
  */
 export function useAsyncValidation<T>(
   validator: (value: T) => Promise<boolean>,
-  _errorMessage = '유효하지 않은 값입니다.',
+  errorMessage = '유효하지 않은 값입니다.',
   debounceMs = 500
 ) {
   const [isValidating, setIsValidating] = useState(false);
-  const [_error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
 
   const validate = useCallback(
@@ -347,9 +346,9 @@ export function useAsyncValidation<T>(
         // 디바운싱을 위한 지연
         await new Promise((resolve) => setTimeout(resolve, debounceMs));
 
-        const _result = await validator(value);
+        const result = await validator(value);
         
-        if (_result) {
+        if (result) {
           setIsValid(true);
           setError(null);
         } else {
@@ -365,7 +364,7 @@ export function useAsyncValidation<T>(
 
       return isValid;
     },
-    [validator, debounceMs, isValid]
+    [validator, debounceMs, isValid, errorMessage]
   );
 
   const reset = useCallback(() => {

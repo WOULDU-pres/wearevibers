@@ -1,8 +1,8 @@
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import GlobalSearch from "@/components/GlobalSearch";
 import MobileMenu from "@/components/MobileMenu";
 import NotificationCenter from "@/components/NotificationCenter";

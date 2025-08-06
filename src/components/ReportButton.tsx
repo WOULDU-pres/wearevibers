@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
-  
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Flag, Shield } from 'lucide-react';
 import { ReportDialog } from './ReportDialog';
-import type { ReportButtonProps } from '@/types/security';
+import type { ReportButtonProps, CreateReportParams } from '@/types/security';
 
 export function ReportButton({
   contentId,

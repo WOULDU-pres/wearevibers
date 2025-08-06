@@ -99,7 +99,7 @@ const Members = () => {
       // Race between the query and timeout
       const testQuery = await Promise.race([testQueryPromise, timeoutPromise]);
       
-      console.warn('🧪 Basic profiles query _result:', testQuery);
+      console.warn('🧪 Basic profiles query result:', testQuery);
       
       if (testQuery.error) {
         console.error('❌ Basic profiles query failed:', testQuery.error);
@@ -146,9 +146,9 @@ const Members = () => {
 
       console.warn('🔍 Executing full members query...');
       const fullQueryPromise = query;
-      const { data, _error } = await Promise.race([fullQueryPromise, timeoutPromise]);
+      const { data, error } = await Promise.race([fullQueryPromise, timeoutPromise]);
       
-      console.warn('📊 Full members query _result:', { data, error, count: data?.length });
+      console.warn('📊 Full members query result:', { data, error, count: data?.length });
 
       if (error) {
         console.error('❌ Error fetching members:', error);

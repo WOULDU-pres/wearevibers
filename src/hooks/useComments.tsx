@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
-import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler as _createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
+import { isAuthError, handleAuthError, authAwareRetry, createAuthAwareMutationErrorHandler } from '@/lib/authErrorHandler';
 import type { 
   CommentWithProfile, 
   CommentContentType, 
@@ -18,7 +18,7 @@ export const useComments = (contentId: string, contentType: CommentContentType) 
   return useQuery({
     queryKey: ['comments', contentType, contentId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -99,7 +99,7 @@ export const useComment = (commentId: string) => {
   return useQuery({
     queryKey: ['comment', commentId],
     queryFn: async () => {
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .select(`
           *,
@@ -139,7 +139,7 @@ export const useCommentCount = (contentId: string, contentType: CommentContentTy
   return useQuery({
     queryKey: ['comment-count', contentType, contentId],
     queryFn: async () => {
-      const { count, _error } = await supabase
+      const { count, error } = await supabase
         .from('comments')
         .select('*', { count: 'exact', head: true })
         .eq('content_id', contentId)
@@ -166,7 +166,7 @@ export const useCreateComment = () => {
     mutationFn: async (commentData: CreateCommentRequest) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .insert({
           ...commentData,
@@ -239,7 +239,7 @@ export const useUpdateComment = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('comments')
         .update({
           ...updates,
@@ -295,7 +295,7 @@ export const useDeleteComment = () => {
       if (!user) throw new Error('User not authenticated');
 
       // 먼저 댓글 정보를 가져와서 어떤 콘텐츠의 댓글인지 확인
-      const { data: commentData, _error: fetchError } = await supabase
+      const { data: commentData, error: fetchError } = await supabase
         .from('comments')
         .select('content_id, content_type, user_id')
         .eq('id', commentId)
@@ -376,7 +376,7 @@ export const useVibeComment = () => {
         }
 
         // 댓글의 좋아요 수 감소
-        const { _error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from('comments')
           .update({ vibe_count: supabase.rpc('decrement', { current_count: 'vibe_count' }) })
           .eq('id', commentId);
@@ -401,7 +401,7 @@ export const useVibeComment = () => {
         }
 
         // 댓글의 좋아요 수 증가
-        const { _error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from('comments')
           .update({ vibe_count: supabase.rpc('increment', { current_count: 'vibe_count' }) })
           .eq('id', commentId);
@@ -438,7 +438,7 @@ export const useCommentVibeStatus = (commentId: string) => {
     queryFn: async () => {
       if (!user) return false;
 
-      const { data, _error } = await supabase
+      const { data, error } = await supabase
         .from('vibes')
         .select('id')
         .eq('user_id', user.id)
